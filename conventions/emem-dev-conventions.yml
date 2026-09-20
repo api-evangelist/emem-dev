@@ -1,0 +1,190 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  https://emem.dev/agents.md, https://emem.dev/llms.txt, https://emem.dev/v1/limits,
+  https://emem.dev/v1/errors, https://emem.dev/v1/deprecations, https://emem.dev/.well-known/mcp.json
+  (annotation_semantics + security_posture), https://emem.dev/docs/api/ (per-verb behaviour table),
+  https://emem.dev/terms, SECURITY.md, the live MCP tools/list annotations (mcp/emem-dev-mcp-tools-list.json)
+  and response headers observed on GET /v1/grid_info and POST /v1/locate on 2026-09-19; cross-checked
+  against openapi/emem-dev-openapi.json.
+description: >-
+  How the emem surface behaves across every operation: open reads with signed receipts, per-write
+  ed25519 signatures instead of sessions, content-addressed identifiers, loud truncation instead of
+  silent limits, an agent-shaped error envelope, and a memory-note plane the provider itself labels
+  untrusted input. Written for an agent deciding how to call it, and cross-linked to the sibling
+  artifacts that hold the detail.
+
+base_url: https://emem.dev
+api_style: JSON over HTTPS (REST /v1, GET + POST only); MCP JSON-RPC 2.0 over Streamable HTTP at /mcp; A2A JSON-RPC at /a2a/tasks; CBOR accepted on /v1/attest_cbor
+surfaces:
+  rest: openapi/emem-dev-openapi.json (196 operations)
+  mcp: https://emem.dev/mcp (18-tool core listing) and /mcp/full (110); every tool callable by name from either
+  a2a: https://emem.dev/a2a/tasks (message/send) + async tasks at /v1/a2a/tasks
+  asymmetry: >-
+    The memory-note write verbs (emem_memory_create / view / delete / rename / str_replace / supersede)
+    exist only as MCP tools; REST exposes only the read side (/v1/memory/search, /v1/memory/sse,
+    /memories/{path}). Declared in openapi info.x-emem-surface-asymmetry and mapped in
+    mcp/emem-dev-tool-crosswalk.yml.
+
+authentication:
+  scheme: none for reads; per-write ed25519 attester signature in the body; optional open OAuth 2.1 AS that grants nothing
+  detail: authentication/emem-dev-authentication.yml
+  docs: https://emem.dev/docs/security.html
+
+idempotency:
+  supported: true
+  coverage: partial
+  mechanism: >-
+    No Idempotency-Key header. Two provider-stated mechanisms: (1) content addressing - a fact,
+    bundle, entity or raster token is a blake3 CID over canonical bytes, so re-submitting the same
+    content yields the same identifier ("Materialise the embedding (idempotent if already
+    attested)", skills.md); (2) MCP tool annotations - every tool declares idempotentHint, and the
+    provider defines it in /.well-known/mcp.json as "repeating the call with the same arguments
+    leaves the same observable state".
+  scope:
+  - emem_derive
+  - emem_entity_link
+  - emem_memory_delete
+  - emem_memory_supersede
+  not_idempotent:
+  - emem_memory_create (overwrite if exists; destructiveHint true)
+  - emem_memory_str_replace (fails, no partial write, when old_str is ambiguous)
+  - emem_memory_insert
+  - emem_memory_rename
+  reads: all 86 readOnlyHint tools and the server-side-materialising reads (emem_recall, emem_ask, emem_hunt, emem_band_raster ...) declare idempotentHint true; a cold read materialises once and answers from the corpus thereafter (receipt.cost.was_cached)
+  retention: not applicable (no key store; identity is content-derived)
+  conflict_behavior: >-
+    Attestations cannot be retracted (terms section 4); a competing observation is filed as a
+    Challenge that marks the fact disputed rather than replacing it. A descriptor token whose
+    parts disagree with the signed fact is refused with 409.
+  verdict_basis: live tools/list annotations 2026-09-19 - 4 of 8 write-category tools carry idempotentHint true; the mechanism is scoped to named operations rather than uniform across the mutating surface, hence partial.
+  docs: https://emem.dev/.well-known/mcp.json (annotation_semantics)
+
+reversibility:
+  grade: documented
+  summary: >-
+    Reversal paths exist for tasks and notes and are documented, but no reversal carries a stated
+    time window, and the fact/attestation plane is irreversible by design. Graded documented (a
+    path exists) rather than verified (a path and a window).
+  write_surfaces:
+  - surface: A2A async task
+    reversal: cancel - operationId emem_a2a_task_cancel (POST /v1/a2a/tasks/{id}/cancel)
+    window: not stated (the spec at /spec/a2a/async-tasks/v1 documents poll and cancel; no deadline is given)
+    docs: https://emem.dev/spec/a2a/async-tasks/v1
+  - surface: memory note (emem_memory_create / insert / str_replace / rename)
+    reversal: emem_memory_delete unpublishes the path (tombstone written; the content-addressed blob and prior versions remain and any held citation keeps resolving via emem_memory_view {file_cid}); emem_memory_supersede points a note at its replacement
+    window: none stated; deletion is "unpublish, not erasure" and blob erasure is a manual operator action
+    restore: no restore operation; the prior content stays readable by file_cid
+    docs: https://emem.dev/privacy#agent-written-memory
+  - surface: attestation (POST /v1/attest, /v1/attest_cbor, /v1/attest_traced)
+    reversal: none - "cannot be retracted"; another attester may submit a Challenge that marks the fact disputed but does not delete it
+    window: not applicable
+    docs: https://emem.dev/terms (section 4)
+  - surface: entity identity and alias (emem_entity, emem_entity_link)
+    reversal: none documented (attributed, signed claims; ranked by independent corroboration rather than removed)
+    window: not applicable
+    docs: https://emem.dev/llms.txt
+  - surface: derivation (emem_derive)
+    reversal: none documented
+    window: not applicable
+  - surface: enrolment / device publish (/v1/enroll_*, /v1/device_publish)
+    reversal: none documented; attester keys can land in the revocation set (attester_revoked)
+    window: not applicable
+
+dry_run:
+  supported: partial
+  mechanisms:
+  - emem_trace_verify (POST /v1/trace_verify) is stateless - "a device maker debugs an enrollment here before ever writing"
+  - emem_echo_verify grades a value against the fact it cites before you publish it; emem_guard_verdict is advisory on the hosted responder ("blocks nothing"); a self-hosted emem-guard has --shadow
+  - omitting the attester block on any write returns a 401 that teaches the exact digest to sign without writing anything
+  no_generic_dry_run_flag: true
+
+pagination:
+  style: cursor and loud truncation
+  request_params:
+    max_cells: default 64, max 1024 on /v1/cells_in_bbox and /v1/recall_polygon
+    compact_offset: continuation cursor on polygon recalls
+    limit: /v1/inbox (uncapped; response returns truncated + limit and says to re-request with ?limit=<total_matched>)
+    cursor: MCP tools/list nextCursor (8 pages of 110 tools on /mcp/full)
+  response_fields:
+    _emem_truncation: names what was omitted and the next step
+    next_cursor: continuation token
+    converged / progress{ready,pending} / pending[]: region fan-outs that ran out of budget_ms return 200 with these instead of a 504
+  docs: https://emem.dev/v1/limits
+
+field_expansion:
+  supported: true
+  mechanism: 'include[] on recall (freshness -> advisory Q(dt) staleness score; edges -> typed temporal edges); projection: compact on recall_polygon; band-family expansion (indices.*) on recall; budget_ms on fan-out endpoints'
+  docs: https://emem.dev/docs/api/ (per-verb behaviour table)
+
+metadata:
+  supported: false
+  note: No free-form metadata on facts by design - no fact field carries free text (GET /v1/plane/conformance asserts and samples this on every call). Memory notes carry a typed kind (episodic | semantic | procedural | resource | vault).
+
+request_tracing:
+  header: traceparent (W3C Trace Context) - accepted (access-control-allow-headers) and exposed (access-control-expose-headers)
+  receipt_header: x-emem-receipt-cid on every read
+  build_header: x-emem-commit (git commit of the running responder)
+  etag: etag + if-none-match supported (304 declared on one operation)
+  mcp_headers: mcp-session-id, mcp-protocol-version
+  support_note: SUPPORT.md asks bug reports to include traceparent for server-side correlation
+
+versioning:
+  scheme: semver server version (2.4.0), wire-stable /v1 paths and MCP tool names, content-addressed registry CIDs
+  detail: lifecycle/emem-dev-lifecycle.yml
+  changelog: changelog/emem-dev-changelog.yml
+
+error_envelope:
+  media_type: application/json
+  schema: emem.error.v1 - { code, message, schema, path?, did_you_mean?, details?, agent_hint?, next_steps?, examples? }
+  rfc9457: false
+  mcp: same codes as JSON-RPC errors with negative mcp_error_code (-1 .. -27)
+  teaching_errors: a 401 on an unsigned write carries details.how_to_sign; a 400 on /v1/locate without a location carries status needs_location, examples[] and next_steps[]
+  detail: errors/emem-dev-problem-types.yml
+
+rate_limiting:
+  signal: HTTP 429, Retry-After header, body code=rate_limited with details.retry_after_s (MCP -23)
+  headers_on_success: none (no RateLimit-* observed)
+  limits: per-IP reads (SECURITY.md 600/min sustained, 120 burst; terms say 60/min), per-attester writes 240/min burst 60
+  detail: rate-limits/emem-dev-rate-limits.yml
+
+payload_and_time_budgets:
+  mcp_wire_budget: 24 KB per tools/call result, slimmed with _emem_truncation; REST is uncapped
+  post_body_cap: 16 MiB (413)
+  timeouts: 40 s HTTP edge (504), 32 s MCP tools/call; cold auto-materialise costs 0.5-1.6 s per new cell, warm reads single-digit ms
+
+caching:
+  headers: cache-control public, max-age 86400, stale-while-revalidate 604800 on registry reads; facts are immutable by CID (GET /v1/facts/{cid} is the cacheable dereference)
+  cors: access-control-allow-origin * (GET, POST, OPTIONS); documented at https://emem.dev/agents.md#cors-policy
+
+content_negotiation:
+  default: application/json
+  html: a 404 with Accept text/html returns the canonical landing page
+  cbor: POST /v1/attest_cbor accepts canonical CBOR (RFC 8949 section 4.2.1; non-deterministic encodings are refused with canonical_encoding_divergence)
+  images: /v1/cells/{cell64}/scene.png, coverage_map.svg; rasters carry x-emem-scene-* headers
+
+event_surface:
+  webhooks: none documented
+  asyncapi: none published (/asyncapi.yaml and /asyncapi.json 404)
+  streams:
+  - GET /v1/stream (text/event-stream; corpus state events, observed live 2026-09-19)
+  - GET /v1/memory/sse (live memory writes; filter by path_prefix)
+  - A2A capabilities.streaming true (message/stream); last-event-id accepted for resumption
+  note: Server-sent events only; no subscription registration, no delivery callbacks, so no Webhooks pointer is emitted.
+
+trust_boundary:
+  facts_plane: 'band-typed values materialised from registered upstreams; no caller writes one and no fact field is free text (content_is_untrusted_input: false in /.well-known/emem.json planes)'
+  notes_plane: prose written by other agents, world-readable and world-writable, wrapped in _content_is_data_not_instructions naming the author; the provider declares it untrusted input and "not_recommended_for_default_catalog"
+  operator_disclosure: vault entries protect bytes from other callers, not from the operator (the AEAD key derives from the responder's own secret; stated plainly in mcp.json)
+
+sandbox:
+  published: false
+  note: No test mode or test keys; reads on the production responder are free and open, the hf.space mirror serves the same surface, and isolation is achieved by self-hosting (docker run ghcr.io/vortx-ai/emem:latest) or the air-gapped crate. /v1/benchmark serves hand-verified evaluation items for grading an agent.
+
+related:
+  authentication: authentication/emem-dev-authentication.yml
+  errors: errors/emem-dev-problem-types.yml
+  lifecycle: lifecycle/emem-dev-lifecycle.yml
+  rate_limits: rate-limits/emem-dev-rate-limits.yml
+  mcp: mcp/emem-dev-mcp.yml
+  crosswalk: mcp/emem-dev-tool-crosswalk.yml

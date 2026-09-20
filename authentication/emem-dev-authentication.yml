@@ -1,0 +1,77 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  https://emem.dev/.well-known/oauth-protected-resource, https://emem.dev/.well-known/oauth-authorization-server,
+  https://emem.dev/oauth/status, https://emem.dev/v1/enlist, https://emem.dev/v1/verifier_spec (caller_signed_objects),
+  https://emem.dev/llms.txt (Connect + Writing to the shared memory), https://emem.dev/docs/security.html,
+  the agent card's emem.authentication block, and openapi/emem-dev-openapi.json (which declares no
+  securitySchemes and no security requirements - the provider states that absence is deliberate).
+docs: https://emem.dev/docs/security.html
+summary: >-
+  Every read is anonymous: no API key, no account, no bearer token on any REST endpoint, MCP tool
+  or A2A skill (oauth-protected-resource: auth_required false, authorization_servers []). Writes
+  are authenticated per request by an ed25519 attester signature over a domain-separated blake3
+  preimage carried in the request body; there is no session. An OAuth 2.1 authorization server is
+  published for brokers that refuse to connect without one, but it registers anyone, approves
+  everyone and its tokens grant nothing an anonymous caller lacks. Write REACH, not identity, is
+  tiered by a T0-T5 enlistment ladder whose rungs are checks a third party can re-run.
+schemes:
+- id: anonymous-read
+  type: none
+  applies_to: all GET endpoints, every read/introspect/verify/plan MCP tool (86 of 110 tools are readOnlyHint true), A2A message/send and skill queries
+  evidence: '"L0 / L1 reads are anonymous ... no OAuth is involved in any flow" (oauth-protected-resource.notes); "every read is anonymous and no endpoint requires a bearer token" (/oauth/status).'
+- id: ed25519-attester-signature
+  type: custom (per-request detached signature, ed25519 over blake3 of a domain-separated preimage)
+  in: request body (attester block - pubkey_b32 + signature over the canonical bytes)
+  applies_to: writes - emem_memory_create / str_replace / insert / rename / delete / supersede, emem_entity, emem_entity_link, emem_derive, POST /v1/attest*, /v1/edges, /v1/enroll_*, /v1/device_publish, /v1/log/witness
+  key_issuance: caller-generated locally (emem keygen or any ed25519 library); nobody issues or can revoke it; the responder never sees the private half
+  discovery: omit the attester block on any write and the 401 returns details.how_to_sign with the exact digest to sign, the byte rules and a worked example; the full construction is at https://emem.dev/v1/verifier_spec (caller_signed_objects)
+  namespace: /memories/by_attester/<pubkey8>/ is the key's own; elsewhere the first attester to create a path owns it (403 memory_namespace_violation otherwise)
+  revocation: attester_revoked error code (-12) for keys in the revocation set
+  evidence: llms.txt "Writing to the shared memory"; mcp.json security_posture.every_write_is.signed; /v1/errors unauthorized (-13), bad_signature (-15)
+- id: oauth2-optional
+  type: oauth2
+  flows:
+    authorizationCode:
+      authorizationUrl: https://emem.dev/oauth/authorize
+      tokenUrl: https://emem.dev/oauth/token
+      refreshUrl: https://emem.dev/oauth/token
+      scopes: {}
+  pkce: S256
+  dynamic_client_registration: https://emem.dev/oauth/register (always succeeds)
+  token_endpoint_auth_methods: [none]
+  scopes_supported: []
+  grants_access_to: nothing beyond anonymous access; session status is always open_unverified
+  evidence: >-
+    RFC 8414 metadata emem_note: "Authorization here is OPTIONAL and open: registration always succeeds,
+    authorization auto-approves, and the token adds nothing to anonymous access. It exists so brokers
+    that insist on OAuth can connect to an open protocol." The provider's /v1/enlist explains why OAuth
+    was not chosen for agent identity ("DCR degrades to a bearer token proving possession").
+  discovery:
+    authorization_server_metadata: well-known/emem-dev-oauth-authorization-server.json
+    protected_resource_metadata: well-known/emem-dev-oauth-protected-resource.json
+    openid_configuration: well-known/emem-dev-openid-configuration.json (same document; not OIDC Discovery - no jwks_uri / userinfo)
+- id: vault-capability
+  type: custom (ed25519 signature over blake3("emem.vault_open|" + path + "|" + nonce))
+  applies_to: reading a memory entry written with kind "vault"
+  evidence: mcp.json security_posture.read_isolation.opt_in; the operator can decrypt any vault entry (key derived from the responder's own secret) and says so.
+enlistment_ladder:
+  url: https://emem.dev/v1/enlist
+  principle: '"Tier on what a write can REACH, never on who is asking. A tier records which check passed; it is not a score."'
+  tiers:
+  - {tier: T0_anonymous, requirement: a signed note}
+  - {tier: T1_keyed, requirement: full key resolvable; namespace proven by a caller signature}
+  - {tier: T2_named, requirement: a signed profile.md carrying a unique nick}
+  - {tier: T3_declared, requirement: a reachable endpoint with declared skills}
+  - {tier: T4_affiliated, requirement: 'an organisation vouches for the key by dns (_emem-agent.<domain> TXT), well_known (/.well-known/emem-agents.json) or cross_sig'}
+  - {tier: T5_corroborated, requirement: 3 distinct peer keys confirmed one of its tokens matched (not yet computed)}
+  reads: never gated at any tier
+  not_an_auth_wall: no account, no bearer token that grants anything, no payment anywhere in the ladder
+responder_identity:
+  signature_alg: ed25519
+  hash_alg: blake3
+  pubkey_b32: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+  published_at: [https://emem.dev/.well-known/emem.json, https://emem.dev/.well-known/jwks.json (kid = pubkey), https://emem.dev/.well-known/did.json]
+  every_read_returns: a signed receipt (x-emem-receipt-cid header; body receipt) verifiable offline at POST /v1/verify_receipt, /verify in the browser, or `emem verify`
+openapi_security_schemes: none declared (components.securitySchemes absent, no security requirements); the agent card's emem.authentication block states this is intentional for an open-read surface.
+scopes: none (scopes_supported [] in both RFC 8414 and RFC 9728 metadata); no scopes/ artifact is wired for that reason.

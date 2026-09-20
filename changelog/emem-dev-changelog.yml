@@ -1,0 +1,68 @@
+generated: '2026-09-19'
+method: searched
+source: https://github.com/Vortx-AI/emem/blob/main/CHANGELOG.md
+description: >-
+  Structured capture of emem's dated changelog. The provider keeps a Keep a Changelog file in
+  the source repository with semantic versions; GitHub releases are cut per version, the npm
+  and PyPI clients and the MCP registry entry are versioned in lock-step (2.4.0 on 2026-09-09),
+  and /v1/deprecations serves the machine-readable deprecation table. Only the recent window is
+  recorded here; the live file is the source of truth (22 versions back to 0.0.2).
+docs: https://github.com/Vortx-AI/emem/blob/main/CHANGELOG.md
+versioning:
+  scheme: semver (Keep a Changelog format)
+  current: 2.4.0
+  current_dated: '2026-09-07'
+  release_tag: v2.4.0 (GitHub release 2026-09-09)
+  deprecations_endpoint: https://emem.dev/v1/deprecations
+  detail: lifecycle/emem-dev-lifecycle.yml
+  cadence: roughly one minor release every one to two weeks since 1.0.0 (2026-07-09)
+entries:
+- version: 2.4.0
+  date: '2026-09-07'
+  latest: true
+  sections: {Added: 16, Changed: 18}
+  breaking: []
+  highlights:
+  - Federation a stranger can join - docker-compose.yml one-command node, scripts/verify_node.py join-bar check, witness job and DNS _emem-node TXT verification
+  - GET /.well-known/did.json (did:web document) and GET /.well-known/emem-agents.json (organisation vouching document)
+  - cid_v1 beside fact_cid so IPFS / Filecoin / ATProto tooling can address a fact without rehashing
+  - A2A protocolVersion corrected to a released version (it had claimed 1.2.0, which A2A never shipped)
+  - Fact index moved from sled to redb; flush coalescing and write watchdog
+- version: 2.3.0
+  date: '2026-08-26'
+  sections: {Added: 13, Changed: 9, Fixed: 9, Removed: 1}
+  breaking: []
+  highlights:
+  - Write enlistment ladder T0-T5; reads stay free at every rung
+  - Perception plane so a place question is not answered from orbit while a camera is watching the street
+  - Google Analytics, the consent banner and the emem_consent cookie removed
+  - Fixed - a write that could not be persisted reported success; consistency proof folded subtree roots
+- version: 2.2.0
+  date: '2026-08-18'
+  sections: {Added: 12, Changed: 4, Security: 1, Fixed: 15}
+  breaking: []
+  highlights:
+  - Agent surface usable without a human deciding which document to read (intent registry, capability manifest)
+  - Security - h2 updated to 0.4.16 for RUSTSEC-2026-0258
+  - Fixed - "every message signed" overclaim corrected (499 of 545 channel notes carried a signature)
+- version: 2.1.0
+  date: '2026-08-10'
+  sections: {Added: 1, Changed: 3, Fixed: 5}
+  breaking: []
+  highlights:
+  - Nine token shapes consolidated; FactCid schema fixed to accept the fact_cids the responder serves
+- version: 2.0.0
+  date: '2026-08-05'
+  sections: {BREAKING: 5}
+  breaking:
+  - Receipt preimage changed (v2 binds the inclusion proof); a verifier hardcoded to v1 rejects every receipt signed from here on - shipped as a major for that reason. v0/v1 receipts still verify under their own rules.
+  highlights:
+  - Polygon aggregates made order-independent; MCP resource templates that refused reads fixed
+- version: 1.4.0
+  date: '2026-07-31'
+  breaking: []
+- version: 1.0.0
+  date: '2026-07-09'
+  breaking: []
+  highlights:
+  - First 1.x; wire format, receipt preimage and address space declared settled for the 1.x line

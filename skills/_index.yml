@@ -1,0 +1,186 @@
+generated: '2026-09-19'
+method: searched
+source: Provider-published Agent Skills saved verbatim from https://github.com/Vortx-AI/emem/tree/main/plugins/emem/skills
+  (Claude Code plugin "emem" v2.4.0, marketplace Vortx-AI/emem) and crates/emem-guard/SKILL.md. operations[] were
+  matched from the REST paths each SKILL.md cites to operationIds in openapi/emem-dev-openapi.json; mcp_tools[]
+  are the tool names the skill text uses.
+install: /plugin marketplace add Vortx-AI/emem then /plugin install emem@emem (wires the MCP server too); or cp
+  -r plugins/emem/skills/emem-* ~/.claude/skills/
+skills:
+- file: emem-dev-a2a-collaboration.md
+  name: emem-a2a-collaboration
+  description: Join the agent-to-agent collaboration running on emem's signed ledger — find the standard, verify
+    another agent's message offline (who wrote it, not just that it was stored), announce yourself, and hand facts
+    to other ag
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_derive
+  - emem_verifier_spec
+  mcp_tools:
+  - emem_memory_view
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-a2a-collaboration/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Bash(python3:*) Read Write
+- file: emem-dev-agent-handoff.md
+  name: emem-agent-handoff
+  description: Hand work to another agent, another session, or your own future context so it arrives as checkable
+    evidence rather than as prose someone has to trust. Compose several readings into one signed bundle, mint citation
+    handle
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_inbox_get
+  - emem_inbox
+  mcp_tools:
+  - emem_memory_create
+  - emem_memory_delete
+  - emem_memory_insert
+  - emem_memory_list_by_kind
+  - emem_memory_rename
+  - emem_memory_search
+  - emem_memory_str_replace
+  - emem_memory_view
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-agent-handoff/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Bash(python3:*) Read Write
+- file: emem-dev-field-tokens.md
+  name: emem-field-tokens
+  description: Get a native-resolution raster field over an area from emem, or a field over time, as a signed, verifiable
+    artifact rather than a set of per-cell scalars. Use when the user needs the actual grid of values over an area
+    of
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_artifact_bytes
+  - emem_band_cube
+  - emem_band_raster
+  - emem_cells_in_bbox
+  - emem_raster_resolve
+  - emem_raster_bundle
+  - emem_raster_bundle_resolve
+  - emem_recall_many
+  mcp_tools: []
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-field-tokens/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Bash(python3:*) Read
+- file: emem-dev-find-similar.md
+  name: emem-find-similar
+  description: Return the top-K most similar places on Earth by cosine over a stored 128-D surface-texture embedding.
+    Use when the user asks for analogues, look-alikes or counterparts ("find cities like Bangalore", "where else
+    looks li
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_find_similar
+  - emem_locate_get
+  - emem_locate
+  - emem_recall
+  mcp_tools: []
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-find-similar/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Read
+- file: emem-dev-locate-and-recall.md
+  name: emem-locate-and-recall
+  description: Resolve a free-form place name to an emem cell64 and recall signed Earth-observation facts at that
+    location. Use when the user asks about current weather, vegetation index, elevation, soil properties, or any
+    other geospa
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_bands
+  - emem_cell_scene_png
+  - emem_data_availability
+  - emem_locate_get
+  - emem_locate
+  - emem_recall
+  - emem_verify_receipt
+  mcp_tools:
+  - emem_echo_verify
+  - emem_guard_verdict
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-locate-and-recall/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Bash(python3:*) Read
+- file: emem-dev-recall-polygon.md
+  name: emem-recall-polygon
+  description: Recall signed Earth-observation facts at every cell inside a user-supplied polygon. Use when the
+    user asks about an extent rather than a point — "what's the average NDVI inside this watershed", "show me precipitation
+    acr
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_recall_polygon
+  mcp_tools: []
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-recall-polygon/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Read
+- file: emem-dev-referential-drift.md
+  name: emem-referential-drift
+  description: Stop two agents, or one agent across two sessions, from silently meaning different things by the
+    same words or reporting different numbers for the same reading. Pin a value to a citation another party resolves
+    to byte-id
+  api: openapi/emem-dev-openapi.json
+  operations: []
+  mcp_tools:
+  - emem_change_attribution
+  - emem_echo_verify
+  - emem_log_consistency
+  - emem_log_inclusion
+  - emem_log_sth
+  - emem_log_witnesses
+  - emem_memory_contradictions
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-referential-drift/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Read
+- file: emem-dev-selfhost-emem-guard.md
+  name: selfhost-emem-guard
+  description: Stand up an emem-guard verdict server, verify it against the conformance checks, and point any agent
+    at it. Use when asked to self-host emem-guard, add a grounding gate to an agent on any model or framework, wire
+    a check
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_guard_verdict
+  mcp_tools: []
+  source: https://github.com/Vortx-AI/emem/blob/main/crates/emem-guard/SKILL.md
+  allowed_tools: null
+- file: emem-dev-shared-identity.md
+  name: emem-shared-identity
+  description: 'Make two agents refer to the same object. Mint or fetch a canonical identity for a thing (a field,
+    a corridor, an asset, a place-as-object), converge a fuzzy phrasing onto an identity already registered, and
+    attest that '
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_enlist_ladder
+  - emem_enlist_verify
+  mcp_tools:
+  - emem_entity
+  - emem_entity_link
+  - emem_entity_resolve
+  - emem_guard_verdict
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-shared-identity/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Bash(python3:*) Read
+- file: emem-dev-sign-and-attest.md
+  name: emem-sign-and-attest
+  description: Write to emem with your own ed25519 key — save a signed note or memory another agent can verify,
+    or register a derivation over signed facts that the responder will recompute. Use when the user wants to record
+    something d
+  api: openapi/emem-dev-openapi.json
+  operations:
+  - emem_derive
+  - emem_verifier_spec
+  mcp_tools:
+  - emem_memory_create
+  - emem_verify_receipt
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-sign-and-attest/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Bash(python3:*) Read Write
+- file: emem-dev-verify-before-publish.md
+  name: emem-verify-before-publish
+  description: Check a draft before you send it. Resolve every emem citation in the text, confirm each one actually
+    supports the sentence around it, and get an allow or deny with a machine-readable reason. Use before publishing
+    any ans
+  api: openapi/emem-dev-openapi.json
+  operations: []
+  mcp_tools:
+  - emem_echo_verify
+  - emem_guard_verdict
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-verify-before-publish/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(jq:*) Read
+- file: emem-dev-verify-receipt.md
+  name: emem-verify-receipt
+  description: Verify an emem receipt's Ed25519 signature offline by rebuilding the canonical BLAKE3 preimage and
+    checking against the responder's published pubkey. Use when the user pastes a receipt JSON and asks whether
+    it's authenti
+  api: openapi/emem-dev-openapi.json
+  operations: []
+  mcp_tools:
+  - emem_echo_verify
+  - emem_guard_verdict
+  source: https://github.com/Vortx-AI/emem/blob/main/plugins/emem/skills/emem-verify-receipt/SKILL.md
+  allowed_tools: Bash(curl:*) Bash(python3:*) Bash(pip:*) Read Write

@@ -1,0 +1,63 @@
+generated: '2026-09-19'
+method: searched
+source: https://github.com/Vortx-AI/emem/blob/main/crates/emem-cli/src/main.rs
+sources:
+- https://github.com/Vortx-AI/emem/blob/main/crates/emem-cli/src/main.rs (clap subcommands, read 2026-09-19)
+- https://github.com/Vortx-AI/emem/blob/main/crates/emem-cli/Cargo.toml (binaries)
+- https://github.com/Vortx-AI/emem/blob/main/crates/emem-guard/README.md and SKILL.md (emem-guard flags)
+- https://emem.dev/llms.txt (emem-guard section)
+- https://github.com/Vortx-AI/emem/blob/main/docs/self-host.md (server install)
+description: >-
+  First-party command-line surface shipped in the emem Rust workspace. Two binaries matter to a
+  consumer: `emem` (crates/emem-cli, "emem agent-native spatial memory protocol"), an offline
+  helper for keys, cell64 encoding, registry dumps and receipt verification; and `emem-guard`
+  (crates/emem-guard), a verdict server for AI checkpoints with audit and conformance modes.
+  `emem-server` is the responder itself. None is published to crates.io (probed 404); they build
+  from source or run from the OCI image. The library clients are catalogued in packages/.
+repo: https://github.com/Vortx-AI/emem
+install:
+  source: cargo build --release   # workspace; binaries land in target/release/
+  guard: cargo build --release -p emem-guard
+  server: cargo build --release --bin emem-server
+  docker: docker run --rm -p 5051:5051 ghcr.io/vortx-ai/emem:latest   # the responder (REST + MCP), not the emem helper CLI
+binaries:
+  emem: crates/emem-cli/src/main.rs (clap; subcommands below)
+  emem-server: crates/emem-cli/src/bin/emem-server.rs (the hosted responder)
+  emem-guard: crates/emem-guard/src/bin/emem-guard.rs
+  others: emem-sled-slim, emem-demo, emem-livedemo, emem-realdemo, emem-connect-demo, emem-purge-fnkey, emem-ask-eval (operator/demo tooling), emem-encode (crates/emem-airgap), emem-sleep-agentd
+commands:
+  registries:
+  - {name: manifests, description: Dump the active manifest CIDs (bands, functions, sources).}
+  - {name: bands, description: Dump the active band ontology as JSON.}
+  - {name: functions, description: Dump the active function registry as JSON.}
+  - {name: sources, description: Dump the active source-connector registry as JSON.}
+  - {name: errors, description: Dump the stable error code catalog as JSON (the same 27 codes as GET /v1/errors).}
+  identity:
+  - {name: keygen, description: Generate an attester ed25519 keypair (base32-nopad-lowercase) for signed writes.}
+  addressing:
+  - {name: cell <cell64>, description: Decode a cell64 string to its u64 representation.}
+  - {name: cell-encode <raw>, description: Encode a u64 cell ID as cell64.}
+  verification:
+  - {name: 'verify <path|-> [--pubkey <b32>] [--base-url <url>]', description: 'Offline-verify a receipt''s ed25519 signature (same blake3 preimage + strict verify as POST /v1/verify_receipt). Pubkey from --pubkey, else --base-url / EMEM_BASE_URL fetching /.well-known/emem.json, else the responder key embedded in the receipt. Exit 0 valid, 1 invalid.'}
+emem_guard:
+  description: Allow/deny verdict server for claims about the physical world; nine checkpoint routes from one engine, every verdict signed and appended to a hash-chained log.
+  flags:
+  - {flag: '(none)', description: 'generates a key, opens a log, serves the nine checkpoint routes (POST /verdict, /verdict/mcp, /verdict/openai, /verdict/cloudevent, /verdict/policy, /verdict/batch, /verdict/anthropic-hook, /verdict/claude-code; GET /log/entry/{leaf}) and GET /.well-known/emem-guard.json'}
+  - {flag: --shadow, description: run every rule, sign and log what it would have done, block nobody}
+  - {flag: --claim-gating, description: also deny transcripts that assert a measurable quantity about a place with no citation (CLAIM_UNGROUNDED); off by default}
+  - {flag: --report, description: count "would have blocked" off disk (also GET /log/report)}
+  - {flag: --audit --data <dir>, description: check a verdict log; exits non-zero if an entry was altered or deleted}
+  - {flag: --conformance <url>, description: run twelve checks against a running deployment over the wire; non-zero exit on any failure}
+  - {flag: '--module <name|webhook:<url>>', description: load a detection module (e.g. secret-patterns); module verdicts are signed and logged like native ones}
+  docs: https://emem.dev/guard
+  skill: skills/emem-dev-selfhost-emem-guard.md
+key_flows:
+  verify_a_receipt_offline:
+    command: emem verify receipt.json
+    description: Rebuilds the canonical preimage, blake3s it and ed25519-verifies against the responder pubkey, entirely offline.
+  mint_a_signing_key:
+    command: emem keygen
+    description: Produces the attester keypair a client needs before any write (memory notes, entities, derivations).
+  gate_an_agent:
+    command: emem-guard --claim-gating --shadow
+    description: Stand up a checkpoint that logs would-be denials without blocking, then remove --shadow to enforce.

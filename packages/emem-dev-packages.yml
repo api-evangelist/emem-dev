@@ -1,0 +1,96 @@
+generated: '2026-09-19'
+method: searched
+source: https://emem.dev/llms.txt
+description: >-
+  First-party emem client libraries and distributions. Names verified against the public
+  registries on 2026-09-19 (registry.npmjs.org, pypi.org JSON API, ghcr.io token-scoped tags
+  list, registry.modelcontextprotocol.io). The provider documents why the names are what they
+  are: the bare PyPI name `emem` belongs to an unrelated project (Automatika Robotics) and npm
+  refused `ememdev` as too close to an existing package, so the JS client is scoped under
+  @vortxai. Neither client is required; the REST and MCP endpoints need no library or key.
+  The Rust workspace crates (emem-cli, emem-guard, emem-server) are not published to crates.io
+  (probed: 404 for emem, emem-guard, ememdev) and build from source.
+packages:
+- language: python
+  registry: pypi
+  name: ememdev
+  url: https://pypi.org/project/ememdev/
+  source: https://github.com/Vortx-AI/emem/tree/main/sdks/emem-py
+  install: pip install ememdev
+  official: true
+  version: 2.4.0
+  published: '2026-09-09'
+  license: Apache-2.0
+  releases: 13
+  note: Thin typed client over the REST surface (httpx); `pip install "ememdev[signing]"` adds blake3 + cryptography for signed memory writes. Python 3.9+.
+- language: javascript
+  registry: npm
+  name: '@vortxai/emem'
+  url: https://www.npmjs.com/package/@vortxai/emem
+  source: https://github.com/Vortx-AI/emem/tree/main/sdks/emem-ts
+  install: npm i @vortxai/emem
+  official: true
+  version: 2.4.0
+  published: '2026-09-09'
+  license: Apache-2.0
+  releases: 9
+  first_published: '2026-07-21'
+  note: ESM TypeScript client, Node >= 18.
+- language: python
+  registry: pypi
+  name: emem-langmem
+  url: https://pypi.org/project/emem-langmem/
+  source: https://github.com/Vortx-AI/emem/tree/main/sdks/emem-langmem
+  install: pip install emem-langmem
+  official: true
+  version: 2.4.0
+  published: '2026-09-09'
+  note: LangChain BaseStore backed by emem.dev, drop-in agent memory for LangGraph. The sibling sdks/llama-index-tools-emem directory is not on PyPI (probed 404).
+- language: container
+  registry: ghcr
+  name: ghcr.io/vortx-ai/emem
+  url: https://github.com/Vortx-AI/emem/pkgs/container/emem
+  source: https://github.com/Vortx-AI/emem
+  install: docker run --rm -p 5051:5051 ghcr.io/vortx-ai/emem:latest
+  official: true
+  version: null
+  published: null
+  note: >-
+    The full responder (REST + MCP) as an OCI image. The ghcr tags list (probed 2026-09-19) carries
+    only the floating tags main and latest plus commit-SHA tags, no semver tags, and the MCP registry
+    entry pins :latest; a consumer cannot tell which release they pull from the tag alone, so version
+    is recorded as null. The running image self-reports its commit in the x-emem-commit header.
+- language: rust
+  registry: none
+  name: emem-cli (binaries emem, emem-server) and emem-guard
+  url: https://github.com/Vortx-AI/emem/tree/main/crates
+  source: https://github.com/Vortx-AI/emem
+  install: cargo build --release --bin emem-server   # or: cargo build --release -p emem-guard
+  official: true
+  version: 2.4.0
+  published: '2026-09-09'
+  note: Version and date are the workspace git tag v2.4.0 (GitHub release 2026-09-09); not published to crates.io. Surface catalogued in cli/emem-dev-cli.yml.
+- language: mcp
+  registry: mcp-registry
+  name: io.github.Vortx-AI/emem
+  url: https://registry.modelcontextprotocol.io/v0/servers?search=emem
+  source: https://github.com/Vortx-AI/emem
+  install: claude mcp add --transport http emem https://emem.dev/mcp
+  official: true
+  version: 2.4.0
+  published: '2026-09-09'
+  note: Official MCP registry entry (remote streamable-http https://emem.dev/mcp plus oci package). Also listed in the GitHub MCP Registry (https://github.com/mcp/Vortx-AI/emem), Glama and Smithery.
+- language: claude-plugin
+  registry: github
+  name: emem (Claude Code plugin, marketplace Vortx-AI/emem)
+  url: https://github.com/Vortx-AI/emem/tree/main/plugins/emem
+  source: https://github.com/Vortx-AI/emem
+  install: /plugin marketplace add Vortx-AI/emem && /plugin install emem@emem
+  official: true
+  version: 2.4.0
+  published: '2026-09-09'
+  note: Ships the 12 Agent Skills saved under skills/ and wires the MCP server. Version from plugins/emem/.claude-plugin/plugin.json; date is the v2.4.0 release.
+integrations:
+- {name: Dify marketplace plugin, url: 'https://marketplace.dify.ai/plugin/vortx-ai/emem', version: null, note: not queried; listed by the provider}
+- {name: ChatGPT app (@emem), url: 'https://chatgpt.com/plugins/plugin_asdk_app_6a6a0832a59081918b19aec0ddf9ec77', version: null}
+- {name: Gemini CLI extension, url: 'https://github.com/Vortx-AI/emem-gemini-extension', version: null}

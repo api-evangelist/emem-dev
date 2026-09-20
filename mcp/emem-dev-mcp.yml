@@ -1,0 +1,1593 @@
+generated: '2026-09-19'
+method: probed
+status: published
+source: https://emem.dev/.well-known/mcp.json (server descriptor) and https://emem.dev/mcp (live initialize + tools/list,
+  2026-09-19); tool list paged from https://emem.dev/mcp/full (8 pages, nextCursor)
+llms_source: https://emem.dev/llms.txt
+server:
+  name: emem
+  transport: streamable-http
+  url: https://emem.dev/mcp
+  full_listing_url: https://emem.dev/mcp/full
+  protocol_versions:
+  - '2024-11-05'
+  - '2025-03-26'
+  - '2025-06-18'
+  - '2025-11-25'
+  server_info:
+    name: emem
+    version: 2.4.0
+  capabilities:
+    prompts:
+      listChanged: false
+    resources:
+      listChanged: false
+      subscribe: false
+    tools:
+      listChanged: false
+  descriptor: well-known/emem-dev-mcp.json
+  listings:
+  - Official MCP registry io.github.Vortx-AI/emem v2.4.0 (registry.modelcontextprotocol.io, published 2026-09-09)
+  - GitHub MCP Registry https://github.com/mcp/Vortx-AI/emem
+  - Glama https://glama.ai/mcp/servers/Vortx-AI/emem
+  - Smithery https://smithery.ai/servers/vortxai/emem
+  - Dify marketplace https://marketplace.dify.ai/plugin/vortx-ai/emem
+  - ChatGPT app (mention @emem) https://chatgpt.com/plugins/plugin_asdk_app_6a6a0832a59081918b19aec0ddf9ec77
+  - 'Claude Code plugin marketplace: /plugin marketplace add Vortx-AI/emem'
+deployment:
+  mode: both
+  endpoint: https://emem.dev/mcp
+  install: docker run --rm -p 5051:5051 ghcr.io/vortx-ai/emem:latest
+  package: https://github.com/Vortx-AI/emem (OCI image ghcr.io/vortx-ai/emem:latest; MCP registry package type oci,
+    streamable-http at http://localhost:5051/mcp)
+  auth: none
+  verified: probed
+  probe: live
+  checked: '2026-09-19'
+  note: The hosted endpoint answered initialize and tools/list anonymously on 2026-09-19. The local deployment is
+    a self-hosted full node (OCI image / cargo build --release --bin emem-server), not a stdio shim; the MCP registry
+    entry lists it as an oci package with a streamable-http transport.
+auth:
+  methods:
+  - none
+  reads: 'anonymous, no key, no account (oauth-protected-resource: auth_required false, authorization_servers [])'
+  writes: per-write ed25519 attester signature in the request body; a write without one returns 401 with details.how_to_sign
+  oauth: 'optional and open: RFC 8414 metadata at /.well-known/oauth-authorization-server, dynamic registration
+    always succeeds, tokens grant nothing beyond anonymous access (session status open_unverified)'
+wire_budget: 24 KB per tools/call result; larger results are slimmed with an _emem_truncation marker (the same call
+  over REST is uncapped)
+tool_count: 110
+core_tool_count: 18
+tools_source: live tools/list 2026-09-19 (mcp/emem-dev-mcp-tools-list.json, verbatim inputSchema + annotations +
+  _meta for all 110; mcp/emem-dev-mcp-tools-list-core.json for the 18-tool default listing)
+authorship: provider
+authorship_note: Tool names mirror the provider's own /v1 operationIds and carry provider-specific dev.emem/* metadata;
+  not a platform-default shape.
+tools:
+- name: emem_tools
+  title: What tools exist here, and when to reach for each
+  category: introspect
+  level: L0
+  shape: plan
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 6
+  has_output_schema: false
+- name: emem_locate
+  title: Resolve place to cell64 + band inventory
+  category: read
+  level: L0
+  shape: identity
+  bundles:
+  - tokenisation
+  - robotics
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 6
+  has_output_schema: false
+- name: emem_ask
+  title: Ask a free-text question about a place
+  category: read
+  level: L0
+  shape: scalar
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 11
+  has_output_schema: true
+- name: emem_hunt
+  title: Hunter mode, find event hotspots over a region
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - forestry
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_eudr_dds
+  title: EUDR Due Diligence Statement, polygon-in, signed Annex II envelope out
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - forestry
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 10
+  has_output_schema: false
+- name: emem_spi
+  title: Standardized Precipitation Index (McKee 1993) drought metric
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - agriculture
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_burn_severity
+  title: Burn severity (dNBR, Key & Benson) from pre/post-fire NBR
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - forestry
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_rice_ch4
+  title: Rice-paddy methane (IPCC 2019 Tier 2, Eq 5.1)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - agriculture
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 7
+  has_output_schema: false
+- name: emem_deforestation_alert
+  title: Deforestation alert proxy (NDVI drop + embedding change)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - forestry
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_sar_forest_disturbance
+  title: Sentinel-1 SAR forest-disturbance scout (cloud-penetrating)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - satellites
+  - forestry
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 2
+  has_output_schema: false
+- name: emem_triple_consensus
+  title: Clay+Prithvi+Tessera change-consensus ensemble
+  category: read
+  level: L0
+  shape: vector
+  bundles:
+  - verification
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 2
+  has_output_schema: false
+- name: emem_change_attribution
+  title: 'Change attribution ledger: why did this place''s readout move'
+  category: read
+  level: L0
+  shape: scalar
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_band_raster
+  title: 'Band raster: a field as a signed derivation'
+  category: read
+  level: L0
+  shape: raster
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_raster_resolve
+  title: 'Dereference an emem:raster: field token'
+  category: read
+  level: L0
+  shape: token
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 2
+  has_output_schema: false
+- name: emem_band_cube
+  title: 'Band cube: a field over time, as a signed manifest'
+  category: read
+  level: L0
+  shape: raster
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_band_composite
+  title: 'Band composite: a signed cloud-masked median over a window'
+  category: read
+  level: L0
+  shape: raster
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 7
+  has_output_schema: false
+- name: emem_cube_resolve
+  title: 'Dereference an emem:cube: field-over-time token'
+  category: read
+  level: L0
+  shape: token
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_raster_bundle
+  title: 'Raster bundle: bind N field tokens into one citeable manifest'
+  category: read
+  level: L0
+  shape: raster
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 2
+  has_output_schema: false
+- name: emem_raster_bundle_resolve
+  title: 'Dereference an emem:rasterset: bundle token'
+  category: read
+  level: L0
+  shape: token
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_terrain
+  title: Terrain triad, slope + ruggedness + topographic position from DEM
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - robotics
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 6
+  has_output_schema: false
+- name: emem_region_similarity
+  title: Region similarity, cosine of two regions' mean GeoTessera embeddings
+  category: read
+  level: L0
+  shape: vector
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_embedding_centroid
+  title: Embedding centroid, mean-pooled GeoTessera vector for a region
+  category: read
+  level: L0
+  shape: vector
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_embedding_diversity
+  title: Embedding diversity, landscape heterogeneity over a region
+  category: read
+  level: L0
+  shape: vector
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_neighborhood_consistency
+  title: Neighbourhood consistency / spatial outlier (GeoTessera vs 8 neighbours)
+  category: read
+  level: L0
+  shape: vector
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 5
+  has_output_schema: false
+- name: emem_state
+  title: Read the place's state vector (single encoder OR full 1792-D cube)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - robotics
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 10
+  has_output_schema: false
+- name: emem_state_multi
+  title: Multi-encoder state at one cell (foundation fan-out)
+  category: read
+  level: L0
+  shape: scalar
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 8
+  has_output_schema: false
+- name: emem_state_diff
+  title: Between-tslot state vector delta (residual + cosine)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - long_horizon
+  - robotics
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_memory_token
+  title: Compose a memory_token citation handle
+  category: read
+  level: L0
+  shape: token
+  bundles:
+  - tokenisation
+  - agent_to_agent
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 4
+  has_output_schema: true
+- name: search
+  title: Find signed facts for a place, as citable sources
+  category: read
+  level: L0
+  shape: token
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 1
+  has_output_schema: true
+- name: fetch
+  title: Open one search result and read the signed record
+  category: read
+  level: L0
+  shape: token
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 1
+  has_output_schema: true
+- name: emem_memory_token_resolve
+  title: Dereference a memory_token in one round-trip
+  category: read
+  level: L0
+  shape: token
+  bundles:
+  - tokenisation
+  - agent_to_agent
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 1
+  has_output_schema: false
+- name: emem_echo_verify
+  title: Check a value against the fact it cites, before you publish it
+  category: read
+  level: L0
+  shape: proof
+  bundles:
+  - verification
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 3
+  has_output_schema: true
+- name: emem_derive
+  title: Register your own derivation over emem facts
+  category: write
+  level: L0
+  shape: token
+  bundles:
+  - tokenisation
+  - long_horizon
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 12
+  has_output_schema: false
+- name: emem_derive_list
+  title: List one attester's registered derivations
+  category: read
+  level: L0
+  shape: token
+  bundles:
+  - tokenisation
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_memory_bundle
+  title: Compose a signed multi-fact memory bundle
+  category: read
+  level: L0
+  shape: token
+  bundles:
+  - tokenisation
+  - agent_to_agent
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: false
+  openWorldHint: true
+  core: true
+  input_properties: 3
+  has_output_schema: false
+- name: emem_memory_bundle_resolve
+  title: Dereference a memory_bundle token
+  category: read
+  level: L0
+  shape: token
+  bundles:
+  - tokenisation
+  - agent_to_agent
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_entity
+  title: Mint or get a canonical object identity
+  category: read
+  level: L0
+  shape: identity
+  bundles:
+  - tokenisation
+  - agent_to_agent
+  - robotics
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 8
+  has_output_schema: false
+- name: emem_entity_resolve
+  title: 'Resolve a phrase (or emem:entity: token) to a canonical object'
+  category: read
+  level: L0
+  shape: identity
+  bundles:
+  - tokenisation
+  - agent_to_agent
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 5
+  has_output_schema: false
+- name: emem_entity_link
+  title: Attest that a phrasing/id denotes an existing object
+  category: write
+  level: L0
+  shape: identity
+  bundles:
+  - tokenisation
+  - agent_to_agent
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 5
+  has_output_schema: false
+- name: emem_memory_view
+  title: memory_view, read file or directory listing
+  category: read
+  level: L0
+  shape: file
+  bundles:
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 6
+  has_output_schema: false
+- name: emem_memory_create
+  title: memory_create, write a memory file (overwrite if exists)
+  category: write
+  level: L0
+  shape: file
+  bundles:
+  - long_horizon
+  readOnlyHint: false
+  destructiveHint: true
+  idempotentHint: false
+  openWorldHint: false
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_memory_str_replace
+  title: memory_str_replace, exact-string replacement in a memory file
+  category: write
+  level: L0
+  shape: file
+  bundles:
+  - long_horizon
+  readOnlyHint: false
+  destructiveHint: true
+  idempotentHint: false
+  openWorldHint: false
+  core: false
+  input_properties: 5
+  has_output_schema: false
+- name: emem_memory_insert
+  title: memory_insert, insert at a given line
+  category: write
+  level: L0
+  shape: file
+  bundles:
+  - long_horizon
+  readOnlyHint: false
+  destructiveHint: true
+  idempotentHint: false
+  openWorldHint: false
+  core: false
+  input_properties: 5
+  has_output_schema: false
+- name: emem_memory_delete
+  title: memory_delete, remove a memory file or directory
+  category: write
+  level: L0
+  shape: file
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: true
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 2
+  has_output_schema: false
+- name: emem_memory_supersede
+  title: memory_supersede, mark your own note replaced by a later one
+  category: write
+  level: L0
+  shape: file
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_memory_rename
+  title: memory_rename, move a memory file
+  category: write
+  level: L0
+  shape: file
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: true
+  idempotentHint: false
+  openWorldHint: false
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_memory_list_by_kind
+  title: memory_list_by_kind, typed enumeration of memory files
+  category: read
+  level: L0
+  shape: file
+  bundles:
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_memory_search
+  title: emem_memory_search, semantic search over /memories/* files
+  category: read
+  level: L0
+  shape: file
+  bundles:
+  - agent_to_agent
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 6
+  has_output_schema: false
+- name: emem_corpus_state_stats
+  title: Signed snapshot of corpus liveness
+  category: read
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_benchmark
+  title: Hand-verified eval items for agent grading
+  category: read
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_recall
+  title: Recall facts at a cell (auto-materializes on miss)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - robotics
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 14
+  has_output_schema: true
+- name: emem_recall_polygon
+  title: Recall facts across a place's polygon
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - robotics
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 20
+  has_output_schema: false
+- name: emem_field_boundaries
+  title: Per-field agricultural boundaries (Fields of The World)
+  category: read
+  level: L0
+  shape: geometry
+  bundles:
+  - agriculture
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 8
+  has_output_schema: false
+- name: emem_query_region
+  title: Aggregate facts over a region
+  category: read
+  level: L0
+  shape: scalar
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 8
+  has_output_schema: false
+- name: emem_compare
+  title: Compare two cells (cosine + scalar deltas)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - agriculture
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_compare_bands
+  title: Compare two bands at one cell
+  category: read
+  level: L0
+  shape: scalar
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 7
+  has_output_schema: false
+- name: emem_find_similar
+  title: k-NN over the corpus by embedding
+  category: read
+  level: L0
+  shape: vector
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 10
+  has_output_schema: false
+- name: emem_trajectory
+  title: Time series for one (cell, band)
+  category: read
+  level: L0
+  shape: timeseries
+  bundles:
+  - long_horizon
+  - robotics
+  - agriculture
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 7
+  has_output_schema: false
+- name: emem_diff
+  title: Signed delta between two tslots
+  category: read
+  level: L0
+  shape: scalar
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 5
+  has_output_schema: false
+- name: emem_compare_same_doy
+  title: Compare a band at the same day-of-year across years
+  category: read
+  level: L0
+  shape: timeseries
+  bundles:
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 8
+  has_output_schema: false
+- name: emem_memory_contradictions
+  title: Scan for multi-attester disagreement
+  category: read
+  level: L0
+  shape: proof
+  bundles:
+  - verification
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 8
+  has_output_schema: false
+- name: emem_edges_recall
+  title: Recall temporal knowledge-graph edges
+  category: read
+  level: L0
+  shape: token
+  bundles:
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 6
+  has_output_schema: false
+- name: emem_fetch
+  title: Resolve a fact by content-address (CID)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_backfill
+  title: Materialize historical facts in a window
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - long_horizon
+  - satellites
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 8
+  has_output_schema: false
+- name: emem_heat_solve
+  title: 2-D heat-equation forecast (urban LST evolution)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_wave_solve
+  title: 1-D shallow-water swell propagation to coast
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 6
+  has_output_schema: false
+- name: emem_jepa_predict
+  title: Constrained JEPA-pattern next-month NDVI predictor
+  category: read
+  level: L0
+  shape: vector
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 5
+  has_output_schema: false
+- name: emem_jepa_predict_v2
+  title: Learned multi-band-scalar dynamics head (jepa_temporal_predictor@2)
+  category: read
+  level: L0
+  shape: vector
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_verify
+  title: Verify a structured claim against a cell
+  category: verify
+  level: L1
+  shape: proof
+  bundles:
+  - verification
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_bands
+  title: Active band ontology
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_functions
+  title: Active function registry
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_sources
+  title: Active source-connector registry
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles:
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_schema
+  title: Active CDDL/JSON schema bundle
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_errors
+  title: Stable error code catalog
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: true
+- name: emem_manifests
+  title: Active manifest CIDs
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles:
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: true
+- name: emem_capabilities
+  title: Cached upstream capability snapshot
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: true
+- name: emem_grid_info
+  title: Active grid encoding
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: true
+- name: emem_cells_in_bbox
+  title: Enumerate the cell64s in a bounding box, paged
+  category: introspect
+  level: L0
+  shape: geometry
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_coverage_matrix
+  title: Per-band live status & history bounds
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles:
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_materializers
+  title: Auto-fetch registry (per-band materializers)
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_data_availability
+  title: Per-band temporal coverage catalog
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles:
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_algorithms
+  title: Composition recipes (algorithms)
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_explain_algorithm
+  title: One-algorithm drill-down (formula + inputs + citation)
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_topics
+  title: Topic-grouped band + algorithm registry
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_coverage_map
+  title: Coverage map (SVG image)
+  category: introspect
+  level: L0
+  shape: raster
+  bundles:
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_cell_scene_rgb
+  title: Sentinel-2 true-colour thumbnail (PNG)
+  category: read
+  level: L0
+  shape: raster
+  bundles:
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 4
+  has_output_schema: false
+- name: emem_cell_geojson
+  title: Cell polygon as GeoJSON
+  category: read
+  level: L0
+  shape: geometry
+  bundles:
+  - robotics
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 1
+  has_output_schema: false
+- name: emem_recall_many
+  title: Bulk recall across up to 256 cells
+  category: read
+  level: L0
+  shape: scalar
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 6
+  has_output_schema: false
+- name: emem_elevation
+  title: Coherent elevation across Cop-DEM + GMRT + WorldCover
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - robotics
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 9
+  has_output_schema: false
+- name: emem_fleet
+  title: Satellite / sensor lineage per band
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles:
+  - robotics
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_substrates
+  title: Substrate profile registry
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles:
+  - robotics
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 1
+  has_output_schema: true
+- name: emem_trace_verify
+  title: Verify a device's OS execution trace
+  category: verify
+  level: L1
+  shape: proof
+  bundles:
+  - robotics
+  - satellites
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_temporal_route
+  title: Plan a temporal recall recipe for a cell
+  category: plan
+  level: L0
+  shape: timeseries
+  bundles:
+  - long_horizon
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 10
+  has_output_schema: false
+- name: emem_verify_receipt
+  title: Server-side ed25519 receipt verifier
+  category: verify
+  level: L1
+  shape: proof
+  bundles:
+  - verification
+  - agent_to_agent
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 4
+  has_output_schema: false
+- name: emem_guard_verdict
+  title: Check whether the citations in a draft actually verify
+  category: verify
+  level: L1
+  shape: proof
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: true
+  input_properties: 4
+  has_output_schema: true
+- name: emem_guard_selfhost
+  title: The procedure for running your own verdict server
+  category: introspect
+  level: L0
+  shape: catalog
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: false
+- name: emem_at
+  title: Multi-band snapshot at a place
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - robotics
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_ndvi
+  title: NDVI at a place (one-shot, polygon-aware)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - agriculture
+  - forestry
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_air
+  title: Air-quality snapshot (CAMS PM2.5 / NO2 / O3)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_lst
+  title: Land surface temperature (MODIS day + night)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - agriculture
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_soil
+  title: 'Soil profile (SoilGrids 0–30 cm: SOC, pH, texture)'
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - agriculture
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_water
+  title: Surface water (JRC GSW recurrence + S1 backscatter)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - robotics
+  - agriculture
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_forest
+  title: Forest signals (Hansen GFC + ESA WorldCover)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - forestry
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_weather
+  title: Current weather snapshot (temperature, cloud, precip, wind)
+  category: read
+  level: L0
+  shape: scalar
+  bundles:
+  - agriculture
+  - climate_risk
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: false
+  input_properties: 16
+  has_output_schema: false
+- name: emem_intent
+  title: Intent-routed planner
+  category: plan
+  level: L0
+  shape: plan
+  bundles: []
+  readOnlyHint: false
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: true
+  core: true
+  input_properties: 14
+  has_output_schema: false
+- name: emem_log_sth
+  title: Transparency log signed tree head
+  category: verify
+  level: L1
+  shape: proof
+  bundles:
+  - verification
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: false
+  openWorldHint: false
+  core: false
+  input_properties: 0
+  has_output_schema: true
+- name: emem_log_inclusion
+  title: Transparency log inclusion proof
+  category: verify
+  level: L1
+  shape: proof
+  bundles:
+  - verification
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: false
+  openWorldHint: false
+  core: false
+  input_properties: 3
+  has_output_schema: false
+- name: emem_log_consistency
+  title: Transparency log consistency proof
+  category: verify
+  level: L1
+  shape: proof
+  bundles:
+  - verification
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: false
+  openWorldHint: false
+  core: false
+  input_properties: 2
+  has_output_schema: false
+- name: emem_log_witnesses
+  title: Transparency log witness co-signatures
+  category: verify
+  level: L1
+  shape: proof
+  bundles:
+  - verification
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: true
+  openWorldHint: false
+  core: false
+  input_properties: 1
+  has_output_schema: true
+- name: emem_reason
+  title: Compose a prose answer over signed facts (LLM, labelled)
+  category: plan
+  level: L0
+  shape: prose
+  bundles: []
+  readOnlyHint: true
+  destructiveHint: false
+  idempotentHint: false
+  openWorldHint: true
+  core: false
+  input_properties: 2
+  has_output_schema: false

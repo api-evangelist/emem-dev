@@ -1,0 +1,81 @@
+generated: '2026-09-19'
+method: searched
+probe: true
+source: https://emem.dev/privacy
+signals:
+  data_subject_request:
+    url: https://emem.dev/privacy
+    section: Your rights
+    channel: avijeet@vortx.ai
+    stated_sla: 'We aim to respond within 30 days.'
+    rights_named: [access / portability, erasure, rectification, object / restrict, withdraw consent / opt out of sale or sharing, non-discrimination]
+    regimes_named: [EU/UK GDPR, California CCPA/CPRA, India Digital Personal Data Protection Act 2023]
+    escalation: local supervisory authority (EU, UK, California) or India's Data Protection Board once operational
+    evidence:
+    - source: https://emem.dev/privacy
+      http_status: 200
+      fetched: '2026-09-19'
+      quote: >-
+        "To exercise a right, email avijeet@vortx.ai with enough context (e.g. the IP and approximate
+        UTC timestamp) for us to locate the record. We aim to respond within 30 days. If you believe
+        we have not addressed your request, you may complain to your local supervisory authority
+        (in the EU, UK, or California) or, in India, to the Data Protection Board once it is operational."
+    note: >-
+      A documented request process with a channel, a response period and named rights, inside the
+      privacy policy (last updated 2026-07-31; canonical copy PRIVACY.md in the source repo). The
+      policy also states the limit that constrains it: operational logs rotate at 30 days, and signed
+      attestations submitted to /v1/attest cannot be retracted by design. No dedicated intake page
+      (/privacy/requests not probed as a route; /legal/* returns 404) and no API endpoint.
+  support_lifetime:
+    url: https://github.com/Vortx-AI/emem/blob/main/SECURITY.md
+    section: Supported versions
+    stated_period: '2.4.x - Yes. Current. Fixes land here. <= 2.3.x - No. Superseded; upgrade rather than report against these.'
+    evidence:
+    - source: https://github.com/Vortx-AI/emem/blob/main/SECURITY.md
+      http_status: 200
+      fetched: '2026-09-19'
+      quote: >-
+        "There is one canonical responder and it runs the tip of `main`, so the hosted instance at
+        `https://emem.dev` is always the supported version. For self-hosted nodes, the version and
+        the exact commit are self-reported ... Registry listings pin older versions by design and are
+        not a statement of support."
+    note: A published supported-versions table (dated 2026-08-24) rather than a fixed support window; recorded verbatim, not normalised to a number.
+  ai_transparency:
+    url: https://emem.dev/llms.txt
+    section: Primitives - explain
+    evidence:
+    - source: https://emem.dev/llms.txt
+      http_status: 200
+      fetched: '2026-09-19'
+      quote: '"explain: POST an ask response -> an UNSIGNED Gemma-4 plain-language reword (signed:false; the signed receipt remains the ground truth)."'
+    - source: https://emem.dev/.well-known/mcp.json
+      http_status: 200
+      fetched: '2026-09-19'
+      quote: '"Prose from a model lives at /v1/explain and is labelled signed:false: prose is never evidence."'
+    note: >-
+      A published labelling practice for model-generated output: the one endpoint that returns LLM
+      prose (/v1/explain) names the model and marks its output signed:false, separating it from the
+      signed measurement it rewords. This is an output-labelling disclosure carried in the machine
+      docs, not a dedicated AI transparency page (/ai/transparency not served).
+absent:
+  sbom: No SBOM published (repository tree searched for sbom/spdx/cyclonedx - none; Cargo.lock only). Search only; not derived.
+  accessibility_conformance: /accessibility returns 404; no VPAT or WCAG statement found.
+  training_data_summary: robots.txt permits indexing and training on the site but publishes no summary of data used to train any model.
+  global_privacy_control: No published statement about Sec-GPC; not probed by header.
+  subprocessors: The privacy policy's "Third parties" list names upstream open-data providers the responder fetches from ("your IP is not forwarded"), not processors of personal data; no dated subprocessor table (/legal/subprocessors 404).
+  data_residency: Operator location (India) is stated; no hosting-region or residency commitment is published.
+  incident_notification: SECURITY.md's 72-hour figure is the acknowledgement time for vulnerability reports, not a customer breach-notification commitment; /legal/dpa 404.
+  age_assurance: Privacy "Children" section states the service is not directed at children under 13; no age-assurance mechanism.
+  notice_and_action: none found.
+  transparency_report: none found (the transparency log at /v1/log/* is a cryptographic write log, not a transparency report).
+  exit_assistance: The protocol is Apache-2.0 and self-hostable and the privacy policy offers log-line portability, but no exit/migration assistance commitment is published.
+probed:
+- {url: 'https://emem.dev/privacy', status: 200}
+- {url: 'https://emem.dev/terms', status: 200}
+- {url: 'https://emem.dev/security', status: 200}
+- {url: 'https://emem.dev/accessibility', status: 404}
+- {url: 'https://emem.dev/legal/subprocessors', status: 404}
+- {url: 'https://emem.dev/legal/dpa', status: 404}
+- {url: 'https://emem.dev/pricing', status: 404}
+- {url: 'https://github.com/Vortx-AI/emem/blob/main/SECURITY.md', status: 200}
+- {url: 'https://github.com/Vortx-AI/emem/blob/main/PRIVACY.md', status: 200}

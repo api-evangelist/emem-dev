@@ -1,0 +1,1061 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the emem OpenAPI
+  version: 1.0.0
+  x-generated: '2026-09-19'
+  x-method: generated
+  x-source: openapi/emem-dev-openapi.json (verbatim from https://emem.dev/openapi.json) + mcp/emem-dev-tool-crosswalk.yml
+  description: The published spec declares no tags. This overlay groups its 196 operations into resource tags for
+    the refine/split pipeline and binds each operation to the MCP tool(s) that expose it (x-mcp-tool), from the
+    derived crosswalk. It never mutates the original.
+extends: openapi/emem-dev-openapi.json
+actions:
+- target: $.info
+  update:
+    x-api-evangelist:
+      profile: https://github.com/api-evangelist/emem-dev
+      artifacts:
+      - mcp/emem-dev-tool-crosswalk.yml
+      - errors/emem-dev-problem-types.yml
+      - conventions/emem-dev-conventions.yml
+      - data-model/emem-dev-data-model.yml
+- target: $
+  update:
+    externalDocs:
+      description: emem agent guide
+      url: https://emem.dev/agents.md
+- target: $
+  update:
+    tags:
+    - name: Discovery
+    - name: A2A
+    - name: Health and Transport
+    - name: Band Helpers and Algorithms
+    - name: Registries and Introspection
+    - name: Fields and Rasters
+    - name: Recall
+    - name: Verify and Attest
+    - name: Locate and Coverage
+    - name: Cells
+    - name: Analysis
+    - name: Compatibility Stubs
+    - name: Enlistment and Devices
+    - name: Entities
+    - name: Transparency Log
+    - name: Agent Memory
+    - name: Perception
+    - name: Other
+- target: $.paths['/.well-known/did.json'].get
+  update:
+    tags:
+    - Discovery
+- target: $.paths['/.well-known/emem-agents.json'].get
+  update:
+    tags:
+    - Discovery
+- target: $.paths['/.well-known/emem-verifier.json'].get
+  update:
+    tags:
+    - Discovery
+- target: $.paths['/.well-known/emem.json'].get
+  update:
+    tags:
+    - Discovery
+- target: $.paths['/.well-known/jwks.json'].get
+  update:
+    tags:
+    - Discovery
+- target: $.paths['/a2a/tasks'].post
+  update:
+    tags:
+    - A2A
+- target: $.paths['/health'].get
+  update:
+    tags:
+    - Health and Transport
+- target: $.paths['/live'].get
+  update:
+    tags:
+    - Health and Transport
+- target: $.paths['/mcp'].get
+  update:
+    tags:
+    - Health and Transport
+- target: $.paths['/mcp'].post
+  update:
+    tags:
+    - Health and Transport
+- target: $.paths['/spec/a2a/async-tasks/v1'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/spec/a2a/channel/v1'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/a2a/skills'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/a2a/tasks'].post
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/a2a/tasks/{id}'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/a2a/tasks/{id}/cancel'].post
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/agent_card'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/agent_quickref'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/agent_stats'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/agents'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/air'].get
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_air
+- target: $.paths['/v1/air'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_air
+- target: $.paths['/v1/algorithm_cids'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/algorithms'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_algorithms
+- target: $.paths['/v1/algorithms/{key}'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_explain_algorithm
+- target: $.paths['/v1/arcade/protocol'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/artifacts/{cid}'].get
+  update:
+    tags:
+    - Fields and Rasters
+- target: $.paths['/v1/ask'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_ask
+- target: $.paths['/v1/at'].get
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_at
+- target: $.paths['/v1/at'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_at
+- target: $.paths['/v1/attest'].post
+  update:
+    tags:
+    - Verify and Attest
+- target: $.paths['/v1/attest_cbor'].post
+  update:
+    tags:
+    - Verify and Attest
+- target: $.paths['/v1/attest_traced'].post
+  update:
+    tags:
+    - Verify and Attest
+- target: $.paths['/v1/backfill'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_backfill
+- target: $.paths['/v1/band_composite'].post
+  update:
+    tags:
+    - Fields and Rasters
+    x-mcp-tool:
+    - emem_band_composite
+- target: $.paths['/v1/band_cube'].post
+  update:
+    tags:
+    - Fields and Rasters
+    x-mcp-tool:
+    - emem_band_cube
+- target: $.paths['/v1/band_raster'].post
+  update:
+    tags:
+    - Fields and Rasters
+    x-mcp-tool:
+    - emem_band_raster
+- target: $.paths['/v1/bands'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_bands
+- target: $.paths['/v1/benchmark'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_benchmark
+- target: $.paths['/v1/benchmark/grade'].post
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/building_footprints'].post
+  update:
+    tags:
+    - Locate and Coverage
+- target: $.paths['/v1/burn_severity'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_burn_severity
+- target: $.paths['/v1/capabilities'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_capabilities
+- target: $.paths['/v1/capabilities'].post
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_capabilities
+- target: $.paths['/v1/cells/{cell64}'].get
+  update:
+    tags:
+    - Cells
+- target: $.paths['/v1/cells/{cell64}/geojson'].get
+  update:
+    tags:
+    - Cells
+    x-mcp-tool:
+    - emem_cell_geojson
+- target: $.paths['/v1/cells/{cell64}/info'].get
+  update:
+    tags:
+    - Cells
+- target: $.paths['/v1/cells/{cell64}/recall_geojson'].get
+  update:
+    tags:
+    - Cells
+- target: $.paths['/v1/cells/{cell64}/scene.png'].get
+  update:
+    tags:
+    - Cells
+- target: $.paths['/v1/cells/{cell64}/scene.rgb'].get
+  update:
+    tags:
+    - Cells
+    x-mcp-tool:
+    - emem_cell_scene_rgb
+- target: $.paths['/v1/cells_in_bbox'].post
+  update:
+    tags:
+    - Cells
+    x-mcp-tool:
+    - emem_cells_in_bbox
+- target: $.paths['/v1/change_attribution'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_change_attribution
+- target: $.paths['/v1/channel/geo'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/chat/completions'].post
+  update:
+    tags:
+    - Compatibility Stubs
+- target: $.paths['/v1/compare'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_compare
+- target: $.paths['/v1/compare_bands'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_compare_bands
+- target: $.paths['/v1/compare_same_doy'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_compare_same_doy
+- target: $.paths['/v1/contributors'].get
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/contributors/{pubkey_b32}'].get
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/corpus_state_stats'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_corpus_state_stats
+- target: $.paths['/v1/coverage'].get
+  update:
+    tags:
+    - Locate and Coverage
+- target: $.paths['/v1/coverage_map.svg'].get
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_coverage_map
+- target: $.paths['/v1/coverage_matrix'].get
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_coverage_matrix
+- target: $.paths['/v1/cube/resolve'].post
+  update:
+    tags:
+    - Fields and Rasters
+    x-mcp-tool:
+    - emem_cube_resolve
+- target: $.paths['/v1/data_availability'].get
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_data_availability
+- target: $.paths['/v1/deforestation_alert'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_deforestation_alert
+- target: $.paths['/v1/demos'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/deprecations'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/derive'].post
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_derive
+- target: $.paths['/v1/derived'].post
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_derive_list
+- target: $.paths['/v1/device_platforms'].get
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/device_publish'].post
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/devices'].get
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/diff'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_diff
+- target: $.paths['/v1/discover'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/echo_verify'].post
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_echo_verify
+- target: $.paths['/v1/edges'].post
+  update:
+    tags:
+    - Recall
+- target: $.paths['/v1/edges/recall'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_edges_recall
+- target: $.paths['/v1/elevation'].get
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_elevation
+- target: $.paths['/v1/elevation'].post
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_elevation
+- target: $.paths['/v1/embedding_centroid'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_embedding_centroid
+- target: $.paths['/v1/embedding_diversity'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_embedding_diversity
+- target: $.paths['/v1/enlist'].get
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/enlist'].post
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/enroll_attested'].post
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/enroll_verify'].post
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/entity'].post
+  update:
+    tags:
+    - Entities
+    x-mcp-tool:
+    - emem_entity
+- target: $.paths['/v1/entity/alias'].post
+  update:
+    tags:
+    - Entities
+    x-mcp-tool:
+    - emem_entity_link
+- target: $.paths['/v1/entity/resolve'].post
+  update:
+    tags:
+    - Entities
+    x-mcp-tool:
+    - emem_entity_resolve
+- target: $.paths['/v1/entity/{id}'].get
+  update:
+    tags:
+    - Entities
+    x-mcp-tool:
+    - emem_entity
+- target: $.paths['/v1/errors'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_errors
+- target: $.paths['/v1/eudr_dds'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_eudr_dds
+- target: $.paths['/v1/explain'].post
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/facts/{cid}'].get
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - fetch
+    - emem_fetch
+- target: $.paths['/v1/fetch'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - fetch
+    - emem_fetch
+- target: $.paths['/v1/field_boundaries'].post
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_field_boundaries
+- target: $.paths['/v1/find_similar'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_find_similar
+- target: $.paths['/v1/fleet'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_fleet
+- target: $.paths['/v1/forest'].get
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_forest
+- target: $.paths['/v1/forest'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_forest
+- target: $.paths['/v1/functions'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_functions
+- target: $.paths['/v1/grid_info'].get
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_grid_info
+- target: $.paths['/v1/guard/capabilities'].get
+  update:
+    tags:
+    - Verify and Attest
+- target: $.paths['/v1/guard/selfhost'].get
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_guard_selfhost
+- target: $.paths['/v1/guard/verdict'].post
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_guard_verdict
+- target: $.paths['/v1/harness/protocol'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/health'].get
+  update:
+    tags:
+    - Health and Transport
+- target: $.paths['/v1/heat_solve'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_heat_solve
+- target: $.paths['/v1/hunt'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_hunt
+- target: $.paths['/v1/inbox'].get
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/inbox'].post
+  update:
+    tags:
+    - A2A
+- target: $.paths['/v1/intent'].post
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_intent
+- target: $.paths['/v1/intents'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/jepa_predict'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_jepa_predict
+- target: $.paths['/v1/jepa_predict_v2'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_jepa_predict_v2
+- target: $.paths['/v1/limits'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/locate'].get
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_locate
+- target: $.paths['/v1/locate'].post
+  update:
+    tags:
+    - Locate and Coverage
+    x-mcp-tool:
+    - emem_locate
+- target: $.paths['/v1/log/consistency'].get
+  update:
+    tags:
+    - Transparency Log
+    x-mcp-tool:
+    - emem_log_consistency
+- target: $.paths['/v1/log/entries'].get
+  update:
+    tags:
+    - Transparency Log
+- target: $.paths['/v1/log/inclusion'].get
+  update:
+    tags:
+    - Transparency Log
+    x-mcp-tool:
+    - emem_log_inclusion
+- target: $.paths['/v1/log/sth'].get
+  update:
+    tags:
+    - Transparency Log
+    x-mcp-tool:
+    - emem_log_sth
+- target: $.paths['/v1/log/witness'].post
+  update:
+    tags:
+    - Transparency Log
+- target: $.paths['/v1/log/witnesses'].get
+  update:
+    tags:
+    - Transparency Log
+    x-mcp-tool:
+    - emem_log_witnesses
+- target: $.paths['/v1/lst'].get
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_lst
+- target: $.paths['/v1/lst'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_lst
+- target: $.paths['/v1/manifests'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_manifests
+- target: $.paths['/v1/materializers'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_materializers
+- target: $.paths['/v1/memory/search'].post
+  update:
+    tags:
+    - Agent Memory
+    x-mcp-tool:
+    - emem_memory_search
+- target: $.paths['/v1/memory/sse'].get
+  update:
+    tags:
+    - Agent Memory
+- target: $.paths['/v1/memory_bundle'].post
+  update:
+    tags:
+    - Agent Memory
+    x-mcp-tool:
+    - emem_memory_bundle
+- target: $.paths['/v1/memory_bundle/{token}'].get
+  update:
+    tags:
+    - Agent Memory
+    x-mcp-tool:
+    - emem_memory_bundle_resolve
+- target: $.paths['/v1/memory_contradictions'].get
+  update:
+    tags:
+    - Agent Memory
+    x-mcp-tool:
+    - emem_memory_contradictions
+- target: $.paths['/v1/memory_contradictions'].post
+  update:
+    tags:
+    - Agent Memory
+    x-mcp-tool:
+    - emem_memory_contradictions
+- target: $.paths['/v1/memory_search/stats'].get
+  update:
+    tags:
+    - Agent Memory
+- target: $.paths['/v1/memory_token'].post
+  update:
+    tags:
+    - Agent Memory
+    x-mcp-tool:
+    - emem_memory_token
+- target: $.paths['/v1/memory_token/resolve'].post
+  update:
+    tags:
+    - Agent Memory
+    x-mcp-tool:
+    - emem_memory_token_resolve
+- target: $.paths['/v1/memory_token/resolve_many'].post
+  update:
+    tags:
+    - Agent Memory
+- target: $.paths['/v1/models'].get
+  update:
+    tags:
+    - Compatibility Stubs
+- target: $.paths['/v1/ndvi'].get
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_ndvi
+- target: $.paths['/v1/ndvi'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_ndvi
+- target: $.paths['/v1/neighborhood_consistency'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_neighborhood_consistency
+- target: $.paths['/v1/perception/{path}'].get
+  update:
+    tags:
+    - Perception
+- target: $.paths['/v1/perception/{path}'].post
+  update:
+    tags:
+    - Perception
+- target: $.paths['/v1/plane/conformance'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/query_region'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_query_region
+- target: $.paths['/v1/quickstart'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/raster/resolve'].post
+  update:
+    tags:
+    - Fields and Rasters
+    x-mcp-tool:
+    - emem_raster_resolve
+- target: $.paths['/v1/raster_bundle'].post
+  update:
+    tags:
+    - Fields and Rasters
+    x-mcp-tool:
+    - emem_raster_bundle
+- target: $.paths['/v1/raster_bundle/resolve'].post
+  update:
+    tags:
+    - Fields and Rasters
+    x-mcp-tool:
+    - emem_raster_bundle_resolve
+- target: $.paths['/v1/recall'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_recall
+- target: $.paths['/v1/recall_many'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_recall_many
+- target: $.paths['/v1/recall_polygon'].post
+  update:
+    tags:
+    - Recall
+    x-mcp-tool:
+    - emem_recall_polygon
+- target: $.paths['/v1/region_archetype_map'].post
+  update:
+    tags:
+    - Fields and Rasters
+- target: $.paths['/v1/region_similarity'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_region_similarity
+- target: $.paths['/v1/reviews'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/reviews'].post
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/reviews/{subject_id}'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/rice_ch4'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_rice_ch4
+- target: $.paths['/v1/sar_forest_disturbance'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_sar_forest_disturbance
+- target: $.paths['/v1/schema'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_schema
+- target: $.paths['/v1/schemas'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/schemas/eudr_dds.json'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/schemas/{name}'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/scoreboard'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/soil'].get
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_soil
+- target: $.paths['/v1/soil'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_soil
+- target: $.paths['/v1/sources'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_sources
+- target: $.paths['/v1/spi'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_spi
+- target: $.paths['/v1/state'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_state
+- target: $.paths['/v1/state/{cid}'].get
+  update:
+    tags:
+    - Analysis
+- target: $.paths['/v1/state_diff'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_state_diff
+- target: $.paths['/v1/state_multi'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_state_multi
+- target: $.paths['/v1/stream'].get
+  update:
+    tags:
+    - Registries and Introspection
+- target: $.paths['/v1/substrates'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_substrates
+- target: $.paths['/v1/temporal_route'].get
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_temporal_route
+- target: $.paths['/v1/temporal_route'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_temporal_route
+- target: $.paths['/v1/terrain'].post
+  update:
+    tags:
+    - Other
+    x-mcp-tool:
+    - emem_terrain
+- target: $.paths['/v1/tessera_field'].post
+  update:
+    tags:
+    - Fields and Rasters
+- target: $.paths['/v1/tools'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_tools
+- target: $.paths['/v1/topics'].get
+  update:
+    tags:
+    - Registries and Introspection
+    x-mcp-tool:
+    - emem_topics
+- target: $.paths['/v1/trace_encodings'].get
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/trace_resolve'].post
+  update:
+    tags:
+    - Enlistment and Devices
+- target: $.paths['/v1/trace_verify'].post
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_trace_verify
+- target: $.paths['/v1/trajectory'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_trajectory
+- target: $.paths['/v1/triple_consensus'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_triple_consensus
+- target: $.paths['/v1/vector_index/stats'].get
+  update:
+    tags:
+    - Other
+- target: $.paths['/v1/verifier_spec'].get
+  update:
+    tags:
+    - Verify and Attest
+- target: $.paths['/v1/verify'].post
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_verify
+- target: $.paths['/v1/verify_receipt'].post
+  update:
+    tags:
+    - Verify and Attest
+    x-mcp-tool:
+    - emem_verify_receipt
+- target: $.paths['/v1/water'].get
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_water
+- target: $.paths['/v1/water'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_water
+- target: $.paths['/v1/wave_solve'].post
+  update:
+    tags:
+    - Analysis
+    x-mcp-tool:
+    - emem_wave_solve
+- target: $.paths['/v1/weather'].get
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_weather
+- target: $.paths['/v1/weather'].post
+  update:
+    tags:
+    - Band Helpers and Algorithms
+    x-mcp-tool:
+    - emem_weather
+- target: $.paths['/v1/worlds'].get
+  update:
+    tags:
+    - Fields and Rasters

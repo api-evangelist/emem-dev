@@ -1,18 +1,107 @@
 aid: emem-dev
 name: Vortx AI Private Limited
-description: 'Vortx AI Private Limited is a company surfaced via the API Evangelist harvest backlog (source:
-  a2a-registry) and added to the network as a stub for full-pipeline profiling.'
+description: >-
+  Vortx AI Private Limited is a spatial AI lab based in India that builds and operates emem
+  (emem.dev), an Apache-2.0 protocol and hosted responder providing shared, verifiable memory
+  for AI agents. Every place on Earth has one 64-bit address (cell64), every observation is an
+  ed25519-signed, content-addressed fact materialised from satellite and open Earth-observation
+  archives, and any agent can read without a key or account and verify the receipt offline. The
+  surface is published as an OpenAPI 3.1 contract (196 operations), a remote MCP server (110
+  tools), an A2A 1.0 agent card, an llms.txt, RFC 8414 / RFC 9728 discovery documents, and
+  first-party Python and TypeScript clients.
+image: https://emem.dev/logo.png
 url: https://raw.githubusercontent.com/api-evangelist/emem-dev/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:a2a-registry
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: enrichment pass 2026-09-19 (local-v3; was a2a-registry harvest stub)
+x-brands:
+- name: emem
+  url: https://emem.dev/
+  note: Product domain; the company site is vortx.ai. The OpenAPI, agent card, security.txt and package metadata all name Vortx AI Private Limited as operator.
 specificationVersion: '0.20'
 created: '2026-09-19'
 modified: '2026-09-19'
 tags:
 - Company
-apis: []
+- Artificial Intelligence
+- AI Agents
+- Agent Memory
+- Geospatial
+- Earth Observation
+- Satellite Imagery
+- Provenance
+- Cryptography
+- MCP
+- Open Source
+- India
+apis:
+- name: emem REST API
+  description: >-
+    The /v1 REST surface of the emem responder: locate a place to a cell64, recall signed facts,
+    ask free-text questions routed over an algorithm registry, mint and resolve emem: citation
+    tokens, verify receipts offline, write signed agent memory, and read the RFC 6962-style
+    transparency log. Reads are anonymous; writes carry a per-request ed25519 attester signature.
+  image: https://emem.dev/logo.png
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev
+  tags:
+  - Agent Memory
+  - Geospatial
+  - Earth Observation
+  - Provenance
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-openapi.json
+  - type: OpenAPI
+    name: emem OpenAPI 3.1 (provider-hosted, verbatim source)
+    url: https://emem.dev/openapi.json
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: Overlay
+    url: overlays/emem-dev-openapi-overlay.yaml
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- name: emem MCP Server
+  description: >-
+    Remote MCP server (JSON-RPC 2.0 over Streamable HTTP) at https://emem.dev/mcp exposing 110
+    tools; /mcp lists an 18-tool core loop and /mcp/full the complete set. No authentication to
+    read; every tool carries MCP annotations and dev.emem/* metadata.
+  image: https://emem.dev/logo.png
+  humanURL: https://emem.dev/tools
+  baseURL: https://emem.dev/mcp
+  tags:
+  - MCP
+  - AI Agents
+  - Agent Memory
+  properties:
+  - type: MCPServer
+    url: mcp/emem-dev-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/emem-dev-tool-crosswalk.yml
+  - type: Documentation
+    url: https://emem.dev/integrations.md
+- name: emem A2A Agent
+  description: >-
+    Agent-to-agent surface: synchronous JSON-RPC message/send at POST /a2a/tasks, an async task
+    extension at /v1/a2a/tasks with polling and cancel, and a skill query at /v1/a2a/skills.
+    Every MCP tool is published as an A2A skill on the signed agent card.
+  image: https://emem.dev/logo.png
+  humanURL: https://emem.dev/a2a
+  baseURL: https://emem.dev/a2a/tasks
+  tags:
+  - A2A
+  - AI Agents
+  properties:
+  - type: Documentation
+    url: https://emem.dev/a2a
+  - type: Documentation
+    name: A2A async tasks extension spec
+    url: https://emem.dev/spec/a2a/async-tasks/v1
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -21,3 +110,83 @@ maintainers:
 common:
 - type: Website
   url: https://emem.dev/
+- type: Security
+  url: security/emem-dev-vulnerability-disclosure.yml
+- type: VulnerabilityDisclosure
+  url: security/emem-dev-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/emem-dev-domain-security.yml
+- type: Authentication
+  url: authentication/emem-dev-authentication.yml
+- type: Website
+  name: Vortx AI company site
+  url: https://vortx.ai/
+- type: DeveloperPortal
+  url: https://emem.dev/reference
+- type: Documentation
+  url: https://emem.dev/docs/
+- type: APIReference
+  url: https://emem.dev/docs/api/
+- type: GettingStarted
+  url: https://emem.dev/docs/quickstart.html
+- type: Support
+  url: https://emem.dev/support
+- type: GitHubOrganization
+  url: https://github.com/Vortx-AI
+- type: GitHub
+  url: https://github.com/Vortx-AI/emem
+- type: Roadmap
+  url: https://emem.dev/docs/roadmap.html
+- type: TermsOfService
+  url: https://emem.dev/terms
+- type: PrivacyPolicy
+  url: https://emem.dev/privacy
+- type: ChangeLog
+  url: https://github.com/Vortx-AI/emem/blob/main/CHANGELOG.md
+- type: ChangeLog
+  url: changelog/emem-dev-changelog.yml
+- type: LLMsTxt
+  url: llms/emem-dev-llms.txt
+- type: AgentCard
+  url: a2a/emem-dev-a2a.yml
+- type: WellKnown
+  url: well-known/emem-dev-well-known.yml
+- type: SecurityTxt
+  url: well-known/emem-dev-security.txt
+- type: OpenIDConnect
+  url: well-known/emem-dev-oauth-authorization-server.json
+- type: Packages
+  url: packages/emem-dev-packages.yml
+- type: SDKs
+  url: packages/emem-dev-packages.yml
+- type: CLI
+  url: cli/emem-dev-cli.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Conformance
+  url: conformance/emem-dev-conformance.yml
+- type: Lifecycle
+  url: lifecycle/emem-dev-lifecycle.yml
+- type: Deprecation
+  url: lifecycle/emem-dev-lifecycle.yml
+- type: Conventions
+  url: conventions/emem-dev-conventions.yml
+- type: Idempotency
+  url: conventions/emem-dev-conventions.yml
+- type: Plans
+  url: plans/emem-dev-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/emem-dev-rate-limits.yml
+- type: RegulatoryPosture
+  url: regulatory/emem-dev-regulatory-posture.yml
+- type: DataSubjectRequest
+  url: regulatory/emem-dev-regulatory-posture.yml
+- type: SupportLifetime
+  url: regulatory/emem-dev-regulatory-posture.yml
+- type: AITransparency
+  url: regulatory/emem-dev-regulatory-posture.yml
+x-enrichment:
+  date: '2026-09-19'
+  status: enriched
+  artifacts_added: 58
+  pass: local-v3

@@ -1,0 +1,123 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  Live discovery documents fetched 2026-09-19 (/.well-known/oauth-authorization-server,
+  /.well-known/oauth-protected-resource, /.well-known/openid-configuration, /.well-known/agent-card.json,
+  /.well-known/mcp.json, /.well-known/did.json, /.well-known/jwks.json, /.well-known/security.txt,
+  /v1/log/sth, /v1/plane/conformance, /v1/schemas), the contract in openapi/emem-dev-openapi.json,
+  the MCP initialize/tools-list handshake, https://emem.dev/llms.txt and SECURITY.md. Every entry
+  names where the evidence sits; nothing is asserted from marketing prose alone.
+standards:
+- id: openapi-3.1
+  conforms: true
+  evidence: openapi/emem-dev-openapi.json declares openapi 3.1.0 with 178 paths / 196 operations, every operation carrying an operationId; served at https://emem.dev/openapi.json (200, application/json).
+- id: json-schema-2020-12
+  conforms: true
+  evidence: GET /v1/schemas serves each request/response body as a self-contained draft 2020-12 JSON Schema (emem.dev/v1/schemas "_means"); /v1/schemas/eudr_dds.json is one of them.
+- id: mcp
+  conforms: true
+  evidence: POST https://emem.dev/mcp answered initialize (2026-09-19) advertising protocol versions 2024-11-05, 2025-03-26, 2025-06-18 and 2025-11-25; tools/list returned 110 tools with inputSchema, MCP annotations (readOnlyHint / destructiveHint / idempotentHint / openWorldHint) and _meta; /.well-known/mcp.json uses the modelcontextprotocol.io well-known-mcp draft schema.
+- id: a2a-1.0
+  conforms: true
+  evidence: /.well-known/agent-card.json carries protocolVersion "1.0", capabilities as an object, skills as an array (113), supportedInterfaces with protocolBinding JSONRPC; graded conformant in a2a/emem-dev-a2a.yml. message/send at POST /a2a/tasks (operationId emem_a2a_tasks_sync).
+- id: rfc8414-oauth-authorization-server-metadata
+  conforms: true
+  evidence: /.well-known/oauth-authorization-server (200) with issuer https://emem.dev, authorization_endpoint, token_endpoint, registration_endpoint, code_challenge_methods_supported [S256], grant_types authorization_code + refresh_token. The provider states the AS is optional and open and that a token grants nothing an anonymous caller lacks.
+- id: rfc9728-oauth-protected-resource-metadata
+  conforms: true
+  evidence: /.well-known/oauth-protected-resource (200) for resource https://emem.dev/mcp - auth_required false, authorization_servers [], bearer_methods_supported [], resource_signing_alg_values_supported [EdDSA].
+- id: rfc7591-dynamic-client-registration
+  conforms: true
+  evidence: registration_endpoint https://emem.dev/oauth/register declared in the RFC 8414 metadata; token_endpoint_auth_methods_supported [none]; the provider states registration always succeeds (emem_note).
+- id: oauth2-pkce
+  conforms: true
+  evidence: code_challenge_methods_supported [S256] in the authorization-server metadata.
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration answers 200 but is byte-identical to the OAuth AS metadata and carries no jwks_uri, userinfo_endpoint, subject_types_supported or id_token_signing_alg_values_supported; no OIDC ID tokens are issued (session status is always open_unverified). Recorded as RFC 8414 metadata served at the OIDC path, not OIDC Discovery.
+- id: rfc9116-security-txt
+  conforms: true
+  evidence: /.well-known/security.txt (200) with Contact, Canonical, Expires 2027-09-20T01:46:26Z, Preferred-Languages, Policy and Acknowledgments; deliberately no Encryption field (SECURITY.md explains why).
+- id: rfc8615-well-known
+  conforms: true
+  evidence: Fourteen documents served under /.well-known/ on emem.dev (see well-known/emem-dev-well-known.yml).
+- id: rfc9727-api-catalog
+  conforms: false
+  evidence: /.well-known/api-catalog returns 404 on every host probed.
+- id: w3c-did-core (did:web)
+  conforms: true
+  evidence: /.well-known/did.json (200, application/did+json) with @context https://www.w3.org/ns/did/v1, Multikey verification methods and a #a2a service; the agent card's responder block names did:web:emem.dev.
+- id: rfc7517-jwks
+  conforms: true
+  evidence: /.well-known/jwks.json (200) with an EdDSA / Ed25519 key whose kid is the responder pubkey; the agent card's JWS signatures header points at it (jku).
+- id: rfc8785-json-canonicalization
+  conforms: true
+  evidence: agent card signatures[].header.payload states the card is canonicalized per RFC 8785 before signing.
+- id: rfc6962-transparency-log
+  conforms: true
+  evidence: GET /v1/log/sth (200) returns a signed tree head with tree_size; /v1/log/inclusion, /v1/log/consistency, /v1/log/entries and witness co-signing (/v1/log/witness, /v1/log/witnesses) are in the OpenAPI; /.well-known/mcp.json security_posture states "RFC 6962 transparency log". Implementation is RFC 6962-style (blake3, ed25519) rather than a CT-log deployment.
+- id: rfc8949-cbor-canonical
+  conforms: true
+  evidence: Facts are content-addressed over canonical CBOR; error code canonical_encoding_divergence ("CBOR you sent isn't deterministic per RFC 8949 section 4.2.1") in /v1/errors; POST /v1/attest_cbor in the OpenAPI.
+- id: w3c-trace-context
+  conforms: true
+  evidence: traceparent is accepted (access-control-allow-headers) and exposed (access-control-expose-headers) on live responses; SUPPORT.md asks reporters to include traceparent for log correlation.
+- id: cloudevents-1.0
+  conforms: true
+  evidence: The guard checkpoint accepts CloudEvents 1.0 producers - POST /v1/guard/verdict?shape=cloudevent on the hosted responder (operationId emem_guard_verdict) and POST /verdict/cloudevent on a self-hosted emem-guard; /.well-known/emem-guard.json publishes the route.
+- id: ietf-rats-attestation
+  conforms: true
+  evidence: 'GET /v1/device_platforms lists 16 whitelisted device platforms "each anchored to a hardware root of trust under IETF RATS" (llms.txt Primitives); emem:attestation: tokens resolve at POST /v1/trace_resolve.'
+- id: ipfs-cidv1
+  conforms: true
+  evidence: cid_v1 alias beside fact_cid on recall facts (same blake3 digest as a CIDv1, raw codec, multihash 0x1e) - CHANGELOG 2.4.0 Added.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: Errors use the provider's emem.error.v1 envelope ({code, message, schema, did_you_mean, details}), not application/problem+json (see errors/emem-dev-problem-types.yml).
+- id: pagination
+  conforms: true
+  evidence: Cursor pagination on area endpoints (next_cursor / compact_offset with max_cells) and MCP tools/list (nextCursor, 8 pages observed); /v1/inbox returns truncated + limit. Documented at https://emem.dev/v1/limits.
+- id: idempotency
+  conforms: true
+  evidence: Partial by design - facts and bundles are content-addressed (same bytes, same CID), and 4 of 8 write tools declare idempotentHint true (emem_derive, emem_entity_link, emem_memory_delete, emem_memory_supersede); memory_create/str_replace/insert/rename declare false. No Idempotency-Key header. See conventions/emem-dev-conventions.yml.
+- id: ratelimit-headers (draft-ietf-httpapi-ratelimit-headers)
+  conforms: false
+  evidence: No RateLimit-* headers on live 200 responses (probed 2026-09-19); exhaustion is signalled by 429 + Retry-After.
+- id: ogc-api
+  conforms: false
+  evidence: Geospatial surface but no OGC API conformance document (no opengis.net conformsTo classes) and no OWS GetCapabilities; the provider's own /v1/plane/conformance is a fact-plane safety self-test, not OGC.
+- id: scim
+  conforms: false
+  evidence: No SCIM surface; the service has no user accounts.
+- id: fhir-r4
+  conforms: false
+  evidence: Not a health API.
+- id: odata
+  conforms: false
+  evidence: No $metadata surface.
+domain_standards:
+- id: eudr-due-diligence-statement (Regulation (EU) 2023/1115, Annex II)
+  conforms: true
+  declared_in: openapi/emem-dev-openapi.json - operationId emem_eudr_dds (POST /v1/eudr_dds) and emem_eudr_dds_schema (GET /v1/schemas/eudr_dds.json)
+  evidence: >-
+    The contract declares an operation that "produces a Due Diligence Statement per Regulation (EU)
+    2023/1115 for one or more plots" (MCP tool emem_eudr_dds, "polygon-in, signed Annex II envelope
+    out") with inputs internal_reference_number, activity_type, cut_off_date, geolocation_confidential
+    and a published JSON Schema for the statement. This is the EU Deforestation Regulation DDS shape
+    an operator files in the EU Information System, declared in the contract rather than in prose.
+- id: a2a-agent-card
+  conforms: true
+  declared_in: /.well-known/agent-card.json (protocolVersion 1.0) and operationId emem_a2a_tasks_sync
+  evidence: See a2a/emem-dev-a2a.yml (graded conformant).
+- id: mcp-tool-annotations
+  conforms: true
+  declared_in: live tools/list (mcp/emem-dev-mcp-tools-list.json)
+  evidence: All 110 tools carry the MCP specification's readOnlyHint / destructiveHint / idempotentHint / openWorldHint annotations and /.well-known/mcp.json publishes annotation_semantics explaining how the provider applies them.
+- id: did-web
+  conforms: true
+  declared_in: /.well-known/did.json; agent card responder.did did:web:emem.dev
+  evidence: Multikey verification methods for the responder and witness keys.
+- id: ipcc-2019-refinement-tier-2 (methodology, not an interop standard)
+  conforms: true
+  declared_in: MCP tool emem_rice_ch4 / operationId emem_rice_ch4
+  evidence: The tool description names IPCC 2019 Refinement Eq 5.1 as the method; recorded as a declared methodology, not scored as a domain interoperability standard.

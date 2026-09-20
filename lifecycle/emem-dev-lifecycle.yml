@@ -1,0 +1,81 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  https://emem.dev/v1/deprecations (machine-readable policy + table),
+  https://emem.dev/docs/operators/deprecations.html (announced/removed tables + stability contract),
+  https://github.com/Vortx-AI/emem/blob/main/SECURITY.md (supported versions),
+  https://emem.dev/terms (section 3, no SLA), https://emem.dev/support (status endpoints),
+  https://github.com/Vortx-AI/emem/blob/main/CHANGELOG.md and https://github.com/Vortx-AI/emem/releases.
+versioning:
+  scheme: semver (server 2.4.0; wire protocol spec.md v1.2.1; receipt preimage versions v0/v1/v2)
+  mechanism: >-
+    The hosted responder runs the tip of main and self-reports its commit in the x-emem-commit
+    response header and the signed operator_attestation in /.well-known/emem.json (version, git_commit,
+    build_timestamp, binary_blake3). REST paths are versioned by prefix (/v1/*) and declared wire-stable;
+    MCP protocol version is negotiated on initialize (2024-11-05 through 2025-11-25) and echoed in the
+    mcp-protocol-version header. Registries that produce facts are pinned by content-addressed manifest
+    CIDs (bands_cid, algorithms_cid, sources_cid, schema_cid ...) served at /v1/manifests and /health.
+  current: 2.4.0
+  current_released: '2026-09-09'
+  docs: https://emem.dev/docs/operators/deprecations.html
+  changelog: changelog/emem-dev-changelog.yml
+  notes: >-
+    Receipts carry preimage_version; a verifier selects the rule from that field. 2.0.0 (2026-08-05)
+    changed the receipt preimage (v2 binds the inclusion proof) and was shipped as a major for that
+    reason; v0 and v1 receipts remain valid under their own rules.
+deprecation:
+  policy_url: https://emem.dev/v1/deprecations
+  policy_text: >-
+    "Pre-1.0. A breaking change carries a deprecation entry here one minor release before removal.
+    Entries name the path, the replacement, and the earliest version that removes the old surface."
+    (served 2026-09-20 with deprecated: [] - the policy text still says pre-1.0 while the server is 2.4.0.)
+  docs_url: https://emem.dev/docs/operators/deprecations.html
+  machine_readable: https://emem.dev/v1/deprecations (schema emem.deprecations.v1)
+  sunset_header: false
+  deprecation_header: false
+  notes: >-
+    No RFC 8594 Sunset or Deprecation headers were observed; deprecations are published in the
+    JSON endpoint and the operators page. The docs page states the stability contract - receipts
+    verify forever, a fact CID is forever, MCP tool names and /v1/* endpoints are wire-stable and
+    renames go through the deprecation table with both names resolving for at least one minor
+    version, and algorithm keys carry an @N version suffix that resolves forever.
+  currently_announced:
+  - surface: /.well-known/ai-plugin.json
+    announced: 0.0.6
+    slated_for_removal: 0.0.8
+    replacement: /.well-known/agent-card.json + /.well-known/mcp.json
+    status: still served on 2026-09-19 (the file stays, doc support dropped after 0.0.8)
+  - surface: EMEM_TOPIC_BACKEND=transformer / =fastembed env aliases (self-host)
+    announced: 0.0.3
+    slated_for_removal: 0.0.7
+    replacement: EMEM_TOPIC_BACKEND=model2vec / =ort
+supported_versions:
+  source: https://github.com/Vortx-AI/emem/blob/main/SECURITY.md
+  table:
+  - {version: 2.4.x, supported: true, note: Current; fixes land here.}
+  - {version: '<= 2.3.x', supported: false, note: Superseded; upgrade rather than report against these.}
+  statement: "There is one canonical responder and it runs the tip of `main`, so the hosted instance at `https://emem.dev` is always the supported version."
+sla:
+  url: https://emem.dev/terms
+  public_uptime_target: null
+  notes: 'Terms section 3: "The service is offered as-is, without uptime SLA. For production workloads, run your own instance."'
+status_page: null
+status_notes: >-
+  No status page is published. Liveness is GET https://emem.dev/health (200 = up, returns the
+  active manifest CIDs) and GET /live; Prometheus metrics at GET /metrics; corpus liveness at
+  /v1/corpus_state_stats and the SSE feed at /v1/stream. Not recorded as a StatusPage pointer
+  because none of these is an incident/uptime page.
+health_endpoints:
+- https://emem.dev/health
+- https://emem.dev/live
+- https://emem.dev/metrics
+- https://emem.dev/v1/corpus_state_stats
+rate_limits: rate-limits/emem-dev-rate-limits.yml
+releases:
+  cadence: minor release every one to two weeks since 1.0.0 (2026-07-09); 2.4.0 on 2026-09-09
+  channels: [GitHub releases/tags, npm @vortxai/emem, PyPI ememdev + emem-langmem, MCP registry io.github.Vortx-AI/emem, ghcr.io/vortx-ai/emem]
+deprecated_products: []
+deprecated_operations:
+  source: openapi/emem-dev-openapi.json
+  count: 0
+  note: No operation carries deprecated:true; /v1/deprecations lists deprecated [] on 2026-09-20.

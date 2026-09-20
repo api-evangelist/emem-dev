@@ -1,0 +1,779 @@
+generated: '2026-09-19'
+method: derived
+source: Derived by aligning the live MCP tools/list (mcp/emem-dev-mcp-tools-list.json, 110 tools fetched 2026-09-19
+  from https://emem.dev/mcp/full, 8 pages) with the operationIds in openapi/emem-dev-openapi.json (196 operations).
+  The provider names its MCP tools after its REST operationIds, so most rows bind by exact name; GET/POST twins
+  of one path are listed together.
+purpose: Make each MCP tool a first-class discovery unit bound to the REST operation that backs it. The tool inherits
+  that operation's parameters + requestBody as its real input contract; the live tools/list also carries a real
+  inputSchema per tool, so both are recorded rather than guessed.
+surfaces:
+  rest_openapi: openapi/emem-dev-openapi.json
+  mcp: https://emem.dev/mcp (core 18) and https://emem.dev/mcp/full (all 110); tools/list is open, no auth
+  graphql: null
+  a2a: https://emem.dev/.well-known/agent-card.json publishes every MCP tool as an A2A skill (113 skills)
+crosswalk:
+- tool: emem_tools
+  category: introspect
+  rest:
+  - emem_tools
+  binding: rest
+  confidence: high
+- tool: emem_locate
+  category: read
+  rest:
+  - emem_locate
+  - emem_locate_get
+  binding: rest
+  confidence: high
+- tool: emem_ask
+  category: read
+  rest:
+  - emem_ask
+  binding: rest
+  confidence: high
+- tool: emem_hunt
+  category: read
+  rest:
+  - emem_hunt
+  binding: rest
+  confidence: high
+- tool: emem_eudr_dds
+  category: read
+  rest:
+  - emem_eudr_dds
+  binding: rest
+  confidence: high
+- tool: emem_spi
+  category: read
+  rest:
+  - emem_spi
+  binding: rest
+  confidence: high
+- tool: emem_burn_severity
+  category: read
+  rest:
+  - emem_burn_severity
+  binding: rest
+  confidence: high
+- tool: emem_rice_ch4
+  category: read
+  rest:
+  - emem_rice_ch4
+  binding: rest
+  confidence: high
+- tool: emem_deforestation_alert
+  category: read
+  rest:
+  - emem_deforestation_alert
+  binding: rest
+  confidence: high
+- tool: emem_sar_forest_disturbance
+  category: read
+  rest:
+  - emem_sar_forest_disturbance
+  binding: rest
+  confidence: high
+- tool: emem_triple_consensus
+  category: read
+  rest:
+  - emem_triple_consensus
+  binding: rest
+  confidence: high
+- tool: emem_change_attribution
+  category: read
+  rest:
+  - emem_change_attribution
+  binding: rest
+  confidence: high
+- tool: emem_band_raster
+  category: read
+  rest:
+  - emem_band_raster
+  binding: rest
+  confidence: high
+- tool: emem_raster_resolve
+  category: read
+  rest:
+  - emem_raster_resolve
+  binding: rest
+  confidence: high
+- tool: emem_band_cube
+  category: read
+  rest:
+  - emem_band_cube
+  binding: rest
+  confidence: high
+- tool: emem_band_composite
+  category: read
+  rest:
+  - emem_band_composite
+  binding: rest
+  confidence: high
+- tool: emem_cube_resolve
+  category: read
+  rest:
+  - emem_cube_resolve
+  binding: rest
+  confidence: high
+- tool: emem_raster_bundle
+  category: read
+  rest:
+  - emem_raster_bundle
+  binding: rest
+  confidence: high
+- tool: emem_raster_bundle_resolve
+  category: read
+  rest:
+  - emem_raster_bundle_resolve
+  binding: rest
+  confidence: high
+- tool: emem_terrain
+  category: read
+  rest:
+  - emem_terrain
+  binding: rest
+  confidence: high
+- tool: emem_region_similarity
+  category: read
+  rest:
+  - emem_region_similarity
+  binding: rest
+  confidence: high
+- tool: emem_embedding_centroid
+  category: read
+  rest:
+  - emem_embedding_centroid
+  binding: rest
+  confidence: high
+- tool: emem_embedding_diversity
+  category: read
+  rest:
+  - emem_embedding_diversity
+  binding: rest
+  confidence: high
+- tool: emem_neighborhood_consistency
+  category: read
+  rest:
+  - emem_neighborhood_consistency
+  binding: rest
+  confidence: high
+- tool: emem_state
+  category: read
+  rest:
+  - emem_state
+  binding: rest
+  confidence: high
+- tool: emem_state_multi
+  category: read
+  rest:
+  - emem_state_multi
+  binding: rest
+  confidence: high
+- tool: emem_state_diff
+  category: read
+  rest:
+  - emem_state_diff
+  binding: rest
+  confidence: high
+- tool: emem_memory_token
+  category: read
+  rest:
+  - emem_memory_token
+  binding: rest
+  confidence: high
+- tool: fetch
+  category: read
+  rest:
+  - emem_fetch
+  - emem_fetch_post
+  binding: rest
+  confidence: high
+  note: Deep-research-style alias; bound by the emem_ prefixed operationId.
+- tool: emem_memory_token_resolve
+  category: read
+  rest:
+  - emem_memory_token_resolve
+  binding: rest
+  confidence: high
+- tool: emem_echo_verify
+  category: read
+  rest:
+  - emem_echo_verify
+  binding: rest
+  confidence: high
+- tool: emem_derive
+  category: write
+  rest:
+  - emem_derive
+  binding: rest
+  confidence: high
+- tool: emem_derive_list
+  category: read
+  rest:
+  - emem_derive_list
+  binding: rest
+  confidence: high
+- tool: emem_memory_bundle
+  category: read
+  rest:
+  - emem_memory_bundle
+  binding: rest
+  confidence: high
+- tool: emem_memory_bundle_resolve
+  category: read
+  rest:
+  - emem_memory_bundle_resolve
+  binding: rest
+  confidence: high
+- tool: emem_entity
+  category: read
+  rest:
+  - emem_entity
+  - emem_entity_get
+  binding: rest
+  confidence: high
+- tool: emem_entity_resolve
+  category: read
+  rest:
+  - emem_entity_resolve
+  binding: rest
+  confidence: high
+- tool: emem_entity_link
+  category: write
+  rest:
+  - emem_entity_link
+  binding: rest
+  confidence: high
+- tool: emem_memory_search
+  category: read
+  rest:
+  - emem_memory_search
+  binding: rest
+  confidence: high
+- tool: emem_corpus_state_stats
+  category: read
+  rest:
+  - emem_corpus_state_stats
+  binding: rest
+  confidence: high
+- tool: emem_benchmark
+  category: read
+  rest:
+  - emem_benchmark
+  binding: rest
+  confidence: high
+- tool: emem_recall
+  category: read
+  rest:
+  - emem_recall
+  binding: rest
+  confidence: high
+- tool: emem_recall_polygon
+  category: read
+  rest:
+  - emem_recall_polygon
+  binding: rest
+  confidence: high
+- tool: emem_field_boundaries
+  category: read
+  rest:
+  - emem_field_boundaries
+  binding: rest
+  confidence: high
+- tool: emem_query_region
+  category: read
+  rest:
+  - emem_query_region
+  binding: rest
+  confidence: high
+- tool: emem_compare
+  category: read
+  rest:
+  - emem_compare
+  binding: rest
+  confidence: high
+- tool: emem_compare_bands
+  category: read
+  rest:
+  - emem_compare_bands
+  binding: rest
+  confidence: high
+- tool: emem_find_similar
+  category: read
+  rest:
+  - emem_find_similar
+  binding: rest
+  confidence: high
+- tool: emem_trajectory
+  category: read
+  rest:
+  - emem_trajectory
+  binding: rest
+  confidence: high
+- tool: emem_diff
+  category: read
+  rest:
+  - emem_diff
+  binding: rest
+  confidence: high
+- tool: emem_compare_same_doy
+  category: read
+  rest:
+  - emem_compare_same_doy
+  binding: rest
+  confidence: high
+- tool: emem_memory_contradictions
+  category: read
+  rest:
+  - emem_memory_contradictions
+  - emem_memory_contradictions_get
+  binding: rest
+  confidence: high
+- tool: emem_edges_recall
+  category: read
+  rest:
+  - emem_edges_recall
+  binding: rest
+  confidence: high
+- tool: emem_fetch
+  category: read
+  rest:
+  - emem_fetch
+  - emem_fetch_post
+  binding: rest
+  confidence: high
+- tool: emem_backfill
+  category: read
+  rest:
+  - emem_backfill
+  binding: rest
+  confidence: high
+- tool: emem_heat_solve
+  category: read
+  rest:
+  - emem_heat_solve
+  binding: rest
+  confidence: high
+- tool: emem_wave_solve
+  category: read
+  rest:
+  - emem_wave_solve
+  binding: rest
+  confidence: high
+- tool: emem_jepa_predict
+  category: read
+  rest:
+  - emem_jepa_predict
+  binding: rest
+  confidence: high
+- tool: emem_jepa_predict_v2
+  category: read
+  rest:
+  - emem_jepa_predict_v2
+  binding: rest
+  confidence: high
+- tool: emem_verify
+  category: verify
+  rest:
+  - emem_verify
+  binding: rest
+  confidence: high
+- tool: emem_bands
+  category: introspect
+  rest:
+  - emem_bands
+  binding: rest
+  confidence: high
+- tool: emem_functions
+  category: introspect
+  rest:
+  - emem_functions
+  binding: rest
+  confidence: high
+- tool: emem_sources
+  category: introspect
+  rest:
+  - emem_sources
+  binding: rest
+  confidence: high
+- tool: emem_schema
+  category: introspect
+  rest:
+  - emem_schema
+  binding: rest
+  confidence: high
+- tool: emem_errors
+  category: introspect
+  rest:
+  - emem_errors
+  binding: rest
+  confidence: high
+- tool: emem_manifests
+  category: introspect
+  rest:
+  - emem_manifests
+  binding: rest
+  confidence: high
+- tool: emem_capabilities
+  category: introspect
+  rest:
+  - emem_capabilities
+  - emem_capabilities_post
+  binding: rest
+  confidence: high
+- tool: emem_grid_info
+  category: introspect
+  rest:
+  - emem_grid_info
+  binding: rest
+  confidence: high
+- tool: emem_cells_in_bbox
+  category: introspect
+  rest:
+  - emem_cells_in_bbox
+  binding: rest
+  confidence: high
+- tool: emem_coverage_matrix
+  category: introspect
+  rest:
+  - emem_coverage_matrix
+  binding: rest
+  confidence: high
+- tool: emem_materializers
+  category: introspect
+  rest:
+  - emem_materializers
+  binding: rest
+  confidence: high
+- tool: emem_data_availability
+  category: introspect
+  rest:
+  - emem_data_availability
+  binding: rest
+  confidence: high
+- tool: emem_algorithms
+  category: introspect
+  rest:
+  - emem_algorithms
+  binding: rest
+  confidence: high
+- tool: emem_explain_algorithm
+  category: introspect
+  rest:
+  - emem_explain_algorithm
+  binding: rest
+  confidence: high
+- tool: emem_topics
+  category: introspect
+  rest:
+  - emem_topics
+  binding: rest
+  confidence: high
+- tool: emem_coverage_map
+  category: introspect
+  rest:
+  - emem_coverage_map
+  binding: rest
+  confidence: high
+- tool: emem_cell_scene_rgb
+  category: read
+  rest:
+  - emem_cell_scene_rgb
+  binding: rest
+  confidence: high
+- tool: emem_cell_geojson
+  category: read
+  rest:
+  - emem_cell_geojson
+  binding: rest
+  confidence: high
+- tool: emem_recall_many
+  category: read
+  rest:
+  - emem_recall_many
+  binding: rest
+  confidence: high
+- tool: emem_elevation
+  category: read
+  rest:
+  - emem_elevation
+  - emem_elevation_get
+  binding: rest
+  confidence: high
+- tool: emem_fleet
+  category: introspect
+  rest:
+  - emem_fleet
+  binding: rest
+  confidence: high
+- tool: emem_substrates
+  category: introspect
+  rest:
+  - emem_substrates
+  binding: rest
+  confidence: high
+- tool: emem_trace_verify
+  category: verify
+  rest:
+  - emem_trace_verify
+  binding: rest
+  confidence: high
+- tool: emem_temporal_route
+  category: plan
+  rest:
+  - emem_temporal_route_get
+  - emem_temporal_route_post
+  binding: rest
+  confidence: medium
+- tool: emem_verify_receipt
+  category: verify
+  rest:
+  - emem_verify_receipt
+  binding: rest
+  confidence: high
+- tool: emem_guard_verdict
+  category: verify
+  rest:
+  - emem_guard_verdict
+  binding: rest
+  confidence: high
+- tool: emem_guard_selfhost
+  category: introspect
+  rest:
+  - emem_guard_selfhost
+  binding: rest
+  confidence: high
+- tool: emem_at
+  category: read
+  rest:
+  - emem_at_get
+  - emem_at_post
+  binding: rest
+  confidence: medium
+- tool: emem_ndvi
+  category: read
+  rest:
+  - emem_ndvi_get
+  - emem_ndvi_post
+  binding: rest
+  confidence: medium
+- tool: emem_air
+  category: read
+  rest:
+  - emem_air_get
+  - emem_air_post
+  binding: rest
+  confidence: medium
+- tool: emem_lst
+  category: read
+  rest:
+  - emem_lst_get
+  - emem_lst_post
+  binding: rest
+  confidence: medium
+- tool: emem_soil
+  category: read
+  rest:
+  - emem_soil_get
+  - emem_soil_post
+  binding: rest
+  confidence: medium
+- tool: emem_water
+  category: read
+  rest:
+  - emem_water_get
+  - emem_water_post
+  binding: rest
+  confidence: medium
+- tool: emem_forest
+  category: read
+  rest:
+  - emem_forest_get
+  - emem_forest_post
+  binding: rest
+  confidence: medium
+- tool: emem_weather
+  category: read
+  rest:
+  - emem_weather_get
+  - emem_weather_post
+  binding: rest
+  confidence: medium
+- tool: emem_intent
+  category: plan
+  rest:
+  - emem_intent
+  binding: rest
+  confidence: high
+- tool: emem_log_sth
+  category: verify
+  rest:
+  - emem_log_sth
+  binding: rest
+  confidence: high
+- tool: emem_log_inclusion
+  category: verify
+  rest:
+  - emem_log_inclusion
+  binding: rest
+  confidence: high
+- tool: emem_log_consistency
+  category: verify
+  rest:
+  - emem_log_consistency
+  binding: rest
+  confidence: high
+- tool: emem_log_witnesses
+  category: verify
+  rest:
+  - emem_log_witnesses
+  binding: rest
+  confidence: high
+mcp_only:
+- tool: search
+  category: read
+  reason: No /v1 operationId shares this tool name; callable only via POST /mcp tools/call.
+- tool: emem_memory_view
+  category: read
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_memory_create
+  category: write
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_memory_str_replace
+  category: write
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_memory_insert
+  category: write
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_memory_delete
+  category: write
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_memory_supersede
+  category: write
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_memory_rename
+  category: write
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_memory_list_by_kind
+  category: read
+  reason: 'MCP-only memory-note verb (openapi info.x-emem-surface-asymmetry: the note plane is written over MCP
+    tools/call only; REST exposes only the read side at /v1/memory/search, /v1/memory/sse, /memories/{path}).'
+- tool: emem_reason
+  category: plan
+  reason: No /v1 operationId shares this tool name; callable only via POST /mcp tools/call.
+rest_only:
+- capability: well-known discovery
+  operations:
+  - emem_well_known_did
+  - emem_well_known_agents
+  - emem_verifier_spec_well_known
+  - emem_well_known
+  - emem_jwks
+- capability: a2a and agent discovery
+  operations:
+  - emem_a2a_tasks_sync
+  - emem_a2a_async_tasks_spec
+  - emem_a2a_channel_spec
+  - emem_a2a_skills
+  - emem_a2a_tasks_async
+  - emem_a2a_task_get
+  - emem_a2a_task_cancel
+  - emem_agent_card
+  - emem_agent_quickref
+  - emem_agent_stats
+  - emem_agents
+  - emem_inbox_get
+  - emem_inbox
+- capability: health and transport
+  operations:
+  - emem_health
+  - emem_live
+  - mcp_discover
+  - mcp_jsonrpc
+  - emem_health_v1
+- capability: other /v1
+  operations:
+  - emem_algorithm_cids
+  - emem_arcade_protocol
+  - emem_artifact_bytes
+  - emem_attest
+  - emem_attest_cbor
+  - emem_attest_traced
+  - emem_benchmark_grade
+  - emem_building_footprints
+  - emem_channel_geo
+  - emem_coverage
+  - emem_demos
+  - emem_deprecations
+  - emem_discover
+  - emem_edges_write
+  - emem_explain
+  - emem_guard_capabilities
+  - emem_harness_protocol
+  - emem_intents
+  - emem_limits
+  - emem_memory_sse
+  - emem_memory_search_stats
+  - emem_memory_token_resolve_many
+  - emem_plane_conformance
+  - emem_quickstart
+  - emem_region_archetype_map
+  - emem_reviews_list
+  - emem_reviews_post
+  - emem_reviews_get
+  - emem_schemas
+  - emem_eudr_dds_schema
+  - emem_schema_by_name
+  - emem_scoreboard
+  - emem_state_record
+  - emem_stream
+  - emem_tessera_field
+  - emem_vector_index_stats
+  - emem_verifier_spec
+  - emem_worlds
+- capability: cell geometry and scenes
+  operations:
+  - emem_recall_cell_get
+  - emem_cell_info
+  - emem_cell_recall_geojson
+  - emem_cell_scene_png
+- capability: not-an-llm-provider stubs
+  operations:
+  - emem_not_an_llm_provider_chat
+  - emem_not_an_llm_provider_models
+- capability: enlistment, devices and traces
+  operations:
+  - emem_contributors
+  - emem_contributor_one
+  - emem_device_platforms
+  - emem_device_publish
+  - emem_devices
+  - emem_enlist_ladder
+  - emem_enlist_verify
+  - emem_enroll_attested
+  - emem_enroll_verify
+  - emem_trace_encodings
+  - emem_trace_resolve
+- capability: transparency log
+  operations:
+  - emem_log_entries
+  - emem_log_witness
+- capability: perception proxy
+  operations:
+  - emem_perception_proxy
+  - emem_perception_proxy_post
+coverage:
+  mcp_tools: 110
+  tools_bound: 100
+  mcp_only: 10
+  rest_operations: 196
+  rest_operations_with_tool: 114
+  rest_only: 82

@@ -1,0 +1,98 @@
+generated: '2026-09-19'
+method: probed
+source: https://emem.dev/.well-known/agent-card.json
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: emem.dev
+  note: >-
+    Served from the product domain at both the A2A 1.0 canonical path and the legacy
+    /.well-known/agent.json (byte-identical bodies). The same card is mirrored on
+    vortx-ai-emem.hf.space and referenced from /.well-known/mcp.json (protocol_card),
+    /.well-known/emem.json (agent_card_a2a_url) and the /v1/agent_card live descriptor.
+    The card is JWS-signed (signatures[] with jku https://emem.dev/.well-known/jwks.json,
+    payload canonicalized per RFC 8785) and names the operator's did:web document.
+conformance:
+  spec: A2A 1.0.0
+  grade: conformant
+  protocol_version: '1.0'
+  preferred_transport: JSONRPC
+  hard_checks:
+    capabilities_is_object: true
+    protocol_version_present: true
+    skills_is_array: true
+  optional_fields_present:
+    preferredTransport: true
+    defaultInputModes: true
+    defaultOutputModes: true
+    supportedInterfaces: true
+    provider: true
+    documentationUrl: true
+    signatures: true
+  deviations: []
+  notes:
+  - Carries both supportedInterfaces (A2A 1.0) and additionalInterfaces (pre-1.0 spelling) so 0.3-era clients still resolve the endpoints; recorded as compatibility, not a deviation.
+  - securitySchemes and security are absent by design; the card's emem.authentication block states that every read is open and that writes carry a per-write ed25519 attester signature.
+  - capabilities.extensions declares two provider extensions (async tasks at /spec/a2a/async-tasks/v1, signed channel at /spec/a2a/channel/v1); capabilities.streaming is true, pushNotifications and stateTransitionHistory false.
+card:
+  name: emem
+  url: https://emem.dev/a2a/tasks
+  version: 2.4.0
+  provider_organization: Vortx AI Private Limited
+  provider_url: https://vortx.ai
+  documentation_url: https://emem.dev/agents.md
+  icon_url: https://emem.dev/favicon.svg
+  capabilities:
+    streaming: true
+    pushNotifications: false
+    stateTransitionHistory: false
+    extendedAgentCard: false
+    extensions: 2
+  default_input_modes: [text/plain, application/json, image/jpeg, image/png]
+  default_output_modes: [application/json, image/jpeg, image/png, video/mp4]
+  skills: 113
+  skills_note: Every MCP tool is published as an A2A skill (110 tools) plus three composite skills; skill query at https://emem.dev/v1/a2a/skills?q=.
+  interfaces:
+  - {protocol: a2a-message-send, transport: JSONRPC, url: 'https://emem.dev/a2a/tasks'}
+  - {protocol: a2a-async-tasks, transport: HTTP+JSON, url: 'https://emem.dev/v1/a2a/tasks'}
+  - {protocol: a2a-skill-query, transport: HTTP+JSON, url: 'https://emem.dev/v1/a2a/skills'}
+  - {protocol: openapi-3.1, transport: HTTP+JSON, url: 'https://emem.dev/openapi.json'}
+  - {protocol: mcp-streamable-http, transport: JSONRPC, url: 'https://emem.dev/mcp'}
+  responder:
+    did: did:web:emem.dev
+    did_document: https://emem.dev/.well-known/did.json
+    signature_alg: ed25519
+    hash_alg: blake3
+  file: emem-dev-agent-card.json
+additional_cards:
+- host: vortx.ai
+  source: https://vortx.ai/.well-known/agent-card.json
+  file: emem-dev-vortx-ai-agent-card.json
+  grade: near-conformant
+  protocol_version: 0.3.0
+  hard_checks: {capabilities_is_object: true, protocol_version_present: true, skills_is_array: true}
+  deviations:
+  - protocolVersion-0.3-predates-a2a-1.0.0
+  - additionalInterfaces-carry-transport-values-HTTP-and-MCP-rather-than-A2A-bindings
+  card: {name: Vortx AI, url: 'https://vortx.ai/', version: 2.0.0, skills: 1, provider_organization: Vortx AI Private Limited}
+  note: >-
+    The company domain publishes its own card describing Vortx AI as the maker of emem, with a
+    single skill (read_earth_memory) whose interfaces point back at https://emem.dev/v1/ and
+    https://emem.dev/mcp. Recorded as a second published card, not as the primary surface.
+- host: vortx-ai-emem.hf.space
+  source: https://vortx-ai-emem.hf.space/.well-known/agent-card.json
+  http_status: 200
+  note: Mirror of the canonical responder named in https://emem.dev/terms; card served (88 KB) but not saved separately.
+x-evidence:
+  fetched: '2026-09-19'
+  url: https://emem.dev/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json
+  also_probed:
+  - {url: 'https://emem.dev/.well-known/agent.json', http_status: 200, note: identical body}
+  - {url: 'https://www.emem.dev/.well-known/agent-card.json', http_status: 200}
+  - {url: 'https://vortx.ai/.well-known/agent-card.json', http_status: 200}
+  - {url: 'https://vortx.ai/.well-known/agent.json', http_status: 404}
+  - {url: 'https://vortx-ai-emem.hf.space/.well-known/agent-card.json', http_status: 200}
+  - {url: 'https://api.emem.dev/.well-known/agent-card.json', http_status: 0, note: host does not resolve}
+  - {url: 'https://mcp.emem.dev/.well-known/agent-card.json', http_status: 0, note: host does not resolve}

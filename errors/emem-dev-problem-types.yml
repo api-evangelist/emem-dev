@@ -1,0 +1,267 @@
+generated: '2026-09-19'
+method: searched
+format: emem.error.v1
+source: https://emem.dev/v1/errors (machine catalog, 27 stable codes with MCP JSON-RPC error numbers), https://emem.dev/docs/errors.html,
+  and the 4xx/5xx responses declared in openapi/emem-dev-openapi.json (196 operations); envelope observed live on
+  404 and 400 responses 2026-09-19.
+envelope:
+  media_type: application/json
+  shape: '{ "code": string, "message": string, "schema": "emem.error.v1", "path"?: string, "did_you_mean"?: [string],
+    "details"?: object, "agent_hint"?: string, "next_steps"?: [string], "examples"?: [object] }'
+  rfc9457: false
+  note: 'Not application/problem+json. Refusals are written for an agent: 20 of 20 refusals in the provider''s own
+    sweep named the missing field and the accepted alternatives (/v1/limits measured.surface_behaviour).'
+  mcp: Over MCP the same codes surface as JSON-RPC error objects with the negative mcp_error_code below.
+response_codes_declared:
+  '200': 194
+  '202': 1
+  '304': 1
+  '400': 27
+  '401': 1
+  '404': 17
+  '405': 1
+  '409': 6
+  '501': 1
+  '502': 4
+  '503': 1
+  default: 94
+problems:
+- status: 400
+  title: Bad Request
+  meaning: Request refused with the cap or missing field named; e.g. POST /v1/locate with no location returns status
+    needs_location with examples[] and next_steps[].
+  declared_on_operations: 27
+  operations_sample:
+  - emem_a2a_tasks_sync
+  - emem_a2a_tasks_async
+  - emem_attest_cbor
+  - emem_band_composite
+  - emem_band_cube
+  - emem_band_raster
+  - emem_building_footprints
+  - emem_cells_in_bbox
+  - emem_compare_same_doy
+  - emem_cube_resolve
+  - emem_derive
+  - emem_derive_list
+- status: 401
+  title: Unauthorized
+  meaning: A write arrived without a valid attester block; details.how_to_sign carries the exact digest to sign,
+    byte rules and a worked example.
+  declared_on_operations: 1
+  operations_sample:
+  - emem_derive
+- status: 404
+  title: Not Found
+  meaning: Route or object not found; the envelope carries did_you_mean[] and points at GET /openapi.json. A deleted
+    memory path answers 404 with a tombstone so a caller can tell deleted from never-written.
+  declared_on_operations: 17
+  operations_sample:
+  - emem_well_known_did
+  - emem_a2a_task_get
+  - emem_a2a_task_cancel
+  - emem_artifact_bytes
+  - emem_not_an_llm_provider_chat
+  - emem_cube_resolve
+  - emem_derive
+  - emem_echo_verify
+  - emem_entity_get
+  - emem_fetch
+  - emem_memory_bundle_resolve
+  - emem_memory_token_resolve
+- status: 405
+  title: Method Not Allowed
+  meaning: Method not allowed on this route.
+  declared_on_operations: 1
+  operations_sample:
+  - mcp_discover
+- status: 409
+  title: Conflict
+  meaning: Conflict; e.g. a descriptor token whose parts disagree with the signed fact is refused with 409.
+  declared_on_operations: 6
+  operations_sample:
+  - emem_cube_resolve
+  - emem_derive
+  - emem_memory_token_resolve
+  - emem_raster_resolve
+  - emem_raster_bundle
+  - emem_raster_bundle_resolve
+- status: 413
+  title: Payload Too Large
+  meaning: POST body over the 16 MiB cap (SECURITY.md hardening table).
+  declared_on_operations: 0
+  note: Not declared in the OpenAPI; documented in SECURITY.md hardening table / /v1/limits.
+- status: 429
+  title: Too Many Requests
+  meaning: Rate limited; code=rate_limited with details.retry_after_s and a Retry-After header.
+  declared_on_operations: 0
+  note: Not declared in the OpenAPI responses; documented in .well-known/mcp.json security_posture.write_rate_limit
+    and SECURITY.md.
+- status: 501
+  title: Not Implemented
+  meaning: Not implemented on this responder.
+  declared_on_operations: 1
+  operations_sample:
+  - emem_log_entries
+- status: 502
+  title: Bad Gateway
+  meaning: An upstream open-data fetch failed (source_fetch_failed / source_format_mismatch).
+  declared_on_operations: 4
+  operations_sample:
+  - emem_band_composite
+  - emem_band_cube
+  - emem_band_raster
+  - emem_building_footprints
+- status: 503
+  title: Service Unavailable
+  meaning: Responder or GPU sidecar unavailable.
+  declared_on_operations: 1
+  operations_sample:
+  - emem_derive_list
+- status: 504
+  title: Gateway Timeout
+  meaning: Request exceeded the 40 s edge timeout (EMEM_TIMEOUT_SECS); region fan-outs now return 200 with converged:false
+    instead.
+  declared_on_operations: 0
+  note: Not declared in the OpenAPI; documented in SECURITY.md hardening table / /v1/limits.
+codes:
+- code: invalid_cell
+  mcp_error_code: -27
+  meaning: cell64 string did not parse
+  recover: Re-encode (lat,lng) via POST /v1/locate, or check the bigram boundaries (must be exactly four base-65,536
+    bigrams joined by '.').
+- code: invalid_resolution
+  mcp_error_code: -1
+  meaning: resolution bits out of range
+  recover: Use the cell64 returned by /v1/locate; that's always at the active resolution. See /v1/grid_info.
+- code: tslot_mismatch
+  mcp_error_code: -2
+  meaning: tslot in request doesn't match band's expected tempo
+  recover: Check /v1/bands for the band's `tempo` field and round your tslot to that grid.
+- code: band_not_in_registry
+  mcp_error_code: -3
+  meaning: band key isn't in the active manifest
+  recover: 'GET /v1/bands for the canonical list. Common typos: missing schema namespace (need `copdem30m.elevation_mean`,
+    not `elevation_mean`).'
+- code: function_not_in_registry
+  mcp_error_code: -4
+  meaning: derivation fn_key not registered
+  recover: Functions ship via /v1/functions. To use a private function, register it in your registry_cid before
+    attesting.
+- code: source_scheme_unknown
+  mcp_error_code: -5
+  meaning: source.scheme not in /v1/sources
+  recover: GET /v1/sources for the active connector list. Self-hosters can add via the source manifest.
+- code: cid_not_found
+  mcp_error_code: -6
+  meaning: fact CID exists but no matching object on disk
+  recover: The fact may have been pruned, or the CID is from a different responder. Verify `responder_pubkey_b32`
+    matches between the receipt and /health.
+- code: no_geocoder_match
+  mcp_error_code: -7
+  meaning: every geocoder tier answered and none of them knows this place (embedded gazetteer, cache, Photon, Nominatim).
+    The transports worked; the name is genuinely not there. HTTP 404.
+  recover: 'Refine the query: add country / region disambiguation (''Springfield, IL, USA''), use the official local-language
+    spelling, or pass `lat`+`lng` directly. POST /v1/locate surfaces `via`, so you can see which tier answered.
+    Retrying an unchanged query will not help.'
+- code: invalid_argument
+  mcp_error_code: -25
+  meaning: syntactically valid but semantically invalid request field (e.g. unparseable timestamp, out-of-range
+    numeric, malformed enum)
+  recover: 'Re-read /openapi.json for the field''s accepted shape. Common causes: ISO 8601 missing ''Z'' for UTC;
+    max_cells > 1024; band key with wrong namespace prefix.'
+- code: registry_cid_unknown
+  mcp_error_code: -8
+  meaning: the bound registry_cid isn't recognised
+  recover: Receipts pin manifest CIDs at issue time; if the responder rotated manifests, check /v1/manifests for
+    the current `registry_cid`.
+- code: schema_cid_unknown
+  mcp_error_code: -9
+  meaning: fact's schema_cid isn't loaded
+  recover: GET /v1/manifests for the current `schema_cid`. Re-attest with the active schema, or pin the older manifest
+    if the responder still has it.
+- code: privacy_refused
+  mcp_error_code: -10
+  meaning: band's privacy_class blocks this query at the requested resolution
+  recover: Drop the resolution (snap to a coarser cell) or request via an authorised attester. Check /v1/bands for
+    `privacy_class`.
+- code: level_too_low
+  mcp_error_code: -11
+  meaning: operation requires a higher protocol level (L1/L2)
+  recover: L0/L1 are anonymous; L2 (write/challenge) requires an attester key. Generate ed25519, post to /v1/attest_cbor.
+- code: attester_revoked
+  mcp_error_code: -12
+  meaning: the attester pubkey is in the revocation set
+  recover: Check /v1/contributors for `revoked` flag. Submit a fresh keypair if revoked legitimately, or contest
+    via /v1/challenge.
+- code: unauthorized
+  mcp_error_code: -13
+  meaning: missing or invalid attester signature on a write
+  recover: Re-sign with the same keypair that issued the registered attester pubkey; signature must be over blake3(batch_root
+    || registry_cid || schema_cid).
+- code: claim_undecidable
+  mcp_error_code: -14
+  meaning: verify input doesn't yield true/false (e.g. NaN, type mismatch)
+  recover: Inspect the fact via /v1/recall, the value may be missing, the wrong type, or NaN. Tighten your claim
+    or pre-filter before /v1/verify.
+- code: bad_signature
+  mcp_error_code: -15
+  meaning: ed25519 signature failed to verify
+  recover: Re-sign with the correct preimage. /v1/verify_receipt's response includes `preimage_blake3_hex` so you
+    can debug locally.
+- code: unaddressable_subject
+  mcp_error_code: -16
+  meaning: a fact's subject belongs to no address space, so the write is refused before the log
+  recover: 'The subject must be a cell64 (four dot-separated alphabet symbols) or an emem:entity: identity. Your
+    signature is NOT the problem: this used to surface as bad_signature and sent debuggers at their keys. The log
+    is append-only, so a fact at a subject nothing resolves could never be recalled or dereferenced, which is why
+    it is refused rather than stored.'
+- code: bad_merkle_proof
+  mcp_error_code: -17
+  meaning: Merkle inclusion proof is malformed or doesn't reach the batch_root
+  recover: Re-build the proof from the canonical-sorted leaf list; verify `leaf_index` is correct.
+- code: canonical_encoding_divergence
+  mcp_error_code: -18
+  meaning: CBOR you sent isn't deterministic per RFC 8949 §4.2.1
+  recover: Use a CBOR library with `canonical=true`; serde-derived structs are usually fine, freeform maps must
+    have sorted keys.
+- code: source_fetch_failed
+  mcp_error_code: -19
+  meaning: 'an upstream fetch failed at the transport layer (non-2xx, DNS, timeout, malformed JSON) before any verdict
+    could be reached. On a PLACE lookup this is the geocoder being down rather than the place being absent, which
+    is `no_geocoder_match`: 502 against 404, retry against refine.'
+  recover: Retry with backoff; check /v1/sources to confirm the URL template still resolves. May indicate provider-side
+    outage. For a place lookup, pass `lat`+`lng` directly to skip the geocoder.
+- code: source_format_mismatch
+  mcp_error_code: -20
+  meaning: fetched bytes don't match the declared scheme (e.g. GeoTIFF magic missing)
+  recover: Re-fetch with explicit content-type. Could indicate provider migrated to a new format; consult their
+    docs.
+- code: compute_timeout
+  mcp_error_code: -21
+  meaning: derivation function exceeded EMEM_TIMEOUT_SECS
+  recover: Submit smaller inputs, or run the computation client-side and attest the derivative directly.
+- code: compute_quota_exceeded
+  mcp_error_code: -22
+  meaning: function call hit per-attester quota
+  recover: Throttle and retry inside the window published at /v1/limits; the quota is per key and per day.
+- code: rate_limited
+  mcp_error_code: -23
+  meaning: per-IP rate limit hit
+  recover: Backoff per the `Retry-After` header, which this responder sets to 1. The bucket refills continuously
+    (600 req/min sustained, 120 burst), so a short sleep is the right response, not a minute. Operators tune via
+    EMEM_RATE_LIMIT_RPS / EMEM_RATE_LIMIT_BURST.
+- code: cache_error
+  mcp_error_code: -24
+  meaning: responder's hot cache (sled) had an internal error
+  recover: Retry; if persistent, the responder's storage may need recovery, operators see the cause in the journald
+    log.
+- code: internal
+  mcp_error_code: -26
+  meaning: responder-side bug
+  recover: Capture the response and the request that produced it; file at https://github.com/Vortx-AI/emem/issues.
+next:
+- GET /v1/manifests , current registry/schema/bands/sources CIDs
+- GET /v1/bands     , band catalogue with tempo + privacy_class
+- POST /v1/verify_receipt, debug a bad_signature with `preimage_blake3_hex`
+schema: emem.errors.v1

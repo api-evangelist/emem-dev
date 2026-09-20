@@ -1,0 +1,586 @@
+generated: '2026-09-19'
+method: derived
+source: Derived from openapi/emem-dev-openapi.json components.schemas (41 schemas, $ref links walked) and the token
+  grammar published in https://emem.dev/llms.txt ("Token shapes") and https://emem.dev/docs/model.html.
+docs: https://emem.dev/docs/model.html
+notation: relationships use has_one / has_many / belongs_to with the field or token segment that carries the reference.
+core_model: Cell x Band x Tslot -> Fact. A fact is signed by the responder over the blake3 of its canonical CBOR;
+  nine typed token shapes share the emem:<shape>:<...> syntax and do not share one guarantee.
+entities:
+- name: Cell
+  id_form: cell64 (b1024 base-65 string, 21-bit lat + 22-bit lng, ~9.55 m at the equator)
+  token: emem:cell:<cell64>
+  description: One place on Earth. An address, not a digest; nothing dereferences until a fact hangs on it.
+- name: Band
+  id_form: band key drawn from the bands manifest (bands_cid)
+  description: A typed measurement channel (NDVI, elevation, air temperature, ...) with tempo and privacy_class;
+    90 distinct bands live in the corpus at fetch time.
+- name: Tslot
+  id_form: time slot aligned to the band's tempo
+  description: The time coordinate of a fact.
+- name: Fact
+  id_form: fact_cid = blake3 over canonical CBOR (32 bytes, 52 base32 chars); cid_v1 alias
+  token: emem:fact:<cell64>:<fact_cid>
+  description: One signed observation keyed by Cell x Band x Tslot. The only token shape where "same bytes for everyone"
+    holds.
+- name: Receipt
+  id_form: x-emem-receipt-cid header; preimage_version v0/v1/v2
+  description: ed25519 signature by the responder over a domain-separated blake3 preimage binding the request, the
+    fact_cids read and (v2) the inclusion proof.
+- name: Attester
+  id_form: ed25519 pubkey (52-char base32); pubkey8 namespace prefix
+  description: A writer. Owns /memories/by_attester/<pubkey8>/ and signs every write; tiered T0-T5 by the enlistment
+    ladder.
+- name: MemoryFile
+  id_form: /memories/<path> plus file_cid
+  description: A prose note written by an agent (kinds episodic | semantic | procedural | resource | vault). World-readable
+    unless vault; deletion unpublishes, content remains.
+- name: Entity
+  id_form: entity_cid (16-byte truncated hash of identity anchor)
+  token: emem:entity:<entity_cid>
+  description: One canonical object identity (a farm plot, a bridge) that agents co-refer to; may carry external
+    ids (GERS / OSM / Wikidata) via entity_link.
+- name: Bundle
+  id_form: bundle_cid (16-byte hash over the citation list)
+  token: emem:bundle:<bundle_cid>
+  description: A signed set of 2..256 facts.
+- name: Raster
+  token: emem:raster:<aoi_cid>:<band>:<tslot>:<derivation_cid>
+  description: A native-resolution Sentinel-2 field over a bbox as a signed derivation.
+- name: Cube
+  token: emem:cube:<aoi_cid>:<band>:<tslot_lo>..<tslot_hi>:<derivation_cid>
+  description: 'A field over time: a manifest over raster slices.'
+- name: RasterSet
+  token: emem:rasterset:<bundle_cid>:<derivation_cid>
+  description: 2..64 field tokens bound into one citeable manifest.
+- name: Derivation
+  id_form: derivation registered under an attester key
+  description: A value an agent computed from facts, registered via /v1/derive and recomputable by the responder.
+- name: Trace
+  token: emem:trace:...
+  description: One verified OS execution trace (emem.os_trace.v1) showing how a device ran when it produced a reading.
+- name: Attestation
+  token: emem:attestation:...
+  description: 'A device''s platform evidence: which hardware root of trust (IETF RATS) vouched for its key.'
+- name: LogEntry
+  id_form: leaf index in the RFC 6962-style transparency log (tree_size, root_b32)
+  description: Append-only record of writes and verdicts; inclusion and consistency proofs at /v1/log/*.
+- name: A2ATask
+  id_form: task id from POST /v1/a2a/tasks
+  description: An asynchronous A2A task with poll (GET /v1/a2a/tasks/{id}) and cancel (POST /v1/a2a/tasks/{id}/cancel).
+relationships:
+- from: Fact
+  to: Cell
+  kind: belongs_to
+  via: cell64
+- from: Fact
+  to: Band
+  kind: belongs_to
+  via: band
+- from: Fact
+  to: Tslot
+  kind: belongs_to
+  via: tslot
+- from: Receipt
+  to: Fact
+  kind: has_many
+  via: receipt.fact_cids
+- from: Receipt
+  to: LogEntry
+  kind: has_one
+  via: inclusion proof (preimage v2)
+- from: Bundle
+  to: Fact
+  kind: has_many
+  via: fact_cids
+- from: Entity
+  to: Cell
+  kind: belongs_to
+  via: cell64 (identity anchor)
+- from: MemoryFile
+  to: Attester
+  kind: belongs_to
+  via: attester pubkey / by_attester namespace
+- from: Derivation
+  to: Attester
+  kind: belongs_to
+  via: attester key
+- from: Derivation
+  to: Fact
+  kind: has_many
+  via: cited fact_cids
+- from: Cube
+  to: Raster
+  kind: has_many
+  via: tslot slices
+- from: RasterSet
+  to: Raster
+  kind: has_many
+  via: tokens (2..64)
+- from: Trace
+  to: Attestation
+  kind: belongs_to
+  via: device platform key
+- from: Attestation
+  to: Fact
+  kind: has_many
+  via: device-borne facts admitted with the trace
+- from: LogEntry
+  to: MemoryFile
+  kind: has_one
+  via: append-only write record
+- from: A2ATask
+  to: Fact
+  kind: has_many
+  via: task artifacts (same signed objects message/send returns)
+openapi_schemas:
+- name: AskReq
+  kind: openapi-schema
+  properties: 8
+  required:
+  - q
+  description: null
+- name: AskResp
+  kind: openapi-schema
+  properties: 11
+  required:
+  - topic_routing
+  - facts
+  - receipt
+  description: Response of /v1/ask. Single envelope combining (a) place resolution, (b) topic-router classification,
+    (c) recalled facts under those topics, (d) applicable algo
+- name: BackfillReq
+  kind: openapi-schema
+  properties: 6
+  required:
+  - cell
+  - band
+  description: null
+- name: BoringPostReq
+  kind: openapi-schema
+  properties: 11
+  required: []
+  description: Body for POST /v1/{ndvi,air,lst,soil,water,forest,weather,at,elevation}. Supply `place` (free-text
+    geocoded via /v1/locate) OR `lat`+`lng` (or `lon`); /v1/at an
+- name: Cell64
+  kind: openapi-schema
+  properties: 0
+  required: []
+  description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded
+    resolution is ~9.55 m at the equator. Each bigram is either '
+- name: Cell64Pattern
+  kind: openapi-schema
+  properties: 0
+  required: []
+  description: Reference copy of the cell64 regex for tooling that wants the pattern without round-tripping through
+    Cell64. Same string as Cell64.pattern.
+- name: Claim
+  kind: openapi-schema
+  properties: 6
+  required:
+  - band
+  - op
+  - value
+  description: null
+- name: CompareBandsReq
+  kind: openapi-schema
+  properties: 6
+  required:
+  - cell
+  - a
+  - b
+  description: 'Body for POST /v1/compare_bands. Compares two bands at the same cell. Returns scalar delta + percent
+    change for scalar pairs, cosine + L2 for vector pairs. The '
+- name: CompareBandsResp
+  kind: openapi-schema
+  properties: 6
+  required:
+  - delta
+  - receipt
+  description: 'Response of /v1/compare_bands. Numeric delta + percent change for scalar pairs; cosine + L2 for
+    vector pairs. `predicate_verdict` is present when a consistency '
+- name: CompareReq
+  kind: openapi-schema
+  properties: 3
+  required:
+  - a
+  - b
+  description: null
+- name: CompareResp
+  kind: openapi-schema
+  properties: 3
+  required:
+  - score
+  - receipt
+  description: Response of /v1/compare. Single cosine similarity score (vector bands) or scalar delta (scalar bands)
+    plus per-band breakdown.
+- name: Cost
+  kind: openapi-schema
+  properties: 5
+  required: []
+  description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness
+    is the age of the stalest source cited (null when undatable, nev'
+- name: DiffReq
+  kind: openapi-schema
+  properties: 4
+  required:
+  - cell
+  - band
+  - tslot_a
+  - tslot_b
+  description: null
+- name: ElevationPostReq
+  kind: openapi-schema
+  properties: 9
+  required: []
+  description: 'Body for POST /v1/elevation. Supply `place` OR `lat`+`lng` (`lon` accepted as an alias) OR `cell64`.
+    Deliberately NOT BoringPostReq: this route reads a narrower'
+- name: Error
+  kind: openapi-schema
+  properties: 3
+  required:
+  - code
+  - message
+  description: null
+- name: ErrorEnvelope
+  kind: openapi-schema
+  properties: 5
+  required:
+  - code
+  - message
+  - schema
+  description: 'The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable
+    `code` (not the human `message`). See GET /v1/errors for the '
+- name: EudrDdsReq
+  kind: openapi-schema
+  properties: 6
+  required:
+  - plots
+  description: POST /v1/eudr_dds body, produces a signed Annex II-shaped Due Diligence Statement per Regulation
+    (EU) 2023/1115. Pair every plot with its operator-supplied geom
+- name: Fact
+  kind: openapi-schema
+  properties: 10
+  required:
+  - kind
+  - cell
+  - band
+  - tslot
+  - value
+  - fact_cid
+  - receipt
+  description: A primary attestation at (cell, band, tslot). `value` is the band's typed reading (number, array
+    of numbers for vector bands, or a categorical class id). `unit`
+- name: FactCid
+  kind: openapi-schema
+  properties: 0
+  required: []
+  description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL
+    32-byte digest with no truncation. Always 52 characters, alpha'
+- name: FetchReq
+  kind: openapi-schema
+  properties: 4
+  required: []
+  description: Body for POST /v1/fetch. Either `cid` (resolve a fact by content-address) OR `cell`+`band` (materialize
+    / read-through that band at that cell, optionally pinned
+- name: FieldBoundariesResp
+  kind: openapi-schema
+  properties: 4
+  required:
+  - fields
+  - license
+  - attribution
+  description: Response of /v1/field_boundaries. `fields` is an array of per-field GeoJSON-Polygon features from
+    Fields of The World (CC-BY-4.0). `attribution` and `license` m
+- name: FindSimilarReq
+  kind: openapi-schema
+  properties: 4
+  required:
+  - key
+  description: null
+- name: FindSimilarResp
+  kind: openapi-schema
+  properties: 4
+  required:
+  - neighbors
+  - receipt
+  description: Response of /v1/find_similar. `neighbors` is the top-k list ordered by similarity (descending). `mode`
+    echoes the scoring choice (`cosine` / `hamming` / `hammin
+- name: HeatSolveReq
+  kind: openapi-schema
+  properties: 3
+  required:
+  - cell
+  description: null
+- name: HuntReq
+  kind: openapi-schema
+  properties: 3
+  required:
+  - event
+  description: Hunter-mode body. Either `region` (geocoded) or `polygon_bbox` (explicit). The responder samples
+    up to 32 cells (8 for slow primary bands such as MODIS LST), re
+- name: JepaPredictReq
+  kind: openapi-schema
+  properties: 4
+  required:
+  - cell
+  description: null
+- name: LocateReq
+  kind: openapi-schema
+  properties: 6
+  required: []
+  description: 'Body for POST /v1/locate. Provide `place` (free-text, geocoded via embedded gazetteer → cache →
+    Photon → Nominatim) OR `lat`+`lng`. Mutually exclusive: at least'
+- name: LocateResp
+  kind: openapi-schema
+  properties: 12
+  required:
+  - cell64
+  - via
+  description: Response of /v1/locate. `cell64` is the canonical handle for the resolved place; `polygon_bbox` is
+    present when the geocoder found an extent (city / park / lake
+- name: MaterializeNote
+  kind: openapi-schema
+  properties: 10
+  required: []
+  description: One entry in the response's `materialize_notes[]`, recording what the lazy materializer did during
+    this call. status:"materialized" means a signed fact was mint
+- name: MemoryTokenResolveResp
+  kind: openapi-schema
+  properties: 19
+  required:
+  - token
+  - canonical_token
+  - cell
+  - fact_cid
+  - value
+  - unit
+  - band
+  - kind
+  description: Response of /v1/memory_token/resolve (and of the emem_memory_token_resolve MCP tool, which shares
+    the implementation, so the two cannot disagree). The dereferen
+- name: PubKey
+  kind: openapi-schema
+  properties: 0
+  required: []
+  description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+- name: QueryRegionReq
+  kind: openapi-schema
+  properties: 5
+  required: []
+  description: Either `geometry` (cell64 or 'cells:c1,c2,...') or `bbox` ([west, south, east, north] WGS-84 degrees)
+    is required. When `bbox` is given the responder samples it
+- name: RecallReq
+  kind: openapi-schema
+  properties: 8
+  required:
+  - cell
+  description: null
+- name: Receipt
+  kind: openapi-schema
+  properties: 15
+  required:
+  - request_id
+  - served_at
+  - primitive
+  - cells
+  - fact_cids
+  - schema_cid
+  - responder
+  - responder_key_epoch
+  description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the
+    receipt fields alone, no callback to the issuer. **A receipt is '
+- name: SignedResponse
+  kind: openapi-schema
+  properties: 5
+  required:
+  - facts
+  - receipt
+  description: Standard recall envelope. `facts` is the array of signed facts touched by this call (subset of `bands_already_attested_at_cell`
+    after auto-materialization). `re
+- name: TrajectoryReq
+  kind: openapi-schema
+  properties: 3
+  required:
+  - cell
+  - band
+  - window
+  description: null
+- name: Tslot
+  kind: openapi-schema
+  properties: 0
+  required: []
+  description: Band-tempo-relative integer offset from the emem epoch. Each band declares its tempo (`fast` / `medium`
+    / `slow` / `static`); tslot is the rounded count of that
+- name: VerifyReceiptResp
+  kind: openapi-schema
+  properties: 4
+  required:
+  - valid
+  - signer
+  description: Response of /v1/verify_receipt. `valid` is the ed25519 signature check; `signer` is the responder
+    pubkey the signature was checked against; `preimage_b64` is th
+- name: VerifyReq
+  kind: openapi-schema
+  properties: 3
+  required:
+  - claim
+  - cell
+  description: null
+- name: VerifyResp
+  kind: openapi-schema
+  properties: 4
+  required:
+  - holds
+  - receipt
+  description: Response of /v1/verify. `holds` is the boolean verdict; `evidence_cids` are the fact CIDs the verifier
+    walked to reach the verdict.
+- name: WaveSolveReq
+  kind: openapi-schema
+  properties: 4
+  required:
+  - coastal_cell
+  - offshore_height_m
+  - period_s
+  description: null
+openapi_schema_references:
+- from: AskResp
+  to: Fact
+  kind: has_many
+  via: facts.facts
+- from: AskResp
+  to: MaterializeNote
+  kind: has_many
+  via: materialize_notes
+- from: AskResp
+  to: LocateResp
+  kind: has_one
+  via: place_resolved
+- from: AskResp
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: CompareBandsResp
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: CompareResp
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: Fact
+  to: Cell64
+  kind: has_one
+  via: cell
+- from: Fact
+  to: FactCid
+  kind: has_one
+  via: fact_cid
+- from: Fact
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: Fact
+  to: Tslot
+  kind: has_one
+  via: tslot
+- from: FieldBoundariesResp
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: FindSimilarResp
+  to: Cell64
+  kind: has_one
+  via: neighbors.cell
+- from: FindSimilarResp
+  to: FactCid
+  kind: has_one
+  via: neighbors.fact_cid
+- from: FindSimilarResp
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: LocateResp
+  to: Cell64
+  kind: has_one
+  via: cell64
+- from: LocateResp
+  to: Cell64
+  kind: has_many
+  via: neighborhood_cells
+- from: LocateResp
+  to: Cell64
+  kind: has_many
+  via: polygon_sample_cells
+- from: MaterializeNote
+  to: Cell64
+  kind: has_one
+  via: cell
+- from: MemoryTokenResolveResp
+  to: Cell64
+  kind: has_one
+  via: cell
+- from: MemoryTokenResolveResp
+  to: Fact
+  kind: has_one
+  via: fact
+- from: MemoryTokenResolveResp
+  to: FactCid
+  kind: has_one
+  via: fact_cid
+- from: MemoryTokenResolveResp
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: MemoryTokenResolveResp
+  to: PubKey
+  kind: has_one
+  via: signer_b32
+- from: Receipt
+  to: Cell64
+  kind: has_many
+  via: cells
+- from: Receipt
+  to: Cost
+  kind: has_one
+  via: cost
+- from: Receipt
+  to: FactCid
+  kind: has_many
+  via: fact_cids
+- from: Receipt
+  to: PubKey
+  kind: has_one
+  via: responder
+- from: Receipt
+  to: PubKey
+  kind: has_one
+  via: responder_pubkey_b32
+- from: SignedResponse
+  to: Fact
+  kind: has_many
+  via: facts
+- from: SignedResponse
+  to: MaterializeNote
+  kind: has_many
+  via: materialize_notes
+- from: SignedResponse
+  to: Receipt
+  kind: has_one
+  via: receipt
+- from: VerifyReceiptResp
+  to: PubKey
+  kind: has_one
+  via: signer
+- from: VerifyReq
+  to: Claim
+  kind: has_one
+  via: claim
+- from: VerifyResp
+  to: FactCid
+  kind: has_many
+  via: evidence_cids
+- from: VerifyResp
+  to: Receipt
+  kind: has_one
+  via: receipt

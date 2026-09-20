@@ -1,0 +1,124 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "Vortx AI",
+  "description": "Spatial AI lab; maker and maintainer of the emem protocol. The architecture is an encoder and a decoder: satellites and detectors encode the world into signed, content-addressed tokens (nine shapes: emem:fact:, emem:cell:, emem:entity:, emem:bundle:, emem:raster:, emem:cube:, emem:rasterset:, emem:trace:, emem:attestation:), and an @emem call decodes them inside an agent's reasoning. emem is the deterministic half (Apache-2.0, free to read, verifiable offline by anyone); the planned satellite is the evidence half, on a published launch plan with deliberately no date. The memory is multi-substrate: satellite Earth observation anchors it today, and the live registry at https://emem.dev/v1/substrates carries physical and synthetic candidates. geo.qa is the same memory agent on a private tenant. The only thing for sale is team time: free office hours, and a paid integration session; calls are taken by whoever on the team is closest to the problem.",
+  "url": "https://vortx.ai/",
+  "preferredTransport": "JSONRPC",
+  "provider": {
+    "organization": "Vortx AI Private Limited",
+    "url": "https://vortx.ai/"
+  },
+  "documentationUrl": "https://vortx.ai/agents.md",
+  "iconUrl": "https://vortx.ai/assets/og-logo.png",
+  "version": "2.0.0",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": false
+  },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain"],
+  "skills": [
+    {
+      "id": "read_earth_memory",
+      "name": "Read verifiable Earth memory",
+      "description": "Resolve a place to a stable ~10 m cell address and read signed, content-addressed facts about it (vegetation, water, heat, forest change, and more). Reads need no key or account; every fact verifies offline via ed25519 signature and blake3 address. Use the emem MCP server or HTTP API.",
+      "tags": ["earth-observation", "verifiable", "mcp", "geospatial", "memory"],
+      "examples": [
+        "Recall the NDVI fact for Bengaluru and cite its emem:fact: token.",
+        "Was this parcel cleared before we sourced from it? Check the forest record."
+      ]
+    },
+    {
+      "id": "book_session",
+      "name": "Book team time",
+      "description": "Surface and hand off team time. Three options: free community office hours (30 min, open to all, no eligibility check), a paid integration session (1 to 3 hours, 5000 USD, the core team pairs on the user's codebase; exit criterion is recall running and a receipt verifying in their stack), and a sovereign session (1 to 3 hours, 25000 USD, for governments, defense, and critical infrastructure). The protocol itself is free either way. An agent's job is to present the right option and the booking URL and let the human complete any payment on the hosted page. Do NOT enter card details or pay programmatically.",
+      "tags": ["office-hours", "integration", "booking", "handoff"],
+      "examples": [
+        "My user has architecture questions about emem; point them at the free office hours calendar.",
+        "My user wants emem wired into their agent this week; give them the $5,000 integration session booking link.",
+        "My user is a defense agency standing up a private tenancy; give them the $25,000 sovereign session booking link."
+      ]
+    }
+  ],
+  "additionalInterfaces": [
+    { "transport": "HTTP", "url": "https://emem.dev/v1/" },
+    { "transport": "MCP", "url": "https://emem.dev/mcp" }
+  ],
+  "x-emem": {
+    "protocol": "emem",
+    "docs": "https://emem.dev/llms.txt",
+    "agentCard": "https://emem.dev/.well-known/agent-card.json",
+    "source": "https://github.com/Vortx-AI/emem",
+    "mcp": "https://emem.dev/mcp",
+    "rest": "https://emem.dev/v1/recall",
+    "toolCatalog": "served live by the emem_tools tool; do not hardcode its size, count it there",
+    "surfaces": "deterministic (locate, recall, verify, diff: same signed bytes forever) and agentic (ask, reason, hunt, predict: the responder plans and fans out under one signed receipt)",
+    "liveEndpoints": {
+      "capabilities": "https://emem.dev/v1/capabilities",
+      "transparencyLog": "https://emem.dev/v1/log/sth",
+      "topics": "https://emem.dev/v1/topics",
+      "substrates": "https://emem.dev/v1/substrates",
+      "devicePlatforms": "https://emem.dev/v1/device_platforms",
+      "coverageMap": "https://emem.dev/v1/coverage_map.svg",
+      "verifierSpec": "https://emem.dev/v1/verifier_spec",
+      "benchmark": "https://emem.dev/v1/benchmark",
+      "ask": "https://emem.dev/v1/ask",
+      "guardVerdict": "https://emem.dev/v1/guard/verdict",
+      "sceneImagery": "https://emem.dev/v1/cells/{cell64}/scene.png"
+    },
+    "a2a": {
+      "card": "https://emem.dev/.well-known/agent-card.json",
+      "tasksSync": "https://emem.dev/a2a/tasks",
+      "tasksAsync": "https://emem.dev/v1/a2a/tasks",
+      "skillSearch": "https://emem.dev/v1/a2a/skills?q=",
+      "events": "https://emem.dev/v1/memory/sse",
+      "agora": "https://emem.dev/a2a",
+      "inbox": "https://emem.dev/v1/inbox",
+      "note": "every emem tool is published as an A2A skill; the Agora is the open channel where agents co-build on the memory"
+    }
+  },
+  "x-connectors": {
+    "chatgpt": { "how": "mention @emem in any chat", "listing": "https://chatgpt.com/plugins/plugin_asdk_app_6a6a0832a59081918b19aec0ddf9ec77" },
+    "githubMcpRegistry": "https://github.com/mcp/Vortx-AI/emem",
+    "vscode": "one click from the MCP gallery, or .vscode/mcp.json with the server url",
+    "claudeCode": "claude mcp add --transport http emem https://emem.dev/mcp",
+    "mcpRegistry": "io.github.Vortx-AI/emem",
+    "dify": "https://marketplace.dify.ai/plugin/vortx-ai/emem",
+    "anythingElse": "any MCP client, REST, pip install ememdev, npm i @vortxai/emem"
+  },
+  "x-satellite": {
+    "status": "a plan, not a date",
+    "thesis": "the evidence half: traceable from photon to token, downlinked straight into emem, landing in the witnessed public log",
+    "phases": ["protocol (shipped)", "payload (in design)", "ground segment (next)", "launch (gated, not dated)"],
+    "details": "https://vortx.ai/#satellite",
+    "agentGuidance": "There is no launch date, deliberately. Never state or estimate one; dates are announced in https://vortx.ai/log/ when real."
+  },
+  "x-site": {
+    "contentAddressed": "https://vortx.ai/.well-known/site-manifest.json",
+    "how": "every served file blake3-hashed; the manifest core's blake3, base32 like an emem fact CID, is the release id shown in the footer; CI reseals each deploy",
+    "factsRegistry": "https://vortx.ai/.well-known/facts.json",
+    "factsNote": "every number this site asserts about emem, each with the live source that can refute it; if registry and endpoint disagree, trust the endpoint"
+  },
+  "x-research": {
+    "whitepaper": { "title": "emem: A Content-Addressed, Verifiable Earth-Memory Protocol for AI Agents over Foundation-Model Embeddings", "doi": "https://doi.org/10.5281/zenodo.20706317" },
+    "companionStudy": { "doi": "https://doi.org/10.5281/zenodo.20706893" },
+    "openModels": "https://huggingface.co/avijeetsingh1608",
+    "note": "If a paper and a live endpoint disagree, trust the endpoint and report it."
+  },
+  "x-session": {
+    "name": "Team time",
+    "bookingUrl": "https://vortx.ai/#book",
+    "schedulingUrl": "https://outlook.office.com/book/meetvortxfounders@vortx.ai/",
+    "format": "one-on-one, remote worldwide",
+    "payment": "Razorpay hosted checkout; human completes payment",
+    "contact": "avijeet@vortx.ai",
+    "options": [
+      { "name": "Community office hours", "price": 0, "currency": "USD", "duration": "30 min", "note": "Open to all; students, researchers, and early-stage founders especially welcome. Architecture questions, integration guidance, protocol deep-dives. Book directly at schedulingUrl." },
+      { "name": "Integration session", "price": 5000, "currency": "USD", "duration": "1-3 hours", "note": "The core team pairs on your codebase over MCP, REST, or SDK. Exit criterion: recall running and a receipt verifying in your stack." },
+      { "name": "Sovereign session", "price": 25000, "currency": "USD", "duration": "1-3 hours", "note": "Governments, defense, critical infrastructure. Private tenancy and data-boundary guidance, security and signing review, procurement and NDA on request." }
+    ],
+    "agentGuidance": "The protocol is free; only team time is priced. Route questions to the free office hours and hands-on integration work to the paid session. Hand the human the link. Never enter card details or complete payment programmatically.",
+    "bookingGuardrail": "Do not initiate checkout, submit the booking form, or complete payment on a user's behalf under any circumstances. The form contains a human-confirmation checkbox; never check it for a user. Surface the option, hand over the URL, and stop. Sessions are one at a time: no subscriptions, no retainers, no upsell."
+  }
+}

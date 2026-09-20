@@ -1,0 +1,98 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: Vortx AI Private Limited
+providerId: emem-dev
+created: '2026-09-19'
+modified: '2026-09-19'
+generated: '2026-09-19'
+method: searched
+source: https://github.com/Vortx-AI/emem/blob/main/SECURITY.md
+sources:
+- https://github.com/Vortx-AI/emem/blob/main/SECURITY.md (hardening table, updated 2026-08-24)
+- https://emem.dev/.well-known/mcp.json (security_posture.write_rate_limit)
+- https://emem.dev/v1/limits (enforced payload caps + measured ceilings)
+- https://emem.dev/terms (section 3, last updated 2026-07-31)
+- https://emem.dev/v1/errors (rate_limited, compute_quota_exceeded codes)
+tags:
+- Rate Limiting
+- Agent Memory
+description: >-
+  Published limits for the hosted responder. Reads are throttled per IP; writes per attester
+  key. The two provider documents disagree on the per-IP read figure: SECURITY.md (2026-08-24)
+  states 600 req/min sustained with a 120 burst, the older terms of service (2026-07-31) state
+  60 req/min with a 120 burst; both are recorded with their source. Exhaustion returns HTTP 429
+  with a Retry-After header and the emem.error.v1 body code rate_limited (details.retry_after_s;
+  MCP JSON-RPC error -23). No RateLimit-* / X-RateLimit-* headers were observed on successful
+  responses (probed GET /v1/grid_info and POST /v1/locate, 2026-09-19); the runtime signal is
+  the 429 itself plus Retry-After.
+limit_count: 5
+headers:
+  retryAfter: Retry-After
+  requestId: traceparent (W3C Trace Context, accepted and echoed)
+  receipt: x-emem-receipt-cid
+  rateLimit: none observed (no RateLimit-* / X-RateLimit-* on 200 responses)
+responseCodes:
+  throttled: 429
+  payloadTooLarge: 413
+  timeout: 504
+errorBody:
+  code: rate_limited
+  mcp_error_code: -23
+  details: retry_after_s
+limits:
+- name: Read requests per IP (SECURITY.md)
+  scope: ip
+  metric: requests_per_minute
+  limit: 600
+  burst: 120
+  timeFrame: minute
+  source: https://github.com/Vortx-AI/emem/blob/main/SECURITY.md
+  note: 'Retry-After: 1 on exhaustion; tunable on self-hosted nodes via EMEM_RATE_LIMIT_RPS / EMEM_RATE_LIMIT_BURST.'
+- name: Read requests per IP (terms of service)
+  scope: ip
+  metric: requests_per_minute
+  limit: 60
+  burst: 120
+  timeFrame: minute
+  source: https://emem.dev/terms
+  note: Older figure from terms section 3; SECURITY.md is dated later and is the hardening table the provider maintains.
+- name: Write requests per attester key
+  scope: attester
+  metric: requests_per_minute
+  limit: 240
+  burst: 60
+  timeFrame: minute
+  source: https://emem.dev/.well-known/mcp.json
+  note: 'HTTP 429 code=rate_limited with details.retry_after_s; the write is only slowed, never lost. Described by the provider as a backstop, not a quota.'
+- name: Compute quota per attester (derivation functions)
+  scope: attester
+  metric: function_calls
+  limit: null
+  timeFrame: unspecified
+  source: https://emem.dev/v1/errors
+  note: Exhaustion surfaces as compute_quota_exceeded (MCP -22); the figure is not published.
+- name: Backfill fetches per IP
+  scope: ip
+  metric: requests
+  limit: null
+  timeFrame: unspecified
+  source: https://emem.dev/terms
+  note: emem_backfill is rate-limited per IP to protect upstream open-data providers; the figure is not published. Bulk historical processing is directed to a self-hosted responder.
+payload_caps:
+- {endpoint: /v1/recall_many, field: cells, max: 256, on_exceed: '400 naming the cap and the count sent'}
+- {endpoint: '/v1/cells_in_bbox, /v1/recall_polygon', field: max_cells, default: 64, max: 1024, on_exceed: 'truncates loudly: _emem_truncation + next_cursor'}
+- {endpoint: /v1/band_raster, field: bbox window, max: 512 px per side, on_exceed: refused with the cap named}
+- {endpoint: /v1/raster_bundle, field: tokens, min: 2, max: 64, on_exceed: '400'}
+- {endpoint: /v1/memory_bundle, field: facts, max: 256, on_exceed: '400'}
+- {endpoint: 'MCP tools/call (any tool)', field: result size, max: 24 KB wire budget, on_exceed: result slimmed with _emem_truncation naming omitted fields; REST is uncapped}
+- {endpoint: 'POST (any)', field: body, max: 16 MiB, on_exceed: '413'}
+timeouts:
+  http_edge: 40 s (504; EMEM_TIMEOUT_SECS)
+  mcp_tools_call: 32 s
+  note: A region fan-out with no budget_ms defaults to 75% of the transport ceiling and returns 200 with converged:false and a retry hint instead of a bare 504.
+policies:
+- name: Slow, never drop
+  description: The write limiter delays rather than discards; the provider states normal agent use never reaches it.
+- name: Self-host for bulk
+  description: Production and bulk-historical workloads are directed to a self-hosted responder; the hosted instance carries no SLA.

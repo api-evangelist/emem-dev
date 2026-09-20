@@ -1,0 +1,75 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: Vortx AI Private Limited
+providerId: emem-dev
+created: '2026-09-19'
+modified: '2026-09-19'
+generated: '2026-09-19'
+method: searched
+source: https://emem.dev/.well-known/emem-readonly.json
+sources:
+- https://emem.dev/.well-known/emem-readonly.json
+- https://emem.dev/terms
+- https://emem.dev/llms.txt
+- https://emem.dev/v1/enlist
+tags:
+- Agent Memory
+- Geospatial
+- Open Source
+plan_count: 1
+description: >-
+  emem publishes no paid tiers and no pricing page (/pricing returns 404). The hosted responder
+  is free and open: the machine-readable readiness document states cost "free", auth "none",
+  approval "none"; the terms of service describe L0/L1 reads as free, anonymous and rate-limited,
+  offered as-is without an uptime SLA. Writes are tiered by an enlistment ladder that explicitly
+  involves no account, no bearer token and no payment. The protocol is Apache-2.0 and self-hosting
+  (ghcr.io/vortx-ai/emem) is unrestricted.
+plans:
+- id: emem-hosted-public
+  name: Public hosted responder (emem.dev)
+  type: free
+  price: 0
+  currency: USD
+  billing_period: none
+  description: >-
+    Anonymous reads of every L0/L1 endpoint and MCP tool with no key, account or approval.
+    Writes (memory notes, attestations, entities) require a caller-generated ed25519 key and
+    climb the T0-T5 enlistment ladder by passing third-party-verifiable checks, never by payment.
+  entries:
+  - label: Read requests
+    name: reads
+    type: metered
+    metric: request
+    limit: -1
+    timeFrame: usage
+    unit: 1
+    price: 0
+    userMultiplied: false
+  - label: Write requests (per attester key)
+    name: writes
+    type: metered
+    metric: request
+    limit: 240
+    timeFrame: minute
+    unit: 1
+    price: 0
+    userMultiplied: false
+  elements:
+  - name: 110 MCP tools and 196 REST operations
+  - name: ed25519-signed receipts verifiable offline
+  - name: No uptime SLA (terms section 3)
+  limits: rate-limits/emem-dev-rate-limits.yml
+- id: emem-self-hosted
+  name: Self-hosted node
+  type: free
+  price: 0
+  currency: USD
+  billing_period: none
+  description: >-
+    Run the Apache-2.0 responder yourself (docker run ghcr.io/vortx-ai/emem:latest or cargo build
+    --release --bin emem-server); recommended by the provider for production workloads and bulk
+    historical processing. Not counted as a hosted plan tier.
+  elements:
+  - name: Apache-2.0 licence
+  - name: OCI image ghcr.io/vortx-ai/emem

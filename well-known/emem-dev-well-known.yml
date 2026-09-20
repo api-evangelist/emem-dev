@@ -1,0 +1,218 @@
+generated: '2026-09-19'
+method: probed
+description: 'Results of probing the /.well-known/ discovery surface on every host the record knows: the product
+  domain emem.dev (also the OpenAPI servers[] host, the API baseURL host and the MCP server host), its www alias,
+  the company domain vortx.ai, the hf.space mirror named in the terms of service, and the conventional api./docs./mcp./app.
+  subdomains (which do not resolve). The oauth-protected-resource document names no authorization_servers, so no
+  third auth host exists to probe. Status is the HTTP code observed on 2026-09-19; 0 means no DNS answer. Only real,
+  correctly-typed documents were saved.'
+hosts:
+- host: https://emem.dev
+  role: product domain, API base, OpenAPI servers[], MCP server (https://emem.dev/mcp)
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    type: text/plain
+    file: emem-dev-security.txt
+  - path: /.well-known/openid-configuration
+    status: 200
+    type: application/json
+    file: emem-dev-openid-configuration.json
+    note: Byte-identical to /.well-known/oauth-authorization-server; carries no jwks_uri, userinfo_endpoint or subject_types_supported,
+      so it is RFC 8414 metadata served at the OIDC path rather than a full OIDC Discovery document. The AS is optional
+      and open (emem_note).
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    type: application/json
+    file: emem-dev-oauth-authorization-server.json
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    type: application/json
+    file: emem-dev-oauth-protected-resource.json
+    note: 'RFC 9728 metadata for resource https://emem.dev/mcp: auth_required false, authorization_servers [], scopes_supported
+      [].'
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    type: application/json
+    file: emem-dev-ai-plugin.json
+    note: Deprecated by the provider (announced 0.0.6, doc support dropped after 0.0.8) but still served.
+  - path: /.well-known/agent-card.json
+    status: 200
+    type: application/json
+    file: ../a2a/emem-dev-agent-card.json
+  - path: /.well-known/agent.json
+    status: 200
+    type: application/json
+    file: ../a2a/emem-dev-agent-card.json
+    note: Legacy path; byte-identical to agent-card.json.
+  - path: /.well-known/mcp.json
+    status: 200
+    type: application/json
+    file: emem-dev-mcp.json
+  - path: /.well-known/did.json
+    status: 200
+    type: application/did+json
+    file: emem-dev-did.json
+  - path: /.well-known/jwks.json
+    status: 200
+    type: application/json
+    file: emem-dev-jwks.json
+  - path: /.well-known/emem.json
+    status: 200
+    type: application/json
+    file: emem-dev-emem.json
+  - path: /.well-known/emem-agents.json
+    status: 200
+    type: application/json
+    file: emem-dev-emem-agents.json
+  - path: /.well-known/emem-guard.json
+    status: 200
+    type: application/json
+    file: emem-dev-emem-guard.json
+  - path: /.well-known/emem-readonly.json
+    status: 200
+    type: application/json
+    file: emem-dev-emem-readonly.json
+  - path: /.well-known/emem-manifest.json
+    status: 200
+    type: application/json
+    file: emem-dev-emem-manifest.json
+  - path: /.well-known/agent-intent.json
+    status: 200
+    type: application/json
+    file: emem-dev-agent-intent.json
+- host: https://www.emem.dev
+  role: www alias (serves the same documents)
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: emem-dev-security.txt
+    note: Same body as emem.dev
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: emem-dev-openid-configuration.json
+    note: Same body as emem.dev
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: emem-dev-oauth-authorization-server.json
+    note: Same body as emem.dev
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: emem-dev-oauth-protected-resource.json
+    note: Same body as emem.dev
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    file: emem-dev-ai-plugin.json
+    note: Same body as emem.dev
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/emem-dev-agent-card.json
+    note: Same body as emem.dev
+  - path: /.well-known/agent.json
+    status: 200
+    file: ../a2a/emem-dev-agent-card.json
+    note: Same body as emem.dev
+  - path: /.well-known/mcp.json
+    status: 200
+    file: emem-dev-mcp.json
+    note: Same body as emem.dev
+- host: https://vortx.ai
+  role: company domain (parent brand)
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    type: application/json
+    file: ../a2a/emem-dev-vortx-ai-agent-card.json
+  - path: /.well-known/agent.json
+    status: 404
+    note: HTML 404 page
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/site-manifest.json
+    status: 200
+    type: application/json
+    file: emem-dev-vortx-ai-site-manifest.json
+    note: Provider-specific content-addressed site manifest (vortx.site_manifest.v1).
+  - path: /.well-known/emem-agents.json
+    status: 404
+- host: https://vortx-ai-emem.hf.space
+  role: mirror of the hosted responder named in https://emem.dev/terms
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    type: application/json
+    note: Mirror of the canonical card (same operator, hf.space mirror named in TERMS); not saved separately.
+  - path: /.well-known/security.txt
+    status: 200
+    type: text/plain
+    file: emem-dev-hf-space-security.txt
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    type: application/json
+    file: emem-dev-hf-space-oauth-protected-resource.json
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    type: application/json
+    file: emem-dev-hf-space-ai-plugin.json
+- host: https://api.emem.dev
+  role: conventional API subdomain (not in use)
+  documents: &id001
+  - path: /.well-known/security.txt
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/openid-configuration
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/oauth-authorization-server
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/oauth-protected-resource
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/api-catalog
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/ai-plugin.json
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/agent-card.json
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/agent.json
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+  - path: /.well-known/mcp.json
+    status: 0
+    note: Host does not resolve (no DNS answer, curl exit 6)
+- host: https://docs.emem.dev
+  role: conventional docs subdomain (not in use)
+  documents: *id001
+- host: https://mcp.emem.dev
+  role: conventional MCP subdomain (not in use; the MCP server is on emem.dev)
+  documents: *id001
+- host: https://app.emem.dev
+  role: conventional console subdomain (not in use)
+  documents: *id001
+note: 'A real WellKnown/SecurityTxt hit: emem.dev serves security.txt (RFC 9116, Expires 2027-09-20), RFC 8414 authorization-server
+  metadata, RFC 9728 protected-resource metadata, an A2A agent card at both the canonical and legacy paths, a well-known
+  MCP descriptor, a did:web document and JWKS. /.well-known/api-catalog (RFC 9727) is absent on every host.'

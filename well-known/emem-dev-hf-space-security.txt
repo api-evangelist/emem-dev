@@ -1,0 +1,9 @@
+Contact: https://github.com/Vortx-AI/emem/security/advisories/new
+Expires: 2027-09-20T01:55:01Z
+Preferred-Languages: en
+Policy: https://github.com/Vortx-AI/emem/blob/main/SECURITY.md
+Acknowledgments: https://github.com/Vortx-AI/emem/security/advisories
+
+# Scope: emem.dev REST + MCP surface, signed-receipt verification path,
+# attestation log, and the source repo. Third-party open-data providers
+# (Sentinel/MODIS/STAC/etc.) are out of scope — report those upstream.
