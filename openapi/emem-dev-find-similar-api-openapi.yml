@@ -1,0 +1,290 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Find Similar API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Find Similar across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Find Similar
+paths:
+  /v1/find_similar:
+    post:
+      description: 'k-NN over the corpus by cell embedding or inline vector. Returns `neighbours` ordered nearest-first, each with `cell64`, `score` and the `band` scanned, plus a signed receipt over the vectors read. Scoring is `mode`: cosine is exact fp32; hamming is a sign-bit popcount that scans far more cells for the same budget; hamming_then_rerank does both. `k` is 1..1000, default 10. It ranks what the corpus already holds; only when the KEY''s own vector is missing does it materialise that one band for the key, signed and reported in `materialize_notes`, then retry. Neighbours are never materialised, so an empty result means nobody has attested a vector nearby, not that nowhere resembles the key.
+
+
+        When to use: Call when the user asks ''find places like X'', ''where else looks like this'', or hands an embedding to find neighbours. `key` is either a cell64 or `inline:[x,y,...]`. Default band is `geotessera` (128-D Tessera foundation embedding); pass `band: "geotessera.multi_year"` for the 1152-D 9-vintage (2017–2025) fusion.'
+      operationId: emem_find_similar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindSimilarReq'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindSimilarResp'
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: k-NN over band vectors
+      tags:
+      - Find Similar
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    Cost:
+      description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
+      properties:
+        credits:
+          description: Conceptual cost units; 0 for L0/L1 read endpoints on the hosted responder.
+          type: number
+        latency_p50_ms:
+          type: number
+        latency_p99_ms:
+          type: number
+        source_freshness_s:
+          description: 'Age of the STALEST source this response cites: now minus the earliest captured_at across the returned facts'' sources. null when nothing in the response carries a dated source, which is the honest answer for a primitive that reads no observation. Was a hardcoded 0 until 2026-08-05, so a 2021 DEM tile reported as 0 s old; a null here means unknown, never fresh.'
+          type:
+          - integer
+          - 'null'
+        was_cached:
+          type: boolean
+      type: object
+    FactCid:
+      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
+      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
+      maxLength: 52
+      minLength: 52
+      pattern: ^[a-z2-7]{52}$
+      type: string
+    Receipt:
+      description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
+      properties:
+        cells:
+          items:
+            $ref: '#/components/schemas/Cell64'
+          type: array
+        cost:
+          $ref: '#/components/schemas/Cost'
+        fact_cids:
+          items:
+            $ref: '#/components/schemas/FactCid'
+          type: array
+        intent:
+          description: Optional natural-language hint. Populated when served via /v1/intent.
+          type: string
+        merkle_proof:
+          description: 'Inclusion proof for `fact_cids[0]` when persisted. Omitted from JSON when the cited facts pre-date the proof tree; under preimage_version 2 that absence is itself signed (an explicit ABSENT marker), so it is a statement rather than a gap. Do not strip this field: v2 binds it into the signature and removing it makes an authentic receipt report `signature_valid: false`.'
+          properties:
+            leaf_index:
+              description: u32 leaf index in the canonical-sorted batch.
+              type: integer
+            path:
+              description: Sibling hashes leaf→root.
+              items:
+                description: 32-byte sibling hash as a byte array
+                items:
+                  type: integer
+                type: array
+              type: array
+            root:
+              description: The expected 32-byte batch root as a byte array.
+              items:
+                type: integer
+              type: array
+            version:
+              description: 'Merkle hashing rule: 0 (omitted) = legacy unprefixed, 1 = RFC 6962-style prefixed.'
+              type: integer
+          required:
+          - leaf_index
+          - path
+          - root
+          type: object
+        primitive:
+          description: 'Namespaced wire form: `emem.recall`, `emem.find_similar`, `emem.verify`, …'
+          type: string
+        registry_cid:
+          description: CID of the function registry version in force.
+          type: string
+        request_id:
+          description: ULID generated per request.
+          type: string
+        responder:
+          $ref: '#/components/schemas/PubKey'
+        responder_key_epoch:
+          description: u32 rotation counter; bumps when the operator rotates keys.
+          type: integer
+        responder_pubkey_b32:
+          $ref: '#/components/schemas/PubKey'
+        schema_cid:
+          description: CID of the active CDDL profile.
+          type: string
+        served_at:
+          description: ISO 8601 UTC, second precision.
+          type: string
+        signature:
+          description: Ed25519 signature, 64 bytes base32-nopad-lowercase encoded.
+          type: string
+        source_versions:
+          additionalProperties:
+            type: string
+          description: Per-source freshness map.
+          type: object
+      required:
+      - request_id
+      - served_at
+      - primitive
+      - cells
+      - fact_cids
+      - schema_cid
+      - responder
+      - responder_key_epoch
+      - responder_pubkey_b32
+      - signature
+      - registry_cid
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string
+    FindSimilarReq:
+      properties:
+        band:
+          default: geotessera
+          description: Vector band to scan. Default geotessera (128-D, int8+scale upstream → decoded f32 over the wire). Pass `geotessera.bin128` (or any band's `.bin128` sibling, plus `mode:"hamming"`) for the binary fast path.
+          type: string
+        k:
+          default: 10
+          maximum: 1000
+          minimum: 1
+          type: integer
+        key:
+          description: cell64 (look up that cell's vector) or 'inline:[x,y,...]' literal vector
+          type: string
+        mode:
+          default: cosine
+          description: Scoring mode. `cosine` (default) is fp32 over the full vector. `hamming` is sign-bit popcount over the binary sibling band, ~1000× faster scan, ~65% recall@10 alone. `hamming_then_rerank` triages with Hamming then re-ranks the top 4·k by cosine, matches cosine precision at ~16× less work.
+          enum:
+          - cosine
+          - hamming
+          - hamming_then_rerank
+          type: string
+      required:
+      - key
+      type: object
+    FindSimilarResp:
+      description: Response of /v1/find_similar. `neighbors` is the top-k list ordered by similarity (descending). `mode` echoes the scoring choice (`cosine` / `hamming` / `hamming_then_rerank`).
+      properties:
+        band:
+          type: string
+        mode:
+          enum:
+          - cosine
+          - hamming
+          - hamming_then_rerank
+          type: string
+        neighbors:
+          items:
+            description: 'Stable neighbor schema: cell/score/lat/lng/place_label_cached are always present. lat/lng are explicit null for inline-vector queries or undecodable cells (no honest centroid), never absent, never fabricated.'
+            properties:
+              cell:
+                $ref: '#/components/schemas/Cell64'
+              fact_cid:
+                $ref: '#/components/schemas/FactCid'
+              label:
+                description: Reader-friendly place label, if the cell is named in the gazetteer.
+                type: string
+              lat:
+                description: Centroid latitude decoded from `cell`; null when the cell has no honest centroid (inline vector / undecodable).
+                type:
+                - number
+                - 'null'
+              lng:
+                description: Centroid longitude decoded from `cell`; null when unknown (see `lat`).
+                type:
+                - number
+                - 'null'
+              place_label_cached:
+                description: Best-effort gazetteer label (~25 km gate); null when the cell isn't near a known anchor.
+                type:
+                - string
+                - 'null'
+              score:
+                description: Cosine similarity in [-1, 1] for `cosine` / `hamming_then_rerank`; normalised Hamming agreement in [0, 1] for `hamming`.
+                type: number
+            required:
+            - cell
+            - score
+            - lat
+            - lng
+            type: object
+          type: array
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+      required:
+      - neighbors
+      - receipt
+      type: object
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

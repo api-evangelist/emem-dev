@@ -1,0 +1,51 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Materializers API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Materializers across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Materializers
+paths:
+  /v1/materializers:
+    get:
+      description: 'Auto-fetch registry: which bands the responder will materialize on a recall miss, the upstream provider, license, value shape, and history bounds.
+
+
+        When to use: Call once at session start (alongside `emem_bands` and `emem_coverage_matrix`) to learn which bands answer for ANY cell on Earth without seeding. Each entry declares `upstream_scheme`, `upstream_endpoint`, `derivation_fn_key`, `value_kind` (primary | absence | primary_or_absence), `coverage` (where the upstream has data), `unit`, `tempo`, `confidence`, and `history_available_from` / `history_available_to` (when the upstream supports historical fetch via `emem_backfill`). Use this when the user asks ''do you have flood data here'', ''what providers feed this'', or you need license attribution. The response also carries an `agent_hint` block explaining the trust model (responder signs, not upstream) and the absence-fact contract.'
+      operationId: emem_materializers
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: per-band auto-fetch registry (which bands the responder will materialize on a…
+      tags:
+      - Materializers
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

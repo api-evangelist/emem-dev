@@ -1,0 +1,101 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Terrain API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Terrain across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Terrain
+paths:
+  /v1/terrain:
+    post:
+      description: 'Compute three standard DEM terrain indices from one 3×3 Copernicus-DEM (copdem30m.elevation_mean) neighbourhood at a cell: Horn (1981) slope in degrees, Riley (1999) Terrain Ruggedness Index (TRI = sqrt(Σ(Z_centre−Z_i)²)), and Weiss (2001) Topographic Position Index (TPI = Z_centre − mean(neighbours); positive = ridge, negative = valley). The 8 neighbour cell64s are derived by perturbing the cell''s lat/lng one cell pitch per axis; the east-west ground spacing is cos(lat)-corrected. Each result is signed; the receipt cites the elevation fact_cids read from the shared memory.
+
+
+        When to use: Call when the user asks how steep / how rugged / ridge-or-valley a place is, for siting (solar, construction, agriculture), erosion/landslide screening, or habitat-heterogeneity inputs. Slope and TRI need the full 8-neighbour ring; TPI degrades to ≥1 neighbour. Copernicus DEM is bathymetry-free, so ocean cells return a signed `inconclusive` rather than a fabricated slope, read each index''s own `verdict`. For raw elevation use `emem_elevation`.'
+      operationId: emem_terrain
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                cell:
+                  description: cell64 or place name
+                  type: string
+                step_cells:
+                  default: 3
+                  description: Stencil step in cell64 pitches (~9.55 m each). Default 3 ≈ 28.7 m matches the Cop-DEM native resolution; 1 reads flat inside one source pixel.
+                  minimum: 1
+                  type: integer
+              required:
+              - cell
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'DEM terrain triad over a 3×3 copdem30m.elevation_mean neighbourhood: Horn-1981…'
+      tags:
+      - Terrain
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

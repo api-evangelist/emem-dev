@@ -1,0 +1,345 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Cite API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged cite across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: cite
+paths:
+  /v1/derive:
+    post:
+      description: 'Register a value YOU computed from facts this responder holds, and get back a citeable `emem:fact:` token whose lineage terminates in emem-signed measurements. The registered fact names its parents by CID, so a stranger walks the DAG down to signed sensor data instead of trusting your summary. Requires an ed25519 `attester` block. What the responder signs is narrow and it says so on the response: that YOU submitted this derivation, over these parents, at this time, and it stored it. NOT that the value is true. Memory algebra: the `derive` operation (https://emem.dev/docs/model.html).
+
+
+        When to use: Call when you have computed something from emem facts (a delta, a zone classification, a per-plot verdict, a model output) and need to hand another agent a token for it rather than a claim. Every input token must already resolve here; recall or backfill the parents first. Provenance class is model_output or human_curated; the sensor classes are refused, since this responder did not compute your value. Note the tenancy rule: a derived fact carries no canonical (cell, band, tslot) key, so it will NOT appear in anyone''s emem_recall at that cell. That is the point: you are getting citation and resolution, not an injection into the shared commons. Read it back with emem_memory_token_resolve, or list your own with emem_derive_list. Idempotent per (your key, derivation body): re-registering an identical derivation returns the same token rather than a twin, so retrying a timed-out call is safe.'
+      operationId: emem_derive
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                attester:
+                  properties:
+                    pubkey_b32:
+                      type: string
+                    sig_b32:
+                      type: string
+                  required:
+                  - pubkey_b32
+                  - sig_b32
+                  type: object
+                band:
+                  type: string
+                budget_ms:
+                  description: optional soft budget in ms; if registration does not finish in time it returns 202 {status:pending} and completes in the background, and since derive is idempotent a re-POST of the identical body returns the token once it persists (a build under load never exits half-registered). Omit for synchronous 200-or-error.
+                  type: integer
+                cell:
+                  type: string
+                code_cid:
+                  description: optional blake3 of the code that computed the value; recorded, never fetched or run
+                  type: string
+                confidence:
+                  maximum: 1
+                  minimum: 0
+                  type: number
+                fn_key:
+                  description: your recipe key, e.g. same_doy_ndvi_delta@1; not an entry in this responder's registry and never executed by it
+                  type: string
+                inputs:
+                  description: parent tokens emem:fact:<cell64>:<fact_cid>; order is significant and signed
+                  items:
+                    type: string
+                  minItems: 1
+                  type: array
+                op:
+                  description: delta | mean | trend | rate | anomaly
+                  type: string
+                provenance_class:
+                  enum:
+                  - model_output
+                  - human_curated
+                  - estimator
+                  type: string
+                tslot_window:
+                  description: inclusive [start, end]
+                  items:
+                    type: integer
+                  maxItems: 2
+                  minItems: 2
+                  type: array
+                value:
+                  description: any JSON value
+              required:
+              - fn_key
+              - inputs
+              - cell
+              - band
+              - tslot_window
+              - op
+              - value
+              - confidence
+              - provenance_class
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '202':
+          description: registration in progress; re-POST the identical body to collect the token
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '401':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: the caller's ed25519 attester binding is missing or does not verify; `details.how_to_sign` carries the exact digest to sign for this request
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: not found
+        '409':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: conflict (the request contradicts a signed fact, e.g. a token whose cell does not match the fact's own cell)
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: Register a derivation YOU computed over facts this responder holds, and get…
+      tags:
+      - cite
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/echo_verify:
+    post:
+      description: 'Grade a value you are about to emit against the signed fact your citation points at. Returns `matches` and, when it does not, the `drift` between what you were about to say and what emem holds. This is the step that turns a transcription error into a caught event instead of a silent wrong number: a model that resolves a fact correctly can still retype `0.2411` for `0.241103`, and nothing else in the loop notices. Memory algebra: the `verify` operation (https://emem.dev/docs/model.html).
+
+
+        When to use: Call immediately before publishing, logging, or handing on any value you took from an emem fact, and treat a false `matches` as a gate rather than a warning. Pair it with `value_verbatim` from resolve: quote that exact decimal string rather than reformatting the number, then echo-verify what you actually emitted. For a due-diligence or compliance record this is what lets you assert `every cited value was echo-verified` with a signed check per citation instead of a promise. Accepts a bare cid too, so a damaged citation still grades rather than failing closed.'
+      operationId: emem_echo_verify
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                claimed_value:
+                  description: the value you emitted, string or number; a string is compared verbatim first
+                  type:
+                  - string
+                  - number
+                token:
+                  description: emem:fact:<cell64>:<fact_cid>, or a bare fact_cid (degraded)
+                  type: string
+              required:
+              - token
+              - claimed_value
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'Close the last mile: check the value YOU emitted against the signed fact your…'
+      tags:
+      - cite
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/memory_bundle:
+    post:
+      description: 'Compose N (cell, band, tslot?) triples into ONE signed envelope. Each triple runs through the standard auto-materialize recall path; the resulting fact_cids are bundled into a content-addressed envelope and the responder signs over the full receipt. The composed `bundle_token` is `emem:bundle:`, a single rebindable string that cites the whole set. Memory algebra: the `merge` operation (https://emem.dev/docs/model.html).
+
+
+        When to use: Call when the agent wants to cite multiple (place, band, vintage) facts as one handle. The bundle stays verifiable offline via /v1/verify_receipt (the receipt covers all cited fact_cids and cells). Use this instead of N separate `emem_memory_token` composers when the citation is conceptually one thing (e.g. "the EUDR-relevant baseline for these 8 plots at 2020-12-31"). Caps at 256 triples per call, and the response reports `members` and `resolved` so a bundle that only partly resolved is visible without walking every citation.'
+      operationId: emem_memory_bundle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                purpose:
+                  description: Optional free-text purpose folded into the bundle_cid, so the same triples bundled for a different purpose get a distinct id.
+                  type: string
+                triples:
+                  description: At most 256 per call; 257 is a typed 400. Chunk larger sets into ceil(N/256) bundles.
+                  items:
+                    properties:
+                      band:
+                        type: string
+                      cell:
+                        type: string
+                      tslot:
+                        type: integer
+                    type: object
+                  maxItems: 256
+                  type: array
+              required:
+              - triples
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: Compose N (cell, band, tslot?) triples into ONE signed envelope.
+      tags:
+      - cite
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/memory_bundle/{token}:
+    get:
+      description: 'Parse a `emem:bundle:` token and return the signed bundle envelope: every citation (cell, band, resolved_tslot, fact_cid, memory_token), the receipt, the responder pubkey, and the deduped flat cells[] / fact_cids[] arrays. Returns 404 with a typed code when the responder does not hold the bundle.
+
+
+        When to use: Call when an agent receives an `emem:bundle:` token from another agent (or earlier turn) and wants the underlying signed citation set. The response is byte-identical to what `emem_memory_bundle` returned at the original responder.'
+      operationId: emem_memory_bundle_resolve
+      parameters:
+      - description: 'emem:bundle:<bundle_cid> (legacy memb: or bare cid accepted)'
+        in: path
+        name: token
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: not found
+      summary: 'Dereference a bundle token back to its signed envelope: the citations, the…'
+      tags:
+      - cite
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

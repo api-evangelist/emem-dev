@@ -1,0 +1,108 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev State API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged State across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: State
+paths:
+  /v1/state:
+    post:
+      description: 'Get one dense numeric fingerprint that summarises everything known about a place, ready to feed into similarity search, a classifier, or clustering. Two views: `encoder` returns a single AI-model embedding (128-D Tessera, 1024-D Clay, 1024-D Prithvi); `cube` returns the full 1792-D vector concatenated across every band, with a per-band coverage manifest.
+
+
+        When to use: Call this when the user wants a machine-usable summary of a place rather than individual band readings, e.g. ''give me a feature vector for this location'', ''how do I represent this place for ML'', or before running similarity / linear-probe / clustering downstream. Also use it to get one rebindable handle (`memory_token` / `state_cid`) that cites the whole place. Default `view=encoder` is the cheap single-recall path; pass `view=cube` for the full attested view (its `coverage[]` lets you tell signed-zero from not-yet-materialised). Then hand the vector to `emem_find_similar` (k-NN), `emem_compare` (two-place cosine), or `emem_verify_receipt` (audit the signature).'
+      operationId: emem_state
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                cell:
+                  description: cell64 or place name
+                  type: string
+                encoder:
+                  default: geotessera
+                  description: foundation embedding band (geotessera, clay_v1, prithvi_eo2, galileo)
+                  type: string
+                tslot:
+                  type: integer
+                view:
+                  default: encoder
+                  enum:
+                  - encoder
+                  - cube
+                  type: string
+              required:
+              - cell
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: dense state vector for a cell or place.
+      tags:
+      - State
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

@@ -1,0 +1,127 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Hunter API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged hunter across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: hunter
+paths:
+  /v1/hunt:
+    post:
+      description: 'Event-discovery sweep: pick an event keyword (algal_bloom, deforestation, flood_extent, wildfire, urban_heat_island, methane_plume, landslide, drought, soil_salinity, crop_stress, water_turbidity, oil_slick) plus a region (free-text name or polygon_bbox). The responder geocodes the region, fans out across up to 32 sampled cells, recalls each event''s primary scalar input band, and returns the top 8 hotspots ranked by that scalar, each an attested entry in the shared memory carrying its cell64, lat/lng, the recalled value, a fact_cid for citation, and a scene.png URL. Bypass for free-text input is `emem_ask` (the classifier in /v1/ask routes "find X in Y" questions to the same hunter path).
+
+
+        When to use: Call when the user asks an open-world discovery question ("find oil spills in the Persian Gulf", "where is deforestation happening in the Amazon", "show me algal blooms in Lake Erie", "hunt wildfires across California"). Surface 3–8 hotspots with their scene.png as image attachments and quote at least one fact_cid. For `oil_slick` the responder honestly reports `not_yet_implemented` and points at SAR-darkening + turbidity proxies, don''t fabricate detections. The ranking uses the algorithm''s primary scalar input only; for the full per-cell algorithm score, fetch the formula at /v1/algorithms/ and apply it client-side over the same recalled bands.'
+      operationId: emem_hunt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HuntReq'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'hunter-mode event discovery: pick an event keyword (algal_bloom, deforestation…'
+      tags:
+      - hunter
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    HuntReq:
+      description: Hunter-mode body. Either `region` (geocoded) or `polygon_bbox` (explicit). The responder samples up to 32 cells (8 for slow primary bands such as MODIS LST), recalls the algorithm's primary scalar input plus any configured gate band, optionally re-ranks the top-K via Tessera embedding coherence, and returns the top 8 hotspots.
+      properties:
+        event:
+          description: 'Event keyword. Maps to one registered detection algorithm. Aliases accepted (case-insensitive): bloom/algae_bloom/chlorophyll_bloom → algal_bloom; forest_loss/tree_loss → deforestation; flood/inundation/flooded_fields → flood_extent; fire/bushfire/burn_severity → wildfire; uhi/heat_island/heat → urban_heat_island; methane/ghg_leak/super_emitter → methane_plume; mudslide/debris_flow/slope_failure → landslide; dry_spell/rainfall_deficit → drought; salinity → soil_salinity; crop_damage/stressed_crops → crop_stress; turbidity/sediment_plume → water_turbidity; oil_spill → oil_slick. The classifier in /v1/ask accepts the same set on free-text input.'
+          enum:
+          - algal_bloom
+          - deforestation
+          - flood_extent
+          - wildfire
+          - urban_heat_island
+          - methane_plume
+          - landslide
+          - drought
+          - soil_salinity
+          - crop_stress
+          - water_turbidity
+          - oil_slick
+          type: string
+        polygon_bbox:
+          description: Explicit polygon bbox; alternative to `region`.
+          properties:
+            max_lat:
+              type: number
+            max_lng:
+              type: number
+            min_lat:
+              type: number
+            min_lng:
+              type: number
+          type: object
+        region:
+          description: Free-text region. Resolved through the same geocoder as /v1/locate. REQUIRED unless `polygon_bbox` is provided.
+          type: string
+      required:
+      - event
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

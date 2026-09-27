@@ -1,0 +1,52 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Coverage Map.svg API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Coverage Map.svg across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Coverage Map.svg
+paths:
+  /v1/coverage_map.svg:
+    get:
+      description: 'Live SVG render of the responder''s corpus density, returned as a proper MCP EmbeddedResource content block (image/svg+xml), multimodal MCP agents can render it natively.
+
+
+        When to use: Call when the user asks ''where do you have data?'', ''show me the coverage'', or wants a visual brief of the responder''s corpus footprint. Returns a 1440×720 Plate-Carrée SVG (1° × 1° bins, log-scale colour, continent envelopes for orientation) plus a structuredContent summary (cell_count, total_facts, responder pubkey, REST URL). Multi-content-block reply: an EmbeddedResource (mimeType `image/svg+xml`, with text + uri) followed by a one-line text summary so text-only clients still see the cell / fact counts. For the bare image bytes, fetch `/v1/coverage_map.svg` over plain REST.'
+      operationId: emem_coverage_map
+      responses:
+        '200':
+          content:
+            image/svg+xml:
+              schema:
+                format: binary
+                type: string
+          description: ok (image/svg+xml)
+      summary: SVG render of corpus density
+      tags:
+      - Coverage Map.svg
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

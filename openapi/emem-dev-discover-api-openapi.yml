@@ -1,0 +1,267 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Discover API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Discover across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Discover
+paths:
+  /v1/discover:
+    get:
+      operationId: emem_discover
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: machine-readable index of all surfaces
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/agents:
+    get:
+      description: 'Every attester that has written to this responder, with note and correspondence counts. The roster is discovered here, never configured: an agent can join, write, and be visible without anyone editing a list.'
+      operationId: emem_agents
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: Every attester that has written to this responder, with note and correspondence…
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/algorithm_cids:
+    get:
+      description: List-form alias for the algorithm hashes under /v1/manifests, for agents asked to pin the algorithm registry. Mirrors the relevant fields so a caller does not bounce through two URLs.
+      operationId: emem_algorithm_cids
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: List-form alias for the algorithm hashes under /v1/manifests, for agents asked…
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/chat/completions:
+    post:
+      description: 'Not an LLM provider. Returns a typed 404 pointing at /v1/ask, the nearest emem equivalent: a place-anchored question answered with a signed receipt.'
+      operationId: emem_not_an_llm_provider_chat
+      responses:
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: Not an LLM provider.
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/deprecations:
+    get:
+      description: Deprecated surfaces and the policy governing them. Stable and typed even when empty, so a crawler learns the surface exists and is intentionally bare rather than reading a 404 as an outage.
+      operationId: emem_deprecations
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: Deprecated surfaces and the policy governing them.
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/limits:
+    get:
+      description: 'The operational ceilings an agent would otherwise find by bisection: batch sizes, body caps, rate limits, timeouts. Split into enforced limits and advisory guidance, because conflating them makes both untrustworthy.'
+      operationId: emem_limits
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'The operational ceilings an agent would otherwise find by bisection: batch…'
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/models:
+    get:
+      description: Not an LLM provider. Returns a typed 404 pointing at /v1/algorithms, which is what a model catalog corresponds to on this surface.
+      operationId: emem_not_an_llm_provider_models
+      responses:
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: Not an LLM provider.
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/perception/{path}:
+    get:
+      description: 'Ground-camera perception, fronted for peers that discover it. A GPU inference service with no auth of its own must not listen publicly, so reachability comes from this door, which carries the public name, TLS, the per-IP limit and the access log. An ALLOWLIST of upstream paths, never a pass-through: `at` (camera presence, and counts on POST), `city` (area aggregate with its coverage denominator), `postcard` (a place painted from its own retained clip), `generate` (video predicted forward from an observed frame, model_output and unsigned), `gonogo` (proceed-or-wait for something that has to move), `history` and `trend` (how a place changed, paired rather than raw), `health`, `cards`, plus the `cards/`, `clips/`, `verify/` and `v1/` trees. The upstream extends faster than this list, so EMEM_PERCEPTION_EXTRA_PATHS adds single segments at runtime; the compiled set is the floor and nothing can subtract from it. Provenance headers from the upstream are forwarded verbatim, including the warning that every frame after the first of a generated video was never seen. Caller identity (X-Agent-Id, X-Emem-Agent, X-Caller, X-Attester-Pubkey) is passed through as a bucketing key so one noisy agent cannot starve a shared quota; it is a claim, not a verified identity.'
+      operationId: emem_perception_proxy
+      parameters:
+      - description: The upstream path to front. Refused with a 404 naming what IS fronted when it is not on the allowlist.
+        in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: Ground-camera perception, fronted for peers that discover it.
+      tags:
+      - Discover
+    post:
+      description: 'POST half of the fronted perception surface: `at` with a body of {cell} runs detection and returns counts per object class, taken from a retained clip whose sha256 is committed in a signed receipt.'
+      operationId: emem_perception_proxy_post
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'POST half of the fronted perception surface: `at` with a body of {cell} runs…'
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/schemas:
+    get:
+      description: 'Every request and response body this responder publishes, by name, each with the URL that serves it as a standalone JSON Schema. Exists because a peer that PROXIES one of these routes cannot honestly declare an MCP outputSchema for it: MCP requires a server to keep the shape it publishes, and the shape belongs to whoever owns the body. Publishing them here lets a proxy declare ours and point at it.'
+      operationId: emem_schemas
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: Every request and response body this responder publishes, by name, each with…
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/schemas/{name}:
+    get:
+      description: One body as a self-contained draft-2020-12 JSON Schema, every $ref resolved into $defs, carrying its own $id. The OpenAPI document already described these shapes, but an internal `#/components/schemas/...` pointer resolves to nothing for a peer holding only the fragment, so this is the form another server can declare verbatim. A 404 names the index rather than leaving the spelling to guesswork.
+      operationId: emem_schema_by_name
+      parameters:
+      - description: A component name from GET /v1/schemas, for example VerifyResp.
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: One body as a self-contained draft-2020-12 JSON Schema, every $ref resolved…
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/scoreboard:
+    get:
+      description: 'The live benchmark: two heats run as a fairness control, reporting material correctness and byte-exactness separately. An arm can be materially perfect and never byte-exact, which is why both are reported.'
+      operationId: emem_scoreboard
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'The live benchmark: two heats run as a fairness control, reporting material…'
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/vector_index/stats:
+    get:
+      description: 'Snapshot of the vector index: row count, index type, last incremental append, and whether the index is disabled. Distinguishes an empty answer from an unopened index.'
+      operationId: emem_vector_index_stats
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'Snapshot of the vector index: row count, index type, last incremental append…'
+      tags:
+      - Discover
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

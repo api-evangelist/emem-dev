@@ -1,5 +1,5 @@
 aid: emem-dev
-name: Vortx AI Private Limited
+name: emem
 description: >-
   Vortx AI Private Limited is a spatial AI lab based in India that builds and operates emem
   (emem.dev), an Apache-2.0 protocol and hosted responder providing shared, verifiable memory
@@ -9,6 +9,23 @@ description: >-
   surface is published as an OpenAPI 3.1 contract (196 operations), a remote MCP server (110
   tools), an A2A 1.0 agent card, an llms.txt, RFC 8414 / RFC 9728 discovery documents, and
   first-party Python and TypeScript clients.
+deliveryModel:
+  model: open-core
+  license: Apache-2.0
+  license_evidence:
+    repo: vortx-ai/emem
+    spdx: Apache-2.0
+    stars: 60
+  open_source: true
+  commercial: true
+  callable_host: false
+  label: Open core · an OSS project plus a commercial hosted product
+  confidence: medium
+  source:
+  - pricing
+  - repository-license
+  generated: '2026-09-25'
+  method: derived
 image: https://emem.dev/logo.png
 url: https://raw.githubusercontent.com/api-evangelist/emem-dev/refs/heads/main/apis.yml
 x-type: company
@@ -33,8 +50,9 @@ tags:
 - Provenance
 - Cryptography
 - MCP
-- Open-Source
+- Open Source
 - India
+- A2A
 tags_raw:
 - Company
 - Artificial Intelligence
@@ -48,42 +66,14 @@ tags_raw:
 - MCP
 - Open Source
 - India
+- Open-Source
+- A2A
 apis:
-- name: emem REST API
-  description: >-
-    The /v1 REST surface of the emem responder: locate a place to a cell64, recall signed facts,
-    ask free-text questions routed over an algorithm registry, mint and resolve emem: citation
-    tokens, verify receipts offline, write signed agent memory, and read the RFC 6962-style
-    transparency log. Reads are anonymous; writes carry a per-request ed25519 attester signature.
-  image: https://emem.dev/logo.png
-  humanURL: https://emem.dev/docs/api/
-  baseURL: https://emem.dev
-  tags:
-  - Agent Memory
-  - Geospatial
-  - Earth Observation
-  - Provenance
-  properties:
-  - type: OpenAPI
-    url: openapi/emem-dev-openapi.json
-  - type: OpenAPI
-    name: emem OpenAPI 3.1 (provider-hosted, verbatim source)
-    url: https://emem.dev/openapi.json
-  - type: Documentation
-    url: https://emem.dev/agents.md
-  - type: APIReference
-    url: https://emem.dev/docs/api/
-  - type: Overlay
-    url: overlays/emem-dev-openapi-overlay.yaml
-  - type: ErrorCatalog
-    url: errors/emem-dev-problem-types.yml
-  - type: DataModel
-    url: data-model/emem-dev-data-model.yml
 - name: emem MCP Server
   description: >-
-    Remote MCP server (JSON-RPC 2.0 over Streamable HTTP) at https://emem.dev/mcp exposing 110
-    tools; /mcp lists an 18-tool core loop and /mcp/full the complete set. No authentication to
-    read; every tool carries MCP annotations and dev.emem/* metadata.
+    Remote MCP server (JSON-RPC 2.0 over Streamable HTTP) at https://emem.dev/mcp exposing 110 tools;
+    /mcp lists an 18-tool core loop and /mcp/full the complete set. No authentication to read; every tool
+    carries MCP annotations and dev.emem/* metadata.
   image: https://emem.dev/logo.png
   humanURL: https://emem.dev/tools
   baseURL: https://emem.dev/mcp
@@ -100,9 +90,9 @@ apis:
     url: https://emem.dev/integrations.md
 - name: emem A2A Agent
   description: >-
-    Agent-to-agent surface: synchronous JSON-RPC message/send at POST /a2a/tasks, an async task
-    extension at /v1/a2a/tasks with polling and cancel, and a skill query at /v1/a2a/skills.
-    Every MCP tool is published as an A2A skill on the signed agent card.
+    Agent-to-agent surface: synchronous JSON-RPC message/send at POST /a2a/tasks, an async task extension
+    at /v1/a2a/tasks with polling and cancel, and a skill query at /v1/a2a/skills. Every MCP tool is published
+    as an A2A skill on the signed agent card.
   image: https://emem.dev/logo.png
   humanURL: https://emem.dev/a2a
   baseURL: https://emem.dev/a2a/tasks
@@ -115,12 +105,2049 @@ apis:
   - type: Documentation
     name: A2A async tasks extension spec
     url: https://emem.dev/spec/a2a/async-tasks/v1
+- aid: emem-dev:emem-dev-a2a-api
+  name: emem A2a API
+  description: The A2a API from emem — 7 operation(s) for a2a.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - A2a
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-a2a-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-agent-card-api
+  name: emem Agent Card API
+  description: The Agent Card API from emem — 1 operation(s) for agent card.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Agent Card
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-agent-card-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-agent-stats-api
+  name: emem Agent Stats API
+  description: The Agent Stats API from emem — 1 operation(s) for agent stats.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Agent Stats
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-agent-stats-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-algorithms-api
+  name: emem Algorithms API
+  description: The Algorithms API from emem — 2 operation(s) for algorithms.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Algorithms
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-algorithms-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-artifacts-api
+  name: emem Artifacts API
+  description: The Artifacts API from emem — 1 operation(s) for artifacts.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Artifacts
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-artifacts-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-ask-api
+  name: emem Ask API
+  description: The Ask API from emem — 1 operation(s) for ask.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Ask
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-ask-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-attest-api
+  name: emem Attest API
+  description: The Attest API from emem — 1 operation(s) for attest.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Attest
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-attest-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-attest-cbor-api
+  name: emem Attest Cbor API
+  description: The Attest Cbor API from emem — 1 operation(s) for attest cbor.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Attest Cbor
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-attest-cbor-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-attest-traced-api
+  name: emem Attest Traced API
+  description: The Attest Traced API from emem — 1 operation(s) for attest traced.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Attest Traced
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-attest-traced-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-backfill-api
+  name: emem Backfill API
+  description: The Backfill API from emem — 1 operation(s) for backfill.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Backfill
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-backfill-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-band-composite-api
+  name: emem Band Composite API
+  description: The Band Composite API from emem — 1 operation(s) for band composite.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Band Composite
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-band-composite-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-band-cube-api
+  name: emem Band Cube API
+  description: The Band Cube API from emem — 1 operation(s) for band cube.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Band Cube
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-band-cube-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-band-raster-api
+  name: emem Band Raster API
+  description: The Band Raster API from emem — 1 operation(s) for band raster.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Band Raster
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-band-raster-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-bands-api
+  name: emem Bands API
+  description: The Bands API from emem — 1 operation(s) for bands.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Bands
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-bands-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-benchmark-api
+  name: emem Benchmark API
+  description: The Benchmark API from emem — 2 operation(s) for benchmark.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Benchmark
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-benchmark-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-boring-api
+  name: emem Boring API
+  description: The boring API from emem — 10 operation(s) for boring.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - boring
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-boring-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-burn-severity-api
+  name: emem Burn Severity API
+  description: The Burn Severity API from emem — 1 operation(s) for burn severity.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Burn Severity
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-burn-severity-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-capabilities-api
+  name: emem Capabilities API
+  description: The Capabilities API from emem — 1 operation(s) for capabilities.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Capabilities
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-capabilities-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-cells-api
+  name: emem Cells API
+  description: The Cells API from emem — 6 operation(s) for cells.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Cells
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-cells-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-cells-in-bbox-api
+  name: emem Cells In Bbox API
+  description: The Cells In Bbox API from emem — 1 operation(s) for cells in bbox.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Cells In Bbox
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-cells-in-bbox-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-change-attribution-api
+  name: emem Change Attribution API
+  description: The Change Attribution API from emem — 1 operation(s) for change attribution.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Change Attribution
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-change-attribution-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-cite-api
+  name: emem Cite API
+  description: The cite API from emem — 4 operation(s) for cite.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - cite
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-cite-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-compare-api
+  name: emem Compare API
+  description: The Compare API from emem — 1 operation(s) for compare.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Compare
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-compare-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-compare-bands-api
+  name: emem Compare Bands API
+  description: The Compare Bands API from emem — 1 operation(s) for compare bands.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Compare Bands
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-compare-bands-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-compare-same-doy-api
+  name: emem Compare Same Doy API
+  description: The Compare Same Doy API from emem — 1 operation(s) for compare same doy.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Compare Same Doy
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-compare-same-doy-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-compliance-api
+  name: emem Compliance API
+  description: The compliance API from emem — 1 operation(s) for compliance.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - compliance
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-compliance-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-contradiction-detection-api
+  name: emem Contradiction Detection API
+  description: The contradiction-detection API from emem — 1 operation(s) for contradiction-detection.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - contradiction-detection
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-contradiction-detection-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-contributors-api
+  name: emem Contributors API
+  description: The Contributors API from emem — 2 operation(s) for contributors.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Contributors
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-contributors-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-corpus-state-stats-api
+  name: emem Corpus State Stats API
+  description: The Corpus State Stats API from emem — 1 operation(s) for corpus state stats.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Corpus State Stats
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-corpus-state-stats-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-coverage-api
+  name: emem Coverage API
+  description: The Coverage API from emem — 1 operation(s) for coverage.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Coverage
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-coverage-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-coverage-map-svg-api
+  name: emem Coverage Map.svg API
+  description: The Coverage Map.svg API from emem — 1 operation(s) for coverage map.svg.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Coverage Map.svg
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-coverage-map-svg-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-coverage-matrix-api
+  name: emem Coverage Matrix API
+  description: The Coverage Matrix API from emem — 1 operation(s) for coverage matrix.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Coverage Matrix
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-coverage-matrix-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-cube-api
+  name: emem Cube API
+  description: The Cube API from emem — 1 operation(s) for cube.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Cube
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-cube-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-data-availability-api
+  name: emem Data Availability API
+  description: The Data Availability API from emem — 1 operation(s) for data availability.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Data Availability
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-data-availability-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-deforestation-alert-api
+  name: emem Deforestation Alert API
+  description: The Deforestation Alert API from emem — 1 operation(s) for deforestation alert.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Deforestation Alert
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-deforestation-alert-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-demos-api
+  name: emem Demos API
+  description: The Demos API from emem — 1 operation(s) for demos.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Demos
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-demos-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-derive-api
+  name: emem Derive API
+  description: The derive API from emem — 2 operation(s) for derive.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - derive
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-derive-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-device-api
+  name: emem Device API
+  description: The device API from emem — 2 operation(s) for device.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - device
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-device-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-device-platforms-api
+  name: emem Device Platforms API
+  description: The Device Platforms API from emem — 1 operation(s) for device platforms.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Device Platforms
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-device-platforms-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-diff-api
+  name: emem Diff API
+  description: The Diff API from emem — 1 operation(s) for diff.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Diff
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-diff-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-discover-api
+  name: emem Discover API
+  description: The Discover API from emem — 12 operation(s) for discover.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Discover
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-discover-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-edges-api
+  name: emem Edges API
+  description: The edges API from emem — 2 operation(s) for edges.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - edges
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-edges-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-embedding-api
+  name: emem Embedding API
+  description: The embedding API from emem — 2 operation(s) for embedding.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - embedding
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-embedding-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-embedding-centroid-api
+  name: emem Embedding Centroid API
+  description: The Embedding Centroid API from emem — 1 operation(s) for embedding centroid.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Embedding Centroid
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-embedding-centroid-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-embedding-diversity-api
+  name: emem Embedding Diversity API
+  description: The Embedding Diversity API from emem — 1 operation(s) for embedding diversity.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Embedding Diversity
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-embedding-diversity-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-enroll-attested-api
+  name: emem Enroll Attested API
+  description: The Enroll Attested API from emem — 1 operation(s) for enroll attested.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Enroll Attested
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-enroll-attested-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-enroll-verify-api
+  name: emem Enroll Verify API
+  description: The Enroll Verify API from emem — 1 operation(s) for enroll verify.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Enroll Verify
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-enroll-verify-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-entity-api
+  name: emem Entity API
+  description: The entity API from emem — 4 operation(s) for entity.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - entity
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-entity-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-errors-api
+  name: emem Errors API
+  description: The Errors API from emem — 1 operation(s) for errors.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Errors
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-errors-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-eudr-api
+  name: emem Eudr API
+  description: The eudr API from emem — 1 operation(s) for eudr.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - eudr
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-eudr-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-fetch-api
+  name: emem Fetch API
+  description: The fetch API from emem — 2 operation(s) for fetch.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - fetch
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-fetch-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-field-boundaries-api
+  name: emem Field Boundaries API
+  description: The Field Boundaries API from emem — 1 operation(s) for field boundaries.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Field Boundaries
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-field-boundaries-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-find-similar-api
+  name: emem Find Similar API
+  description: The Find Similar API from emem — 1 operation(s) for find similar.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Find Similar
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-find-similar-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-fleet-api
+  name: emem Fleet API
+  description: The Fleet API from emem — 1 operation(s) for fleet.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Fleet
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-fleet-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-functions-api
+  name: emem Functions API
+  description: The Functions API from emem — 1 operation(s) for functions.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Functions
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-functions-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-get-fact-api
+  name: emem Get Fact API
+  description: The get_fact API from emem — 1 operation(s) for get_fact.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - get_fact
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-get-fact-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-grid-info-api
+  name: emem Grid Info API
+  description: The Grid Info API from emem — 1 operation(s) for grid info.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Grid Info
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-grid-info-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-health-api
+  name: emem Health API
+  description: The Health API from emem — 2 operation(s) for health.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Health
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-health-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-heat-solve-api
+  name: emem Heat Solve API
+  description: The Heat Solve API from emem — 1 operation(s) for heat solve.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Heat Solve
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-heat-solve-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-hunter-api
+  name: emem Hunter API
+  description: The hunter API from emem — 1 operation(s) for hunter.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - hunter
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-hunter-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-identity-api
+  name: emem Identity API
+  description: The identity API from emem — 7 operation(s) for identity.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - identity
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-identity-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-inbox-api
+  name: emem Inbox API
+  description: The Inbox API from emem — 1 operation(s) for inbox.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Inbox
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-inbox-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-intent-api
+  name: emem Intent API
+  description: The Intent API from emem — 1 operation(s) for intent.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Intent
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-intent-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-introspect-api
+  name: emem Introspect API
+  description: The introspect API from emem — 2 operation(s) for introspect.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - introspect
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-introspect-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-jepa-predict-api
+  name: emem Jepa Predict API
+  description: The Jepa Predict API from emem — 1 operation(s) for jepa predict.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Jepa Predict
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-jepa-predict-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-jepa-predict-v2-api
+  name: emem Jepa Predict V2 API
+  description: The Jepa Predict V2 API from emem — 1 operation(s) for jepa predict v2.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Jepa Predict V2
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-jepa-predict-v2-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-knowledge-graph-api
+  name: emem Knowledge Graph API
+  description: The knowledge-graph API from emem — 2 operation(s) for knowledge-graph.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - knowledge-graph
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-knowledge-graph-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-live-api
+  name: emem Live API
+  description: The Live API from emem — 1 operation(s) for live.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Live
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-live-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-locate-api
+  name: emem Locate API
+  description: The Locate API from emem — 1 operation(s) for locate.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Locate
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-locate-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-log-api
+  name: emem Log API
+  description: The Log API from emem — 6 operation(s) for log.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Log
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-log-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-manifests-api
+  name: emem Manifests API
+  description: The Manifests API from emem — 1 operation(s) for manifests.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Manifests
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-manifests-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-materializers-api
+  name: emem Materializers API
+  description: The Materializers API from emem — 1 operation(s) for materializers.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Materializers
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-materializers-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-mcp-api
+  name: emem MCP API
+  description: The Mcp API from emem — 1 operation(s) for mcp.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Mcp
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-mcp-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-memory-api
+  name: emem Memory API
+  description: The memory API from emem — 14 operation(s) for memory.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - memory
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-memory-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-memory-token-api
+  name: emem Memory Token API
+  description: The Memory Token API from emem — 3 operation(s) for memory token.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Memory Token
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-memory-token-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-neighborhood-consistency-api
+  name: emem Neighborhood Consistency API
+  description: >-
+    The Neighborhood Consistency API from emem — 1 operation(s) for neighborhood consistency.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Neighborhood Consistency
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-neighborhood-consistency-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-query-region-api
+  name: emem Query Region API
+  description: The Query Region API from emem — 1 operation(s) for query region.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Query Region
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-query-region-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-quickstart-api
+  name: emem Quickstart API
+  description: The Quickstart API from emem — 1 operation(s) for quickstart.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Quickstart
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-quickstart-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-raster-api
+  name: emem Raster API
+  description: The Raster API from emem — 1 operation(s) for raster.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Raster
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-raster-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-raster-bundle-api
+  name: emem Raster Bundle API
+  description: The Raster Bundle API from emem — 2 operation(s) for raster bundle.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Raster Bundle
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-raster-bundle-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-reason-api
+  name: emem Reason API
+  description: The reason API from emem — 1 operation(s) for reason.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - reason
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-reason-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-recall-api
+  name: emem Recall API
+  description: The Recall API from emem — 1 operation(s) for recall.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Recall
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-recall-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-recall-many-api
+  name: emem Recall Many API
+  description: The Recall Many API from emem — 1 operation(s) for recall many.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Recall Many
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-recall-many-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-recall-polygon-api
+  name: emem Recall Polygon API
+  description: The Recall Polygon API from emem — 1 operation(s) for recall polygon.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Recall Polygon
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-recall-polygon-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-region-similarity-api
+  name: emem Region Similarity API
+  description: The Region Similarity API from emem — 1 operation(s) for region similarity.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Region Similarity
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-region-similarity-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-render-api
+  name: emem Render API
+  description: The render API from emem — 1 operation(s) for render.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - render
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-render-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-reviews-api
+  name: emem Reviews API
+  description: The Reviews API from emem — 2 operation(s) for reviews.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Reviews
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-reviews-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-rice-ch4-api
+  name: emem Rice Ch4 API
+  description: The Rice Ch4 API from emem — 1 operation(s) for rice ch4.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Rice Ch4
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-rice-ch4-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-sar-forest-disturbance-api
+  name: emem Sar Forest Disturbance API
+  description: The Sar Forest Disturbance API from emem — 1 operation(s) for sar forest disturbance.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Sar Forest Disturbance
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-sar-forest-disturbance-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-schema-api
+  name: emem Schema API
+  description: The Schema API from emem — 1 operation(s) for schema.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Schema
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-schema-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-security-api
+  name: emem Security API
+  description: The security API from emem — 2 operation(s) for security.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - security
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-security-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-sources-api
+  name: emem Sources API
+  description: The Sources API from emem — 1 operation(s) for sources.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Sources
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-sources-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-spi-api
+  name: emem Spi API
+  description: The Spi API from emem — 1 operation(s) for spi.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Spi
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-spi-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-state-api
+  name: emem State API
+  description: The State API from emem — 1 operation(s) for state.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - State
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-state-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-state-diff-api
+  name: emem State Diff API
+  description: The State Diff API from emem — 1 operation(s) for state diff.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - State Diff
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-state-diff-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-state-multi-api
+  name: emem State Multi API
+  description: The State Multi API from emem — 1 operation(s) for state multi.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - State Multi
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-state-multi-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-stream-api
+  name: emem Stream API
+  description: The Stream API from emem — 1 operation(s) for stream.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Stream
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-stream-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-substrates-api
+  name: emem Substrates API
+  description: The Substrates API from emem — 1 operation(s) for substrates.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Substrates
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-substrates-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-temporal-route-api
+  name: emem Temporal Route API
+  description: The Temporal Route API from emem — 1 operation(s) for temporal route.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Temporal Route
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-temporal-route-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-terrain-api
+  name: emem Terrain API
+  description: The Terrain API from emem — 1 operation(s) for terrain.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Terrain
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-terrain-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-tools-api
+  name: emem Tools API
+  description: The Tools API from emem — 1 operation(s) for tools.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Tools
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-tools-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-topics-api
+  name: emem Topics API
+  description: The Topics API from emem — 1 operation(s) for topics.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Topics
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-topics-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-trace-encodings-api
+  name: emem Trace Encodings API
+  description: The Trace Encodings API from emem — 1 operation(s) for trace encodings.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Trace Encodings
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-trace-encodings-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-trace-resolve-api
+  name: emem Trace Resolve API
+  description: The Trace Resolve API from emem — 1 operation(s) for trace resolve.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Trace Resolve
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-trace-resolve-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-trace-verify-api
+  name: emem Trace Verify API
+  description: The Trace Verify API from emem — 1 operation(s) for trace verify.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Trace Verify
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-trace-verify-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-trajectory-api
+  name: emem Trajectory API
+  description: The Trajectory API from emem — 1 operation(s) for trajectory.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Trajectory
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-trajectory-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-triple-consensus-api
+  name: emem Triple Consensus API
+  description: The Triple Consensus API from emem — 1 operation(s) for triple consensus.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Triple Consensus
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-triple-consensus-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-vector-api
+  name: emem Vector API
+  description: The vector API from emem — 1 operation(s) for vector.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - vector
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-vector-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-verify-api
+  name: emem Verify API
+  description: The Verify API from emem — 8 operation(s) for verify.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Verify
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-verify-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-verify-receipt-api
+  name: emem Verify Receipt API
+  description: The Verify Receipt API from emem — 1 operation(s) for verify receipt.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Verify Receipt
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-verify-receipt-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-wave-solve-api
+  name: emem Wave Solve API
+  description: The Wave Solve API from emem — 1 operation(s) for wave solve.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Wave Solve
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-wave-solve-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-well-known-api
+  name: emem .well Known API
+  description: The .well Known API from emem — 1 operation(s) for .well known.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - .well Known
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-well-known-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
+- aid: emem-dev:emem-dev-worlds-api
+  name: emem Worlds API
+  description: The Worlds API from emem — 1 operation(s) for worlds.
+  humanURL: https://emem.dev/docs/api/
+  baseURL: https://emem.dev/mcp
+  tags:
+  - Worlds
+  properties:
+  - type: OpenAPI
+    url: openapi/emem-dev-worlds-api-openapi.yml
+  - type: Documentation
+    url: https://emem.dev/agents.md
+  - type: APIReference
+    url: https://emem.dev/docs/api/
+  - type: ErrorCatalog
+    url: errors/emem-dev-problem-types.yml
+  - type: DataModel
+    url: data-model/emem-dev-data-model.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/emem-dev-openapi-overlay.yaml
 - type: Website
   url: https://emem.dev/
 - type: Security
@@ -203,3 +2230,11 @@ x-enrichment:
   status: enriched
   artifacts_added: 58
   pass: local-v3
+x-legal-name: Vortx AI Private Limited
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://emem.dev/.well-known/agent-card.json"
+  grade: "conformant"
+  protocol_version: "1.0"
+  control: 404

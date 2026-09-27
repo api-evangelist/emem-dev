@@ -1,0 +1,116 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Wave Solve API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Wave Solve across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Wave Solve
+paths:
+  /v1/wave_solve:
+    post:
+      description: 'Forward-step 1-D explicit finite-difference solver for the shallow-water wave equation ∂²u/∂t² = c²∂²u/∂x² with c² = g·h, where depth h comes from `gmrt.topobathy_mean` along the seaward gradient. Models how an offshore swell of height H_s and period T propagates toward `coastal_cell`. Returns a signed forecast of arrival height + time + depth + phase-speed profiles, all under a CFL-stable timestep; the receipt cites the depth facts read from the shared memory.
+
+
+        When to use: Use when the user wants to predict swell arrival at a coast (storm-surge planning, shoreline-impact assessment, surf forecasting). The solver walks `n_offshore_cells` cells seaward from `coastal_cell` along the bathymetric gradient (default 8 cells = 80 m of profile at the active 10 m grid), samples GMRT depth at each, and integrates the wave equation forward until the wavefront reaches the coast plus one period. Receipt cites every depth fact CID along the profile. Returns 422 with a clear message if `coastal_cell` is land-locked.'
+      operationId: emem_wave_solve
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaveSolveReq'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 1-D explicit-FD shallow-water wave-equation solver (propagate offshore swell to…
+      tags:
+      - Wave Solve
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    WaveSolveReq:
+      properties:
+        coastal_cell:
+          description: cell64 of the coastal destination.
+          type: string
+        n_offshore_cells:
+          default: 8
+          description: Number of seaward cells to sample for the bathymetric profile.
+          maximum: 64
+          minimum: 1
+          type: integer
+        offshore_height_m:
+          description: Offshore significant wave height H_s (m).
+          maximum: 30
+          minimum: 0
+          type: number
+        period_s:
+          description: Wave period (s); 6–18 s is the typical wind-wave + swell envelope.
+          maximum: 30
+          minimum: 2
+          type: number
+      required:
+      - coastal_cell
+      - offshore_height_m
+      - period_s
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

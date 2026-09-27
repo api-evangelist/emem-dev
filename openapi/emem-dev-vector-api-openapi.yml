@@ -1,0 +1,141 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Vector API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged vector across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Vector
+paths:
+  /v1/building_footprints:
+    post:
+      description: 'Overture building footprints over a bbox, as GeoJSON polygons with height where the source carries one. The per-cell `overture.buildings.count` band answers how many; this answers where and how tall, which is what a renderer needs. `height_m` is null for most buildings and null is NOT zero: use `num_floors` times your own storey height as the fallback and say which you used.'
+      operationId: emem_building_footprints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                max_features:
+                  description: cap on returned footprints; default 10000. `count` still reports the true total, so a truncated answer is distinguishable from a complete one.
+                  type: integer
+                place:
+                  description: one of place or polygon_bbox is required
+                  type: string
+                polygon_bbox:
+                  description: OBJECT form only; array corner orders disagree between conventions and are refused.
+                  properties:
+                    max_lat:
+                      maximum: 90
+                      minimum: -90
+                      type: number
+                    max_lng:
+                      maximum: 180
+                      minimum: -180
+                      type: number
+                    min_lat:
+                      maximum: 90
+                      minimum: -90
+                      type: number
+                    min_lng:
+                      maximum: 180
+                      minimum: -180
+                      type: number
+                  required:
+                  - min_lat
+                  - max_lat
+                  - min_lng
+                  - max_lng
+                  type: object
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '502':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: Overture building footprints over a bbox, as GeoJSON polygons with height where…
+      tags:
+      - Vector
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

@@ -1,0 +1,51 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Corpus State Stats API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Corpus State Stats across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Corpus State Stats
+paths:
+  /v1/corpus_state_stats:
+    get:
+      description: 'Signed snapshot of corpus liveness: distinct_cells, distinct_bands, facts_scanned, top per-band counts, manifest CIDs. Same payload that backs /v1/stream''s corpus.state tick (signed). Use this for a one-shot poll instead of holding an SSE connection.
+
+
+        When to use: Call when an agent needs a single liveness reading to surface in a dashboard, attach to a report, or decide whether to refresh local caches. Includes ed25519 signature over a deterministic preimage so the snapshot is verifiable. For a continuous feed, GET /v1/stream over Server-Sent Events instead.'
+      operationId: emem_corpus_state_stats
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'snapshot of corpus liveness: distinct_cells, distinct_bands, facts_scanned…'
+      tags:
+      - Corpus State Stats
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

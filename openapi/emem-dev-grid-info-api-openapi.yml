@@ -1,0 +1,51 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Grid Info API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Grid Info across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Grid Info
+paths:
+  /v1/grid_info:
+    get:
+      description: 'Active grid encoding: cell64 ground resolution, lat/lng axis sizes, DGGS lineage.
+
+
+        When to use: Call once at session start (or when the user asks about cell resolution / ''how big is a cell''). Returns the actual ground resolution today (~9.54 m × 9.55 m square at the equator (lat 21 bits × lng 22 bits, matching Sentinel-1/Sentinel-2 native pixel pitch). The cell64 bit layout reserves a resolution-tag field for future hierarchical refinement targeting H3-equivalent res-13 (~3.4 m) cells in v0.1.) and the spec target. Useful before you reason about whether one cell is enough or whether you need `emem_recall_polygon`.'
+      operationId: emem_grid_info
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: declare the active spatial grid (cell64 / Hilbert / future H3)
+      tags:
+      - Grid Info
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

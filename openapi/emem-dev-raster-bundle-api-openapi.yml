@@ -1,0 +1,196 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Raster Bundle API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Raster Bundle across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Raster Bundle
+paths:
+  /v1/raster_bundle:
+    post:
+      description: 'Mint an emem:rasterset: token: a signed manifest binding 2..64 already-minted emem:raster: field tokens (any mix of band_raster / s2_median_composite / dem_raster / embedding_raster) into ONE citeable thing. The composition primitive a world model or a compliance report needs when it must cite one token that points at every signed layer at once - the RGB ground composites, the DEM geometry, the encoder embedding field - so the report points at the world and the world points back at each signed layer. Unlike emem_band_cube (which MINTS members by fanning one band across dates), this BUNDLES existing tokens across bands and types: it is the raster analogue of a memory bundle and the cross-band analogue of a cube. It mints no new pixels - each member resolves and re-derives on its own, and the bundle''s lineage terminates in each member''s own derivation. bundle_cid = blake3 of the ordered member derivation cids (plus purpose), so the same ordered set always names the same bundle; resolve recomputes it and refuses an altered or forged membership. A member that is not a live raster-shaped derivation fails the whole mint by name. This signs and persists the manifest.
+
+
+        When to use: Call when you have several minted emem:raster: tokens (a world''s ground, geometry, and embedding layers) and want ONE token the report or world card cites. For one field use emem_band_raster; for one band over time use emem_band_cube; to bundle per-cell FACTS (not fields) use emem_memory_bundle. Resolve a received bundle with emem_raster_bundle_resolve.'
+      operationId: emem_raster_bundle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                purpose:
+                  type: string
+                tokens:
+                  items:
+                    type: string
+                  maxItems: 64
+                  minItems: 2
+                  type: array
+              required:
+              - tokens
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: not found
+        '409':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: conflict (the request contradicts a signed fact, e.g. a token whose cell does not match the fact's own cell)
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'bind 2..64 already-minted emem:raster: field tokens (band_raster /…'
+      tags:
+      - Raster Bundle
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/raster_bundle/resolve:
+    post:
+      description: 'Resolve emem:rasterset:: back to its signed manifest and verify it. Fail-closed like every field-token resolve: the cid must be a raster_bundle@1 derivation, bundle_cid is recomputed from the record''s ordered members and matched against BOTH the token and the record (any mismatch is a typed 409, refusing an altered or forged membership), and every member emem:raster: token is re-verified as a live raster derivation. Returns the member list with a per-member resolves flag, so a stranger confirms the whole set is intact before trusting the world it names.
+
+
+        When to use: Call when you receive an emem:rasterset: token (a world''s or DDS''s bundle of field layers) and want to verify the membership is intact and every layer still resolves, before you trust or render it. For a single emem:raster: token use emem_raster_resolve.'
+      operationId: emem_raster_bundle_resolve
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                token:
+                  type: string
+              required:
+              - token
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: not found
+        '409':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: conflict (the request contradicts a signed fact, e.g. a token whose cell does not match the fact's own cell)
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'dereference an emem:rasterset:: token.'
+      tags:
+      - Raster Bundle
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

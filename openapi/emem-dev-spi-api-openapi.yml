@@ -1,0 +1,107 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Spi API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Spi across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Spi
+paths:
+  /v1/spi:
+    post:
+      description: 'Compute the Standardized Precipitation Index (McKee et al. 1993) at a cell: fit a gamma distribution to the same-window precipitation-accumulation history, then standardize the current accumulation to a z-score and map it to a drought class (extreme/severe/moderate drought … normal … wet). Supply `precip_history_mm` + `current_accumulation_mm` directly, or omit them to read the stored `weather.precipitation_mm` trajectory and build the window accumulations server-side. `window_days` selects SPI-1 (30 d), SPI-3 (90 d, default), SPI-12 (360 d), etc. The result is signed; the receipt cites the precipitation fact_cids it read from the shared memory.
+
+
+        When to use: Call when the user asks ''is this place in drought'', ''how dry is it relative to normal'', or wants a precipitation-anomaly z-score. The response is honest: when fewer than the WMO-recommended minimum samples exist it returns verdict=`inconclusive` with `spi:null` and a `honest_note` rather than fabricating a z-score from a handful of points. Quote the `spi`, `spi_class`, and `n_samples`. For raw precipitation use `emem_weather`; SPI is the standardized anomaly.'
+      operationId: emem_spi
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                cell:
+                  description: cell64 or place name
+                  type: string
+                current_accumulation_mm:
+                  description: Current-window accumulation (mm); required when precip_history_mm is supplied.
+                  type: number
+                precip_history_mm:
+                  description: Optional explicit same-window precipitation accumulations (mm).
+                  items:
+                    type: number
+                  type: array
+                window_days:
+                  description: Accumulation window (SPI-3 = 90 d default; SPI-1 = 30 d; SPI-12 = 360 d).
+                  type: integer
+              required:
+              - cell
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'McKee-1993 Standardized Precipitation Index drought metric: fits a gamma to the…'
+      tags:
+      - Spi
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

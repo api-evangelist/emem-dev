@@ -1,0 +1,64 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Health API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Health across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Health
+paths:
+  /health:
+    get:
+      operationId: emem_health
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: liveness + corpus stats
+      tags:
+      - Health
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/health:
+    get:
+      description: liveness + corpus stats, the same handler as /health under the prefix every other endpoint uses. Aliased because a health check probing a /v1/* API guesses this path first, and a 404 there reads as a dead service rather than a wrong guess.
+      operationId: emem_health_v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: liveness + corpus stats, the same handler as /health under the prefix every…
+      tags:
+      - Health
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

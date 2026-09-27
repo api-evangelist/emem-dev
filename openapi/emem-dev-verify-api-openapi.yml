@@ -1,0 +1,525 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Verify API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Verify across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Verify
+paths:
+  /v1/verify:
+    post:
+      description: 'Verify a structured claim against a cell''s facts. Returns verdict + evidence CIDs + signed receipt.
+
+
+        When to use: Call when the user asks a yes/no question about a cell (''is the NDVI > 0.7 here'', ''has this been deforested''), or when downstream code wants citable evidence for a logical predicate.'
+      operationId: emem_verify
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyReq'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyResp'
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: verify a structured claim
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /.well-known/emem-verifier.json:
+    get:
+      description: 'Alias of GET /v1/verifier_spec: the code-generated signing/verification specification, at a well-known path so an offline verifier can discover it without reading the OpenAPI document.'
+      operationId: emem_verifier_spec_well_known
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'Alias of GET /v1/verifier_spec: the code-generated signing/verification…'
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /.well-known/jwks.json:
+    get:
+      description: This responder's ed25519 public key as a JWK set (OKP/Ed25519, alg EdDSA). The agent card's signature names this document in its `jku`, so a client holding only the card can fetch the key and verify the card without being told where to look.
+      operationId: emem_jwks
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: This responder's ed25519 public key as a JWK set (OKP/Ed25519, alg EdDSA).
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/echo_verify:
+    post:
+      description: 'Grade a value you are about to emit against the signed fact your citation points at. Returns `matches` and, when it does not, the `drift` between what you were about to say and what emem holds. This is the step that turns a transcription error into a caught event instead of a silent wrong number: a model that resolves a fact correctly can still retype `0.2411` for `0.241103`, and nothing else in the loop notices. Memory algebra: the `verify` operation (https://emem.dev/docs/model.html).
+
+
+        When to use: Call immediately before publishing, logging, or handing on any value you took from an emem fact, and treat a false `matches` as a gate rather than a warning. Pair it with `value_verbatim` from resolve: quote that exact decimal string rather than reformatting the number, then echo-verify what you actually emitted. For a due-diligence or compliance record this is what lets you assert `every cited value was echo-verified` with a signed check per citation instead of a promise. Accepts a bare cid too, so a damaged citation still grades rather than failing closed.'
+      operationId: emem_echo_verify
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                claimed_value:
+                  description: the value you emitted, string or number; a string is compared verbatim first
+                  type:
+                  - string
+                  - number
+                token:
+                  description: emem:fact:<cell64>:<fact_cid>, or a bare fact_cid (degraded)
+                  type: string
+              required:
+              - token
+              - claimed_value
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'Close the last mile: check the value YOU emitted against the signed fact your…'
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/guard/capabilities:
+    get:
+      description: 'The emem-guard contract, machine-readable: every deny code and what it means, every remedy and what to do about it, the reason grammar, what the hosted route will and will not do, and how to stand up a node that enforces. Mirrors the /.well-known/emem-guard.json a self-hosted node serves, so an agent that learned one learned both.'
+      operationId: emem_guard_capabilities
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'The emem-guard contract, machine-readable: every deny code and what it means…'
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/guard/verdict:
+    post:
+      description: 'Run emem-guard''s policy pipeline over text you are about to send, against this responder''s corpus. Finds every emem: citation, resolves each one, and returns allow or deny with a machine-readable reason: `EMEM-GUARD DENY token= fix= leaf=`. Codes are PROV_SIG (signature did not verify), PROV_BYTES (resolved to different content than claimed), PROV_DRIFT (reading has moved past its band threshold), CLAIM_UNGROUNDED (a measurable claim with no citation, opt-in via claim_gating). `fix` is the actionable half: refresh_token, remove_reference, contact_admin, cite_observation. ADVISORY: nothing is blocked, and a citation this responder does not hold is never a denial, because it is indistinguishable from one minted elsewhere. Memory algebra: the `verify` operation (https://emem.dev/docs/model.html).
+
+
+        When to use: Call it on your own draft before you assert something, or on a tool result before you reason on it, to catch a citation that does not resolve while you can still fix it. `claim_gating: true` also names measurable claims with no citation and the band that would answer them. For a payload another framework produced (CloudEvent, OPA input, OpenAI moderations body, another server''s tool call) send it as-is and name its `shape`: the default reader sees only `texts`, and a check that read nothing still answers allow. To ENFORCE rather than consult, emem_guard_selfhost returns the procedure for your own node.'
+      operationId: emem_guard_verdict
+      parameters:
+      - description: 'Which envelope the body is in, and which envelope to answer in. Exists so you never reshape a payload to ask the question: post the body your own framework produced. `mcp` reads a JSON-RPC tools/call or a tool result and answers with the CallToolResult to substitute on a deny; `openai` reads a moderations or chat-completions body; `cloudevent` reads a CloudEvents 1.0 structured event; `policy` reads {input} and answers {result:{allow,deny}}. An unrecognised value falls back to native rather than erroring.'
+        in: query
+        name: shape
+        required: false
+        schema:
+          default: native
+          enum:
+          - native
+          - mcp
+          - openai
+          - cloudevent
+          - policy
+          type: string
+      - description: Also flag measurable physical-world claims that carry NO citation. Reports on absence rather than on a failed check, so it is off unless asked for.
+        in: query
+        name: claim_gating
+        required: false
+        schema:
+          default: false
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                agent:
+                  description: Free-text label for the caller. Advisory, never a trust boundary.
+                  type: string
+                claim_gating:
+                  default: false
+                  description: Also flag measurable physical-world claims that carry no citation.
+                  type: boolean
+                messages:
+                  description: A chat-completions-shaped transcript, read for its text only.
+                  items:
+                    type: object
+                  type: array
+                texts:
+                  description: 'Free text to check: a draft answer, a tool result, a whole turn.'
+                  items:
+                    type: string
+                  type: array
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: Run emem-guard's policy pipeline over a transcript against this responder's…
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/state/{cid}:
+    get:
+      description: 'The record an emem:state: address commits to, as stored, with its canonical CBOR and the address recomputed from those bytes beside the one asked for. Third step of the order a peer set for reasoning states: canonicalisation (published), worked vector (published), then this route. 404 for an address this responder never stored; the answer that carried it remains recomputable via /v1/verifier_spec.'
+      operationId: emem_state_record
+      parameters:
+      - description: The state cid, or the whole emem:state:<cid> token.
+        in: path
+        name: cid
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '404':
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                type: object
+          description: not found
+      summary: 'The record an emem:state: address commits to, as stored, with its canonical…'
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/verifier_spec:
+    get:
+      description: Machine-readable specification of how this responder signs, emitted from the same compiled emem-attest tag constants the signer uses, so it cannot drift from the wire. Returns the receipt preimage v1 segment table (tag, name, scalar|list, optional) plus the domain-separation and length-prefix rules, and the segment table for every other signed family (attestation, transparency-log STH, witness co-signature, operator attestation, corpus_state_stats, stream tick). Consume once and reproduce the preimage for any signature this responder emits. Also served at /.well-known/emem-verifier.json.
+      operationId: emem_verifier_spec
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: Machine-readable specification of how this responder signs, emitted from the…
+      tags:
+      - Verify
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    Cost:
+      description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
+      properties:
+        credits:
+          description: Conceptual cost units; 0 for L0/L1 read endpoints on the hosted responder.
+          type: number
+        latency_p50_ms:
+          type: number
+        latency_p99_ms:
+          type: number
+        source_freshness_s:
+          description: 'Age of the STALEST source this response cites: now minus the earliest captured_at across the returned facts'' sources. null when nothing in the response carries a dated source, which is the honest answer for a primitive that reads no observation. Was a hardcoded 0 until 2026-08-05, so a 2021 DEM tile reported as 0 s old; a null here means unknown, never fresh.'
+          type:
+          - integer
+          - 'null'
+        was_cached:
+          type: boolean
+      type: object
+    FactCid:
+      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
+      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
+      maxLength: 52
+      minLength: 52
+      pattern: ^[a-z2-7]{52}$
+      type: string
+    Claim:
+      properties:
+        agg:
+          description: Aggregation over `window`
+          enum:
+          - any
+          - all
+          - mean
+          - min
+          - max
+          type: string
+        band:
+          description: Band key (e.g. `indices.ndvi`, `copdem30m.elevation_mean`)
+          type: string
+        op:
+          description: Comparison or membership operator
+          enum:
+          - eq
+          - ne
+          - lt
+          - le
+          - gt
+          - ge
+          - in
+          - ni
+          - exists
+          - absent
+          type: string
+        tslot:
+          description: Specific tslot; one of `tslot` or `window` MUST be set
+          type: integer
+        value:
+          description: Right-hand value, band-typed (number for scalar bands, array for vector bands, set for in/ni). Required even for exists/absent where it is ignored.
+        window:
+          description: Inclusive [start, end] u64 Unix-epoch range
+          items:
+            type: integer
+          maxItems: 2
+          minItems: 2
+          type: array
+      required:
+      - band
+      - op
+      - value
+      type: object
+    Receipt:
+      description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
+      properties:
+        cells:
+          items:
+            $ref: '#/components/schemas/Cell64'
+          type: array
+        cost:
+          $ref: '#/components/schemas/Cost'
+        fact_cids:
+          items:
+            $ref: '#/components/schemas/FactCid'
+          type: array
+        intent:
+          description: Optional natural-language hint. Populated when served via /v1/intent.
+          type: string
+        merkle_proof:
+          description: 'Inclusion proof for `fact_cids[0]` when persisted. Omitted from JSON when the cited facts pre-date the proof tree; under preimage_version 2 that absence is itself signed (an explicit ABSENT marker), so it is a statement rather than a gap. Do not strip this field: v2 binds it into the signature and removing it makes an authentic receipt report `signature_valid: false`.'
+          properties:
+            leaf_index:
+              description: u32 leaf index in the canonical-sorted batch.
+              type: integer
+            path:
+              description: Sibling hashes leaf→root.
+              items:
+                description: 32-byte sibling hash as a byte array
+                items:
+                  type: integer
+                type: array
+              type: array
+            root:
+              description: The expected 32-byte batch root as a byte array.
+              items:
+                type: integer
+              type: array
+            version:
+              description: 'Merkle hashing rule: 0 (omitted) = legacy unprefixed, 1 = RFC 6962-style prefixed.'
+              type: integer
+          required:
+          - leaf_index
+          - path
+          - root
+          type: object
+        primitive:
+          description: 'Namespaced wire form: `emem.recall`, `emem.find_similar`, `emem.verify`, …'
+          type: string
+        registry_cid:
+          description: CID of the function registry version in force.
+          type: string
+        request_id:
+          description: ULID generated per request.
+          type: string
+        responder:
+          $ref: '#/components/schemas/PubKey'
+        responder_key_epoch:
+          description: u32 rotation counter; bumps when the operator rotates keys.
+          type: integer
+        responder_pubkey_b32:
+          $ref: '#/components/schemas/PubKey'
+        schema_cid:
+          description: CID of the active CDDL profile.
+          type: string
+        served_at:
+          description: ISO 8601 UTC, second precision.
+          type: string
+        signature:
+          description: Ed25519 signature, 64 bytes base32-nopad-lowercase encoded.
+          type: string
+        source_versions:
+          additionalProperties:
+            type: string
+          description: Per-source freshness map.
+          type: object
+      required:
+      - request_id
+      - served_at
+      - primitive
+      - cells
+      - fact_cids
+      - schema_cid
+      - responder
+      - responder_key_epoch
+      - responder_pubkey_b32
+      - signature
+      - registry_cid
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    VerifyResp:
+      description: Response of /v1/verify. `holds` is the boolean verdict; `evidence_cids` are the fact CIDs the verifier walked to reach the verdict.
+      properties:
+        evidence_cids:
+          items:
+            $ref: '#/components/schemas/FactCid'
+          type: array
+        explanation:
+          type: string
+        holds:
+          type: boolean
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+      required:
+      - holds
+      - receipt
+      type: object
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+    VerifyReq:
+      properties:
+        cell:
+          type: string
+        claim:
+          $ref: '#/components/schemas/Claim'
+        mode:
+          enum:
+          - fast
+          - resolve
+          type: string
+      required:
+      - claim
+      - cell
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

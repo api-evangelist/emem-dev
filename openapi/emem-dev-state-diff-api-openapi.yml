@@ -1,0 +1,104 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev State Diff API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged State Diff across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: State Diff
+paths:
+  /v1/state_diff:
+    post:
+      description: 'Vector delta between the same cell at two tslots: returns the per-element residual, its L2 norm (scalar change-magnitude), the cosine between the two source vectors (orientation drift), and both source fact CIDs so the agent can quote both attestations as evidence.
+
+
+        When to use: Call when the user asks ''how much did X change between A and B'' for a foundation embedding at one place. Pass `tslot_a` and `tslot_b` (must differ); default `encoder=geotessera`. For per-band scalar change (NDVI delta, elevation delta) use `emem_diff` instead.'
+      operationId: emem_state_diff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                cell:
+                  type: string
+                encoder:
+                  default: geotessera
+                  type: string
+                tslot_a:
+                  type: integer
+                tslot_b:
+                  type: integer
+              required:
+              - cell
+              - tslot_a
+              - tslot_b
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: vintage delta of one cell between two tslots.
+      tags:
+      - State Diff
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

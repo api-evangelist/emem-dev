@@ -1,0 +1,180 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Eudr API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged eudr across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: eudr
+paths:
+  /v1/eudr_dds:
+    post:
+      description: 'Produce a Due Diligence Statement per Regulation (EU) 2023/1115 for one or more plots. Each plot carries operator-supplied geometry (GeoJSON Polygon for >4 ha, Point for ≤4 ha non-cattle per Article 2(28)), country of production (ISO3), Combined Nomenclature code (HS-6+), and quantity in kg. The endpoint applies the regulation''s 10 % canopy / 0.5 ha / 5 m height forest definition (Article 2(4)) using the EU Commission''s expected JRC GFC2020 V3 baseline plus Hansen GFC v1.12 loss-year confirmation; Sims et al. 2025 driver attribution and RADD SAR fallback layer on when those connectors are wired (Absence today). The response is an Annex II-shaped envelope with per-plot verdict (pass/fail/not_in_scope/indeterminate/below_mmu), failing-cell fraction, and signed fact CIDs for every per-cell verdict, operators quote them in the company''s Article 12 record. Article 9(1)(b) legality (land tenure, FPIC, country-of-origin laws) is structurally out of EO scope; the response carries an explicit `legality_disclaimer` for that reason.
+
+
+        When to use: Call when a commodity supplier or EU importer needs to evidence due diligence under Regulation (EU) 2023/1115. Use the plot-level signed receipts as evidence inside the operator''s company record; pair with a partner legality module before submitting the final DDS to the EU Information System (TRACES NT). For a single plot, pass one entry in `plots`. For batch supply-chain audits, pass up to a few dozen plots in one call, the endpoint fans out per plot. Surface the failing-cell fraction, the chosen forest baseline, and the legality disclaimer in the user-facing response so the operator understands what the engine claims (and does not).'
+      operationId: emem_eudr_dds
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EudrDdsReq'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'EUDR Due Diligence Statement: polygon-in, signed Annex II envelope out.'
+      tags:
+      - eudr
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    EudrDdsReq:
+      description: POST /v1/eudr_dds body, produces a signed Annex II-shaped Due Diligence Statement per Regulation (EU) 2023/1115. Pair every plot with its operator-supplied geometry (GeoJSON Polygon for >4 ha, Point for ≤4 ha non-cattle per Article 2(28)), country of production (ISO3), Combined Nomenclature code (HS-6+), and quantity in kg. The endpoint runs eudr_compliance@1 per cell (JRC GFC2020 V3 legal baseline + Hansen GFC v1.12 post-cut-off loss-year consensus; JRC GFC2020 is read as 10° COG tiles for fast cold reads across all geographies). JRC TMF v2025, WRI-Sims driver attribution and RADD SAR are deferred off the hot path for latency (TMF) / pending fast public endpoints (WRI, RADD). Applies the Article 2(4) 0.5 ha MMU floor at plot aggregation, validates `commodity_hs` against Annex I, and emits the structured envelope. The response carries an explicit `legality_disclaimer` because Article 9(1)(b) legality verification (land tenure, FPIC, country-of-origin law compliance) is structurally out of Earth-observation scope. Response includes an ed25519-signed `receipt` over the union of every per-cell fact_cid; verifiable offline at `/verify` (or `/v1/verify_receipt`). Pass an optional `scope` block (`{user_id, agent_id, run_id, org_id}`) to bind the receipt to a tenant.
+      properties:
+        cut_off_date:
+          default: '2020-12-31'
+          description: EUDR cut-off date (ISO 8601). The regulation's value is 2020-12-31.
+          type: string
+        forest_baseline_override:
+          description: 'Optional baseline override: ''jrc_gfc2020_v3'' (default), ''hansen_only'', or ''both'' (consensus).'
+          type: string
+        legality_module:
+          description: Operator-chosen legality provider. Default 'none' surfaces the explicit Article 9(1)(b) out-of-scope disclaimer.
+          type: string
+        max_cells_per_plot:
+          description: Sample budget per POLYGON plot. Omit and it is auto-derived from the polygon area (~110 cells/ha, clamped to 51,200); there is no fixed default to declare, which is why this carries none. POINT plots evaluate at 1 cell regardless of this value.
+          maximum: 51200
+          minimum: 1
+          type: integer
+        operator:
+          description: Operator identification per Annex II §1.
+          properties:
+            address:
+              type: string
+            eori:
+              type: string
+            name:
+              type: string
+          type: object
+        plots:
+          description: One or more plots to evaluate.
+          items:
+            properties:
+              commodity_hs:
+                description: Combined Nomenclature code (HS-6+). First 4 digits detect cattle (0102/0201/0202) for the Article 2(28) cattle exemption.
+                type: string
+              commodity_name:
+                description: Optional plain-English commodity name.
+                type: string
+              country_of_production:
+                description: ISO 3166-1 alpha-3 (e.g. BRA, IDN, CIV).
+                type: string
+              geometry_geojson:
+                description: GeoJSON Polygon (preferred) OR Point (for ≤4 ha non-cattle) OR a bare {bbox:[minlng,minlat,maxlng,maxlat]}.
+                oneOf:
+                - properties:
+                    coordinates: {}
+                    type:
+                      enum:
+                      - Polygon
+                      - Point
+                      type: string
+                  required:
+                  - type
+                  - coordinates
+                  type: object
+                - properties:
+                    bbox:
+                      items:
+                        type: number
+                      maxItems: 4
+                      minItems: 4
+                      type: array
+                  required:
+                  - bbox
+                  type: object
+              plot_id:
+                description: Operator-supplied identifier; preserved verbatim in the response.
+                type: string
+              quantity_kg:
+                description: Net mass in kilograms (Annex II §3).
+                type: number
+              request_visual_evidence:
+                default: false
+                description: 'Opt-in: build a per-year visual deforestation-evidence block for this plot. Adds a `visual_evidence` field to the per-plot result containing a Sentinel-2 NDVI annual timeline from 2020..current_year + Sentinel-1 RTC VV-backscatter cloud-independent confirmation + per-cell scene.png URLs the agent can render as a 6-up year-by-year grid. Adds upstream Sentinel fan-out per plot; the EUDR budget auto-bumps to 60s + 110s × n_visual_plots (capped at 480s, deliberately under the ~300s client/edge cut for 1–2 plots) when this flag is set on any plot. Visual-evidence concurrency is bounded (EMEM_EUDR_VISUAL_CONCURRENCY) and the route is capped (EMEM_EUDR_MAX_INFLIGHT) so a visual-evidence burst can''t starve the server. The block carries its own `verdict` (`no_visual_deforestation` / `visual_deforestation_suspected` / `indeterminate_no_baseline`) computed from NDVI drop ≥ EMEM_VISUAL_NDVI_DROP_THRESHOLD (default 0.15 vs 2020, Pelletier 2024) and S1 VV drop ≥ EMEM_VISUAL_S1_DROP_DB_THRESHOLD (default 3 dB, Reiche 2018). All underlying facts are signed Primary records under the responder''s identity; auditors cite ndvi_fact_cids + s1_fact_cids.'
+                type: boolean
+              supplier:
+                description: Optional supplier identifier.
+                type: string
+            required:
+            - plot_id
+            - geometry_geojson
+            - country_of_production
+            - commodity_hs
+            - quantity_kg
+            type: object
+          minItems: 1
+          type: array
+      required:
+      - plots
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

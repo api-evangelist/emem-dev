@@ -1,0 +1,99 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Triple Consensus API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Triple Consensus across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Triple Consensus
+paths:
+  /v1/triple_consensus:
+    post:
+      description: 'Three-encoder change ensemble: compute the cosine change between the two most-recent DISTINCT vintages for each of the Clay, Prithvi, and Tessera embeddings at the cell, then vote each encoder''s change against `consensus_threshold` (registry default 0.15). Returns each encoder''s change magnitude, its vote, and the consensus verdict (how many of the three agree change happened). Two caveats ride every response. First, the gate is NOT calibrated per encoder: 0.15 is a threshold for spectral change, applied unchanged to cosine distances in three embedding spaces with different scales, and the deployed Prithvi checkpoint''s change tops out near 0.1155, under the gate. Prithvi therefore never votes, `all_three` is arithmetically unreachable, and `two_of_three` means Clay plus Tessera; read `encoders_used[].change` per encoder instead of the vote, and see the `gate_calibration` field. Second, this tool MATERIALIZES a missing prior vintage, so despite its Read category it signs and persists facts and spends GPU time. Degrades to a signed `inconclusive` when the GPU sidecar is unreachable or a cell lacks two distinct vintages for the encoders. The response carries a machine-readable `degraded` boolean, a `degraded_reason` (closed set: `gpu_sidecar_unavailable`, `single_vintage`, `outside_coverage`, `no_finite_overlap`, `recall_failed`, `partial_consensus_N_of_3`, `insufficient_encoders`), and `degraded_message`; each `encoders_absent[]` entry also carries its own `reason_code`. A 2-of-3 result reports `degraded:true` even though it still carries a real ensemble number. This is an experiment over model outputs: each leg carries a `model_output` caution (learned representation, not a measurement), so corroborate with a deterministic band before load-bearing use.
+
+
+        When to use: Call when the user wants a robust, model-agnostic ''did this place change'' answer backed by three independent foundation encoders rather than one, e.g. cross-checking a single-encoder alert, or auditing change with consensus voting. Gate on `degraded`/`degraded_reason`, a `degraded:true` partial consensus is lower-confidence than a full triple. Surface the per-encoder change + the vote count. When only one encoder has two vintages the verdict is honest about the thin evidence. For a single-encoder vector delta use `emem_state_diff`; for the NDVI+embedding proxy use `emem_deforestation_alert`.'
+      operationId: emem_triple_consensus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                cell:
+                  description: cell64 or place name
+                  type: string
+                consensus_threshold:
+                  description: Override the registry gate (default 0.15), clamped to (0,1).
+                  type: number
+              required:
+              - cell
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'clay_prithvi_tessera change-ensemble: cosine change across the two most-recent…'
+      tags:
+      - Triple Consensus
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

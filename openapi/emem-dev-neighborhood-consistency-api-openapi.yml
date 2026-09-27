@@ -1,0 +1,96 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Neighborhood Consistency API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Neighborhood Consistency across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Neighborhood Consistency
+paths:
+  /v1/neighborhood_consistency:
+    post:
+      description: 'Score how much a cell looks like its surroundings: consistency = (1/8) Σ cosine(centre, neighbour_i) over the 8 immediate cell64 neighbours, plus outlier_score = 1 − consistency. High consistency = the cell blends in (Tobler''s First Law); high outlier_score = it stands out, an edge, a fresh clearing, a built patch in farmland. CPU-only GeoTessera embeddings.
+
+
+        When to use: Call to flag a cell that is anomalous versus its local neighbourhood (change/edge detection, QA of a homogeneous expectation, scouting for the odd-one-out). Signed `inconclusive` when neither the centre nor any neighbour carried an embedding. For year-over-year change at one cell use `emem_state_diff` or `emem_triple_consensus`.'
+      operationId: emem_neighborhood_consistency
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                cell:
+                  description: cell64 or place name
+                  type: string
+              required:
+              - cell
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: Spatial consistency/outlier of a cell vs its 8 immediate cell64 neighbours…
+      tags:
+      - Neighborhood Consistency
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

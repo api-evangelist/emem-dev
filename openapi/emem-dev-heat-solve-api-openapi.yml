@@ -1,0 +1,106 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Heat Solve API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Heat Solve across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Heat Solve
+paths:
+  /v1/heat_solve:
+    post:
+      description: 'Forward-step 2-D explicit finite-difference solver for the heat equation ∂u/∂t = α∇²u over a 3×3 cell stencil centred on `cell`. Reads `modis.lst_day_8day` (Land Surface Temperature) at the centre and 8 cell64 neighbours, integrates N hours ahead under a CFL-stable timestep, returns a signed forecast. Real PDE rollout, not a decay-scoring heuristic.
+
+
+        When to use: Use when the user wants a short-horizon LST forecast (urban heat island, surface-temperature evolution, heatwave onset modelling) at a specific cell. Default α=1e-6 m²/s matches urban surface diffusivity (Oke 2017); pass a smaller α for water bodies or higher for vegetated surfaces. The solver caps at one-week horizons because the 8-day MODIS composite stops being a representative initial condition past that. Each call materialises 9 MODIS facts (one per neighbour) on miss, first call ~5 s cold, ~30 ms warm. Receipt cites all 9 input fact CIDs.'
+      operationId: emem_heat_solve
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeatSolveReq'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 2-D explicit-FD heat-equation solver (forecast LST N hours ahead from a 3×3…
+      tags:
+      - Heat Solve
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    HeatSolveReq:
+      properties:
+        cell:
+          description: cell64 string. The solver evaluates LST evolution at this cell's centre.
+          type: string
+        diffusivity_m2_per_s:
+          default: 1.0e-06
+          description: Thermal diffusivity α (m²/s). Default 1e-6 matches urban surfaces (Oke 2017 §2.3 Table 2.4); use ~5e-7 for vegetation, ~1.4e-7 for water.
+          type: number
+        hours_ahead:
+          default: 6
+          description: Forecast horizon in hours. Capped at 168 (one week).
+          type: number
+      required:
+      - cell
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

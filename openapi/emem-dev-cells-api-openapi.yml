@@ -1,0 +1,455 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Cells API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Cells across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Cells
+paths:
+  /v1/cells/{cell64}:
+    get:
+      operationId: emem_recall_cell_get
+      parameters:
+      - in: path
+        name: cell64
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignedResponse'
+          description: ok
+      summary: recall facts at a cell
+      tags:
+      - Cells
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/cells/{cell64}/geojson:
+    get:
+      description: 'Cell polygon as a native MCP EmbeddedResource (mimeType application/geo+json). Properties carry centre lat/lng, bbox, approx size in metres, and the 8-cell neighbourhood, drop straight into Mapbox / Leaflet / Deck.gl / QGIS without a GIS pipeline.
+
+
+        When to use: Call when the agent (or a downstream renderer) needs the cell as geographic geometry, for map overlays, polygon-clipping ops, or feeding a styling pipeline. Pass `cell` as cell64 or place name. The result is a GeoJSON Feature with Polygon geometry; for a FeatureCollection that includes every recalled fact''s value as a property, fetch /v1/cells/{cell64}/recall_geojson?bands=... over plain REST instead.'
+      operationId: emem_cell_geojson
+      parameters:
+      - in: path
+        name: cell64
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: cell polygon as GeoJSON
+      tags:
+      - Cells
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/cells/{cell64}/info:
+    get:
+      operationId: emem_cell_info
+      parameters:
+      - in: path
+        name: cell64
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: cell64 introspection (centroid, bbox, neighbors)
+      tags:
+      - Cells
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/cells/{cell64}/recall_geojson:
+    get:
+      description: cell polygon as GeoJSON Feature with every recalled fact embedded as a property, paste straight into Mapbox/Leaflet/Deck.gl
+      operationId: emem_cell_recall_geojson
+      parameters:
+      - in: path
+        name: cell64
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: bands
+        required: false
+        schema:
+          description: comma-separated band list; default = every recallable band at this cell
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: cell polygon as GeoJSON Feature with every recalled fact embedded as a…
+      tags:
+      - Cells
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/cells/{cell64}/scene.png:
+    get:
+      operationId: emem_cell_scene_png
+      parameters:
+      - in: path
+        name: cell64
+        required: true
+        schema:
+          type: string
+      - description: max eo:cloud_cover percent
+        in: query
+        name: max_cloud
+        required: false
+        schema:
+          default: 20.0
+          type: number
+      - description: ISO-8601 date or datetime; returns the most recent S2 scene at or before this instant (window resolved server-side via EMEM_SCENE_AT_LOOKBACK_DAYS, default 7d). Ignored when `datetime` is also supplied.
+        in: query
+        name: at
+        required: false
+        schema:
+          example: '2024-06-15'
+          format: date-time
+          type: string
+      - description: Explicit STAC datetime window `A/B`; takes precedence over `at`.
+        in: query
+        name: datetime
+        required: false
+        schema:
+          example: 2024-06-01T00:00:00Z/2024-06-30T00:00:00Z
+          type: string
+      responses:
+        '200':
+          content:
+            image/png:
+              schema:
+                format: binary
+                type: string
+          description: ok (image/png)
+      summary: Sentinel-2 true-colour thumbnail (256×256 PNG)
+      tags:
+      - Cells
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/cells/{cell64}/scene.rgb:
+    get:
+      description: 'True-colour Sentinel-2 L2A RGB thumbnail centred on a cell. PNG returned as a native MCP ImageContent block (mimeType image/png). Pure-Rust pipeline: STAC search + HTTP-Range COG reads + 2-98 percentile stretch + PNG encode.
+
+
+        When to use: Call when the user wants a VISUAL of a place, ''show me what this looks like'', ''before/after the flood'', ''is there a forest here'', ''is this developed''. Returns a 256×256 px RGB image (~2.56 km × ~2.56 km at S2''s 10 m native resolution), centred on the cell. Pass `cell` as a cell64 string OR a place name (auto-resolved). `max_cloud` filters scenes by `eo:cloud_cover` (default 20 %); raise it (60–80 %) for cloud-prone tropics if you keep getting ''no scene'' errors. `datetime` is an RFC 3339 interval like `"2024-01-01T00:00:00Z/2024-12-31T00:00:00Z"` for a temporal slice (defaults to last 90 days). `structuredContent` carries the STAC item id, capture time, cloud_cover, EPSG, the per-channel reflectance percentile stretch values used, and `illumination` (sun azimuth and elevation, view azimuth and incidence, as the granule recorded them) -- quote those alongside the image so the receipt is reproducible, and use the sun to check any height you claim: a vertical object casts height/tan(elevation) metres toward azimuth+180.'
+      operationId: emem_cell_scene_rgb
+      parameters:
+      - in: path
+        name: cell64
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: max_cloud
+        required: false
+        schema:
+          default: 20.0
+          type: number
+      - description: ISO-8601 date or datetime; returns the most recent S2 scene at or before this instant. Ignored when `datetime` is also supplied.
+        in: query
+        name: at
+        required: false
+        schema:
+          format: date-time
+          type: string
+      - description: Explicit STAC datetime window `A/B`; takes precedence over `at`.
+        in: query
+        name: datetime
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+          description: raw rgb8 plane (w*h*3 bytes)
+      summary: Sentinel-2 true-colour thumbnail as raw 8-bit RGB pixel buffer (no PNG framing).
+      tags:
+      - Cells
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    Cost:
+      description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
+      properties:
+        credits:
+          description: Conceptual cost units; 0 for L0/L1 read endpoints on the hosted responder.
+          type: number
+        latency_p50_ms:
+          type: number
+        latency_p99_ms:
+          type: number
+        source_freshness_s:
+          description: 'Age of the STALEST source this response cites: now minus the earliest captured_at across the returned facts'' sources. null when nothing in the response carries a dated source, which is the honest answer for a primitive that reads no observation. Was a hardcoded 0 until 2026-08-05, so a 2021 DEM tile reported as 0 s old; a null here means unknown, never fresh.'
+          type:
+          - integer
+          - 'null'
+        was_cached:
+          type: boolean
+      type: object
+    FactCid:
+      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
+      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
+      maxLength: 52
+      minLength: 52
+      pattern: ^[a-z2-7]{52}$
+      type: string
+    Receipt:
+      description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
+      properties:
+        cells:
+          items:
+            $ref: '#/components/schemas/Cell64'
+          type: array
+        cost:
+          $ref: '#/components/schemas/Cost'
+        fact_cids:
+          items:
+            $ref: '#/components/schemas/FactCid'
+          type: array
+        intent:
+          description: Optional natural-language hint. Populated when served via /v1/intent.
+          type: string
+        merkle_proof:
+          description: 'Inclusion proof for `fact_cids[0]` when persisted. Omitted from JSON when the cited facts pre-date the proof tree; under preimage_version 2 that absence is itself signed (an explicit ABSENT marker), so it is a statement rather than a gap. Do not strip this field: v2 binds it into the signature and removing it makes an authentic receipt report `signature_valid: false`.'
+          properties:
+            leaf_index:
+              description: u32 leaf index in the canonical-sorted batch.
+              type: integer
+            path:
+              description: Sibling hashes leaf→root.
+              items:
+                description: 32-byte sibling hash as a byte array
+                items:
+                  type: integer
+                type: array
+              type: array
+            root:
+              description: The expected 32-byte batch root as a byte array.
+              items:
+                type: integer
+              type: array
+            version:
+              description: 'Merkle hashing rule: 0 (omitted) = legacy unprefixed, 1 = RFC 6962-style prefixed.'
+              type: integer
+          required:
+          - leaf_index
+          - path
+          - root
+          type: object
+        primitive:
+          description: 'Namespaced wire form: `emem.recall`, `emem.find_similar`, `emem.verify`, …'
+          type: string
+        registry_cid:
+          description: CID of the function registry version in force.
+          type: string
+        request_id:
+          description: ULID generated per request.
+          type: string
+        responder:
+          $ref: '#/components/schemas/PubKey'
+        responder_key_epoch:
+          description: u32 rotation counter; bumps when the operator rotates keys.
+          type: integer
+        responder_pubkey_b32:
+          $ref: '#/components/schemas/PubKey'
+        schema_cid:
+          description: CID of the active CDDL profile.
+          type: string
+        served_at:
+          description: ISO 8601 UTC, second precision.
+          type: string
+        signature:
+          description: Ed25519 signature, 64 bytes base32-nopad-lowercase encoded.
+          type: string
+        source_versions:
+          additionalProperties:
+            type: string
+          description: Per-source freshness map.
+          type: object
+      required:
+      - request_id
+      - served_at
+      - primitive
+      - cells
+      - fact_cids
+      - schema_cid
+      - responder
+      - responder_key_epoch
+      - responder_pubkey_b32
+      - signature
+      - registry_cid
+      type: object
+    Fact:
+      description: A primary attestation at (cell, band, tslot). `value` is the band's typed reading (number, array of numbers for vector bands, or a categorical class id). `unit` is the band's declared unit (e.g. `m_msl`, `degC`, `mm`).
+      properties:
+        absence_reason:
+          description: Present only when kind=`absence`.
+          enum:
+          - unavailable_capability
+          - outside_coverage
+          - archetype_seed_unavailable
+          - gpu_unavailable
+          - upstream_error
+          - upstream_timeout
+          type: string
+        band:
+          type: string
+        cell:
+          $ref: '#/components/schemas/Cell64'
+        fact_cid:
+          $ref: '#/components/schemas/FactCid'
+        kind:
+          description: '`primary` = signed measurement; `absence` = signed "we don''t have this here" with a typed reason.'
+          enum:
+          - primary
+          - absence
+          type: string
+        provenance:
+          description: Upstream source key (e.g. `copdem30m`, `s2_l2a`, `cams_eu`).
+          type: string
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+        tslot:
+          $ref: '#/components/schemas/Tslot'
+        unit:
+          type: string
+        value:
+          description: Number, array of numbers, or class id depending on band type.
+      required:
+      - kind
+      - cell
+      - band
+      - tslot
+      - value
+      - fact_cid
+      - receipt
+      type: object
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string
+    SignedResponse:
+      description: Standard recall envelope. `facts` is the array of signed facts touched by this call (subset of `bands_already_attested_at_cell` after auto-materialization). `receipt` is the responder's signature over the call. `materialize_notes` lists any lazy-materializer activity that happened to satisfy the request, empty for purely warm reads.
+      properties:
+        bands_already_attested_at_cell:
+          description: Bands the cell already has facts for, regardless of whether they were requested. Useful for follow-up calls without a second /v1/coverage_matrix hit.
+          items:
+            type: string
+          type: array
+        caveats:
+          description: Plain-language constraints the caller should fold into their answer (grid resolution, revisit cadence, sample-size warnings).
+          items:
+            type: string
+          type: array
+        facts:
+          items:
+            $ref: '#/components/schemas/Fact'
+          type: array
+        materialize_notes:
+          items:
+            $ref: '#/components/schemas/MaterializeNote'
+          type: array
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+      required:
+      - facts
+      - receipt
+      type: object
+    Tslot:
+      description: Band-tempo-relative integer offset from the emem epoch. Each band declares its tempo (`fast` / `medium` / `slow` / `static`); tslot is the rounded count of that tempo's unit since the epoch.
+      minimum: 0
+      type: integer
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+    MaterializeNote:
+      description: 'One entry in the response''s `materialize_notes[]`, recording what the lazy materializer did during this call. status:"materialized" means a signed fact was minted and persisted (a Primary observation OR a confirmed, evidence-backed Absence - both are signed and citeable by fact_cid). status:"skipped" means nothing was signed: `reason_class` says why (transient `timeout`/`upstream_error`, retryable; or structural `unknown_band`/`no_materializer`/`capability_unavailable`, not retryable here) and `absence` is always false, because a skip is ''unknown'', never a confirmed absence.'
+      properties:
+        absence:
+          description: Always false on a skip; a confirmed absence is a signed fact with status:materialized, not a skip.
+          type: boolean
+        band:
+          type: string
+        cell:
+          $ref: '#/components/schemas/Cell64'
+        fact_cid:
+          type: string
+        latency_ms:
+          type: number
+        ok:
+          type: boolean
+        reason:
+          type: string
+        reason_class:
+          enum:
+          - timeout
+          - upstream_error
+          - unknown_band
+          - no_materializer
+          - capability_unavailable
+          type: string
+        retryable:
+          type: boolean
+        status:
+          enum:
+          - materialized
+          - skipped
+          type: string
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

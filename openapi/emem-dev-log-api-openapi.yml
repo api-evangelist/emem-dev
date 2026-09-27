@@ -1,0 +1,272 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Log API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Log across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Log
+paths:
+  /v1/log/consistency:
+    get:
+      description: 'Return an RFC 6962 consistency proof that the tree of size `first` is an append-only prefix of size `second` (defaults to the current size). This is the append-only guarantee: it catches a responder that rewrites or forks history.
+
+
+        When to use: Call with `first` = the tree_size of an STH you pinned earlier. Verify the returned proof offline against that STH''s root; if the first_root does not match what you pinned, the log rewrote history.'
+      operationId: emem_log_consistency
+      parameters:
+      - in: query
+        name: first
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+      - in: query
+        name: second
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'transparency log: RFC 6962 consistency proof that the tree of size `first` is…'
+      tags:
+      - Log
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/log/entries:
+    get:
+      description: 'transparency log: RFC 6962 §4.6 get-entries. Returns the raw attestations at global indices [start, end), as {leaf_index, attestation_cbor_b32, entry_hash_b32}. This is what makes the log AUDITABLE rather than only provable: /v1/log/inclusion proves a cid you already hold is committed, while enumeration lets a third party read what else is in the tree. Entry i is the preimage of leaf i in /v1/log/sth, so blake3(attestation_cbor_b32) == entry_hash_b32 and /v1/log/inclusion proves that hash sits under the STH, with no trust in this responder. Capped at 256 per call (RFC 6962 permits returning fewer than asked); the response carries end_exclusive and truncated so you paginate on what you received, not what you requested.'
+      operationId: emem_log_entries
+      parameters:
+      - description: first global leaf index, inclusive
+        in: query
+        name: start
+        schema:
+          minimum: 0
+          type: integer
+      - description: exclusive end; defaults to start+256 and is clamped to it
+        in: query
+        name: end
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '501':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'transparency log: RFC 6962 §4.6 get-entries.'
+      tags:
+      - Log
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/log/inclusion:
+    get:
+      description: 'Return an RFC 6962 inclusion (audit) proof that a log entry is committed under the current signed tree head. Verify offline: the audit path re-derives the STH root from the entry''s leaf hash.
+
+
+        When to use: Call to prove a specific log entry is in the log. Pass `leaf_index` (0-based position) or `entry_hash` (base32 of the record''s blake3). Returns the audit path plus the STH to check it against.'
+      operationId: emem_log_inclusion
+      parameters:
+      - in: query
+        name: leaf_index
+        required: false
+        schema:
+          minimum: 0
+          type: integer
+      - in: query
+        name: entry_hash
+        required: false
+        schema:
+          description: base32-nopad of the record's 32-byte blake3
+          type: string
+      - description: 1..=current head; default the current head
+        in: query
+        name: tree_size
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+      summary: 'transparency log: RFC 6962 inclusion (audit) proof that a log entry is…'
+      tags:
+      - Log
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/log/sth:
+    get:
+      description: 'Fetch the responder-signed tree head (STH) over the whole append-only attestation log: {tree_size, root_b32, signed_at, responder_pubkey_b32, signature_b32}. The signature is ed25519 over a domain-separated preimage, verifiable offline.
+
+
+        When to use: Call to pin a cryptographic commitment to the log''s current state. Save the STH, then later call emem_log_consistency to prove the log only grew (append-only), a mismatch means the responder rewrote history. No arguments.'
+      operationId: emem_log_sth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'transparency log: signed tree head (RFC 6962) over the append-only attestation…'
+      tags:
+      - Log
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/log/witness:
+    post:
+      description: 'transparency log: submit a witness ed25519 co-signature over a (tree_size, root) tree-head claim. The responder verifies the signature AND that the root matches its own history at that size before recording it. Preimage: PreimageV1("emem.translog.witness.v1"){1:u64_be tree_size, 2:root, 3:witness_pubkey}.'
+      operationId: emem_log_witness
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                root_b32:
+                  type: string
+                signature_b32:
+                  type: string
+                tree_size:
+                  minimum: 1
+                  type: integer
+                witness_pubkey_b32:
+                  type: string
+              required:
+              - tree_size
+              - root_b32
+              - witness_pubkey_b32
+              - signature_b32
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'transparency log: submit a witness ed25519 co-signature over a (tree_size…'
+      tags:
+      - Log
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/log/witnesses:
+    get:
+      description: 'List witness co-signatures recorded for tree heads, independent parties that counter-signed a (tree_size, root) claim under their own ed25519 key. Co-signatures let a client detect split-view equivocation. Empty until witnesses submit (submission is a signed write, done off-MCP via POST /v1/log/witness).
+
+
+        When to use: Call to see who has independently vouched for the log''s history. For each co-signature, verify it offline, then call emem_log_consistency from that witness''s tree_size to the current size to confirm the log the witness saw is a prefix of the log you see. Optional `tree_size` filter.'
+      operationId: emem_log_witnesses
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'transparency log: witness co-signatures recorded for the current signed tree…'
+      tags:
+      - Log
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

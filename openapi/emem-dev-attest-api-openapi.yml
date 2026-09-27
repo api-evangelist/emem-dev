@@ -1,0 +1,148 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Attest API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Attest across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Attest
+paths:
+  /v1/attest:
+    post:
+      description: 'Submit a signed attestation (JSON). FACT PLANE IS CLOSED BY DEFAULT: an attestation whose facts occupy an address (cell, band, tslot) is accepted only from this responder''s own key, a device enrolled through the OS-trace gate, or a key the operator lists; any other verified signature is refused 403 level_too_low. Derivations and edges take no address and are accepted from any T1 key (see /v1/derive). Body carries a batch envelope: `batch_root` (the 32-byte BLAKE3 merkle root over the per-fact CIDs, serialized as a 32-element array of byte integers, NOT a hex string), `attester`, `signature` (ed25519 over blake3(batch_root||registry_cid||schema_cid)), and `facts[]` (each is a tagged variant carrying `kind` plus cell, band, tslot, value, and per-fact metadata). The responder rejects facts that don''t hash into the named batch_root, and rejects the envelope if the signature does not verify against the attester pubkey under the corresponding ed25519 key.'
+      operationId: emem_attest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                attester:
+                  description: '32-byte ed25519 attester pubkey, as a 32-element array of byte integers (serde [u8;32]). NOT a base32 string, despite base32 being the spelling everywhere else on this responder: these bytes sit inside the canonical CBOR that fact_cid hashes, so the wire form cannot be changed without moving every content address ever issued. Convert with base64.b32decode(pubkey_b32.upper()+''=''*((8-len(pubkey_b32)%8)%8)).'
+                  items:
+                    maximum: 255
+                    minimum: 0
+                    type: integer
+                  maxItems: 32
+                  minItems: 32
+                  type: array
+                batch_root:
+                  description: 32-byte BLAKE3 merkle root over the per-fact CIDs, as a 32-element array of byte integers (serde [u8;32]). A hex string is NOT accepted.
+                  items:
+                    maximum: 255
+                    minimum: 0
+                    type: integer
+                  maxItems: 32
+                  minItems: 32
+                  type: array
+                facts:
+                  items:
+                    properties:
+                      band:
+                        type: string
+                      cell:
+                        type: string
+                      kind:
+                        description: Tagged fact variant; required. `primary` = direct observation, `derivative` = deterministic function over parent facts, `absence` = signed confirmed-absence.
+                        enum:
+                        - primary
+                        - derivative
+                        - absence
+                        type: string
+                      privacy_class:
+                        type: string
+                      signed_at:
+                        type: string
+                      tslot:
+                        type: integer
+                      value: {}
+                    required:
+                    - kind
+                    - cell
+                    - band
+                    - value
+                    type: object
+                  type: array
+                signature:
+                  description: 'ed25519 signature over blake3(batch_root||registry_cid||schema_cid), as a 64-element array of byte integers (serde [u8;64]). Same reason as `attester`: not a base32 string.'
+                  items:
+                    maximum: 255
+                    minimum: 0
+                    type: integer
+                  maxItems: 64
+                  minItems: 64
+                  type: array
+              required:
+              - batch_root
+              - attester
+              - signature
+              - facts
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: Submit a signed attestation (JSON).
+      tags:
+      - Attest
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

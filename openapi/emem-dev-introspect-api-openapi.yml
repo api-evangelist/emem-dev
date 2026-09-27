@@ -1,0 +1,68 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Introspect API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged introspect across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Introspect
+paths:
+  /v1/guard/capabilities:
+    get:
+      description: 'The emem-guard contract, machine-readable: every deny code and what it means, every remedy and what to do about it, the reason grammar, what the hosted route will and will not do, and how to stand up a node that enforces. Mirrors the /.well-known/emem-guard.json a self-hosted node serves, so an agent that learned one learned both.'
+      operationId: emem_guard_capabilities
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: 'The emem-guard contract, machine-readable: every deny code and what it means…'
+      tags:
+      - Introspect
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+  /v1/guard/selfhost:
+    get:
+      description: 'Returns the full emem-guard self-host skill as markdown, plus the exact build, test and run commands. A node you run needs no account here and no key from us: it generates its own signing key, keeps its own append-only verdict log, verifies what it holds, and cites what it does not. It exposes checkpoints for Anthropic Inference hooks, Claude Code client hooks, MCP tools/call, OpenAI-shaped clients, CloudEvents 1.0 and OPA-style policy clients, plus a native route that belongs to no vendor. Memory algebra: the `introspect` operation (https://emem.dev/docs/model.html).
+
+
+        When to use: Call when you want to ENFORCE grounding rather than consult it, when you need a verdict over a corpus this responder does not hold, or when a signed, offline-verifiable record of every allow and deny has to live on infrastructure you control. Every step in the returned document is a command plus a check, written to be run unattended.'
+      operationId: emem_guard_selfhost
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+      summary: The full self-host procedure for emem-guard as markdown, plus the exact build…
+      tags:
+      - Introspect
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

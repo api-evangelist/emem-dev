@@ -1,0 +1,290 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Locate API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Locate across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Locate
+paths:
+  /v1/locate:
+    get:
+      description: 'Mint the canonical, vendor-neutral address (cell64) for a real-world place: the shared spatial identity every agent resolves to identically, so two models refer to the same ground instead of two descriptions of it. Also returns the topic-grouped inventory of bands and algorithms recallable there. For a first-class OBJECT identity (a bridge, a plot, a named place) rather than a raw cell, use emem_entity. Send EITHER `lat`+`lng` as numbers OR a free-text place; coordinates win when both arrive. `q`, `query` and `name` are all accepted spellings of `place`. A key this schema does not declare is reported in `_unrecognised_arguments`, so a typo answers about somewhere else rather than erroring.
+
+
+        When to use: Call when the input names a real-world place and the next step needs its cell64, or wants to know which bands exist there before recalling. `data_at_this_cell` carries `live_bands_by_topic` (every recallable band, grouped by topic), `algorithms_for_topic` (recipes that fuse them into named scores) and `declared_but_no_materializer_at_this_responder`. For one packaged answer in a single call, use `emem_ask`.'
+      operationId: emem_locate_get
+      parameters:
+      - in: query
+        name: place
+        required: false
+        schema:
+          description: Free-text place name. REQUIRED unless lat+lng are provided.
+          type: string
+      - in: query
+        name: q
+        required: false
+        schema:
+          description: Alias for `place`.
+          type: string
+      - in: query
+        name: query
+        required: false
+        schema:
+          description: Alias for `place`.
+          type: string
+      - in: query
+        name: name
+        required: false
+        schema:
+          description: Alias for `place`.
+          type: string
+      - in: query
+        name: lat
+        required: false
+        schema:
+          description: WGS-84 latitude. REQUIRED with `lng` unless `place` is provided.
+          type: number
+      - in: query
+        name: lng
+        required: false
+        schema:
+          description: WGS-84 longitude. REQUIRED with `lat` unless `place` is provided.
+          type: number
+      - in: query
+        name: lon
+        required: false
+        schema:
+          description: Alias for `lng`.
+          type: number
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocateResp'
+          description: ok
+      summary: resolve a place (or lat/lng) to a cell64 via query string, convenience wrapper…
+      tags:
+      - Locate
+    post:
+      description: 'Mint the canonical, vendor-neutral address (cell64) for a real-world place: the shared spatial identity every agent resolves to identically, so two models refer to the same ground instead of two descriptions of it. Also returns the topic-grouped inventory of bands and algorithms recallable there. For a first-class OBJECT identity (a bridge, a plot, a named place) rather than a raw cell, use emem_entity. Send EITHER `lat`+`lng` as numbers OR a free-text place; coordinates win when both arrive. `q`, `query` and `name` are all accepted spellings of `place`. A key this schema does not declare is reported in `_unrecognised_arguments`, so a typo answers about somewhere else rather than erroring.
+
+
+        When to use: Call when the input names a real-world place and the next step needs its cell64, or wants to know which bands exist there before recalling. `data_at_this_cell` carries `live_bands_by_topic` (every recallable band, grouped by topic), `algorithms_for_topic` (recipes that fuse them into named scores) and `declared_but_no_materializer_at_this_responder`. For one packaged answer in a single call, use `emem_ask`.'
+      operationId: emem_locate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocateReq'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocateResp'
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: resolve a place name (or lat/lng) to a cell64
+      tags:
+      - Locate
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    LocateResp:
+      description: Response of /v1/locate. `cell64` is the canonical handle for the resolved place; `polygon_bbox` is present when the geocoder found an extent (city / park / lake / country / region), absent for point features. `via` declares which layer of the seven-tier embedded cascade answered, falling back to network (Photon → Nominatim) only when no embedded layer matched.
+      properties:
+        cell64:
+          $ref: '#/components/schemas/Cell64'
+        data_at_this_cell:
+          description: Topic-grouped inventory of recallable bands and applicable algorithms at this cell. Lets the caller chain into /v1/recall without a second introspection round-trip.
+          type: object
+        label:
+          description: Reader-friendly place label.
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        localized_names:
+          additionalProperties:
+            type: string
+          description: Map of ISO 639 language tag (`en`, `bn`, `zh-Hans`, `ar`, …) to localized name, when the resolved entity is in Overture and carries `names.common`. Lets an agent surface the user's-language label without a second geocoder call.
+          type: object
+        neighborhood_cells:
+          description: Eight neighbouring cell64s of the resolved centre cell.
+          items:
+            $ref: '#/components/schemas/Cell64'
+          type: array
+        overture_division:
+          description: Overture-divisions provenance, present when the cascade pulled an authoritative admin polygon. `division_id` is the GERS ID (globally stable, citable in receipts). `subtype` declares the admin level (country/region/county/locality/etc). `country` is the ISO 3166-1 alpha-2 owner.
+          properties:
+            country:
+              description: ISO 3166-1 alpha-2 (e.g. `BD`, `US`).
+              type: string
+            division_id:
+              type: string
+            schema_url:
+              type: string
+            subtype:
+              enum:
+              - country
+              - region
+              - county
+              - localadmin
+              - locality
+              - borough
+              - macrohood
+              - neighborhood
+              - microhood
+              - dependency
+              type: string
+          type: object
+        polygon_bbox:
+          description: Present when the place has spatial extent.
+          properties:
+            max_lat:
+              type: number
+            max_lng:
+              type: number
+            min_lat:
+              type: number
+            min_lng:
+              type: number
+            source:
+              description: '`overture_division_area` is authoritative (conflated OSM+Esri+Meta+TomTom polygon), preferred whenever Overture has a row for the entity. `country_table` / `admin1_table` / `admin2_table` / `admin3_table` are cities1000-aggregated approximations used when Overture is unreachable. `wide_bbox_table` is the curated wide-feature override for Sahara/Amazon/Himalayas etc.'
+              enum:
+              - wide_bbox_table
+              - country_table
+              - admin1_table
+              - admin2_table
+              - admin3_table
+              - nominatim_boundingbox
+              - overture_division_area
+              - centre_cell_bbox
+              type: string
+          type: object
+        polygon_geojson:
+          description: True OSM/Overture boundary as GeoJSON `Polygon` or `MultiPolygon` when an admin tier resolved. Pass back to /v1/recall_polygon to mask the cell grid against the boundary.
+          type: object
+        polygon_sample_cells:
+          description: Up to 64 representative cells covering the polygon, pass to /v1/recall_many or /v1/recall_polygon.
+          items:
+            $ref: '#/components/schemas/Cell64'
+          type: array
+        via:
+          description: Layer of the seven-tier locate cascade that answered. `country`/`admin1`/`admin2`/`admin3` = GeoNames hierarchical-admin tables (in-process); `embedded` = cities1000 populated places (in-process); `pois` = curated GeoNames well-known landmarks (peaks/lakes/parks/airports/monuments, in-process); `wide_bbox_table` = curated wide regions (in-process); `cache` = sled hot cache; `photon`/`nominatim` = network fallback.
+          enum:
+          - direct_latlng
+          - wide_bbox_table
+          - country
+          - admin1
+          - admin2
+          - admin3
+          - embedded
+          - pois
+          - cache
+          - photon
+          - nominatim
+          type: string
+      required:
+      - cell64
+      - via
+      type: object
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string
+    LocateReq:
+      description: 'Body for POST /v1/locate. Provide `place` (free-text, geocoded via embedded gazetteer → cache → Photon → Nominatim) OR `lat`+`lng`. Mutually exclusive: at least one of (`place`/`q`/`query`/`name`) or (`lat`+`lng`) must be present.'
+      oneOf:
+      - required:
+        - place
+      - required:
+        - q
+      - required:
+        - query
+      - required:
+        - name
+      - required:
+        - lat
+        - lng
+      properties:
+        lat:
+          description: WGS-84 latitude. REQUIRED with `lng` unless `place` is provided.
+          type: number
+        lng:
+          description: WGS-84 longitude. REQUIRED with `lat` unless `place` is provided.
+          type: number
+        name:
+          description: Alias for `place`.
+          type: string
+        place:
+          description: Free-text place name. Resolved via embedded gazetteer → cache → Photon → Nominatim.
+          type: string
+        q:
+          description: Alias for `place`.
+          type: string
+        query:
+          description: Alias for `place`.
+          type: string
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

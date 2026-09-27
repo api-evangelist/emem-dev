@@ -1,0 +1,139 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Verify Receipt API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Verify Receipt across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Verify Receipt
+paths:
+  /v1/verify_receipt:
+    post:
+      description: 'Verify a signed receipt envelope server-side: rebuilds the canonical preimage under the rule the receipt''s own `preimage_version` names, runs ed25519 over the embedded key and signature, and returns `{valid, reason, failure_detail, signature_valid, merkle_proof_valid, signer_pubkey_b32, preimage_blake3_hex}`. A receipt is BYTE-FOR-BYTE OR NOTHING: v2 binds the inclusion proof, so any reshaping (a dropped field, a re-keyed one, a summary) invalidates the signature by design. For when the in-browser /verify path is unavailable, or for a server-side audit of a third party''s receipt.
+
+
+        When to use: Pass the receipt EXACTLY as the read primitive returned it, whole and unmodified. Two omissions produce a false forgery rather than a 400, and they are the only two worth memorising: dropping `merkle_proof`, and dropping `preimage_version` (absent deserialises to 0, which silently selects the v0 rule, so the proof still walks while the signature reads as invalid). Signature and pubkey may be byte arrays or `sig_b32` / `responder_pubkey_b32`; no other spelling is tolerated. Reshaping a field this responder can check is reported as `reason: receipt_reshaped_after_signing` with the field named, never accepted. Optionally set `pubkey_b32` to assert a specific signer. A bad signature is 200 with `valid: false`, never a 4xx. The example arguments are a real receipt this responder signed (key epoch 0) over one weather fact at Trafalgar Square: run it unchanged and `valid` is true; change any byte and it is not.'
+      operationId: emem_verify_receipt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                pubkey_b32:
+                  description: Optional override; defaults to receipt.responder_pubkey_b32
+                  type: string
+                receipt:
+                  description: The receipt object returned by any /v1/* response
+                  properties:
+                    cells:
+                      items:
+                        type: string
+                      type: array
+                    fact_cids:
+                      items:
+                        type: string
+                      type: array
+                    primitive:
+                      type: string
+                    request_id:
+                      type: string
+                    responder_pubkey_b32:
+                      type: string
+                    served_at:
+                      type: string
+                    signature_b32:
+                      type: string
+                  type: object
+              required:
+              - receipt
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyReceiptResp'
+          description: ok
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: 'offline-verify any responder''s receipt (algebra: verify): rebuild the canonical…'
+      tags:
+      - Verify Receipt
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+    VerifyReceiptResp:
+      description: Response of /v1/verify_receipt. `valid` is the ed25519 signature check; `signer` is the responder pubkey the signature was checked against; `preimage_b64` is the canonical preimage that was hashed and signed, for reproduction in any other ed25519 implementation.
+      properties:
+        errors:
+          items:
+            type: string
+          type: array
+        preimage_b64:
+          type: string
+        signer:
+          $ref: '#/components/schemas/PubKey'
+        valid:
+          type: boolean
+      required:
+      - valid
+      - signer
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json

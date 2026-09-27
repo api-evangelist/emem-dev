@@ -1,0 +1,148 @@
+openapi: 3.2.0
+info:
+  title: Emem Dev Band Composite API
+  version: 2.4.0
+  license:
+    name: Apache-2.0
+  x-emem-surface-asymmetry:
+    memory_notes: MCP only
+    reach_them_at: POST /mcp, method tools/call
+    read_side_is_here:
+    - /v1/memory/search
+    - /v1/memory/sse
+    - /memories/{path}
+    tools:
+    - emem_memory_create
+    - emem_memory_view
+    - emem_memory_delete
+    - emem_memory_rename
+    - emem_memory_str_replace
+    - emem_memory_supersede
+    why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
+  description: 'Operations tagged Band Composite across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- description: Hosted instance (HTTPS-only)
+  url: https://emem.dev
+tags:
+- name: Band Composite
+paths:
+  /v1/band_composite:
+    post:
+      description: 'Mint a signed, cloud-masked median composite over a date window as a raster-shaped field: the clean, gap-filled texture a world model actually drapes, rather than one cloudy scene. It reads every Sentinel-2 scene in [start_date, end_date] over the bbox, masks each per pixel by its SCL scene-classification class (default reject {0,1,3,8,9,10}: no-data, saturated, cloud shadow, cloud, cirrus; snow 11 is KEPT because snow is surface, not occlusion, and a snow-rejected median would fabricate a bare winter scene; override with mask_policy), and takes the per-pixel lower-of-two median (never averaging two measurements into a value nobody took) with a pinned min_valid_count, below which a pixel is nodata. The mask policy, min_valid_count, and the exact member scene list are pinned in the signed derivation, so a stranger re-derives the composite pixel for pixel from the same scenes. Returns an emem:raster: token (resolve with emem_raster_resolve) plus the content-addressed artifact; the receipt binds (aoi_cid, derivation_cid). Needs at least two clear scenes at one CRS. This signs and persists the derivation.
+
+
+        When to use: Call when a world model or an analyst needs the clean composite texture over an area across a season, not a single-date snapshot that may be cloudy: a scrub-frame base layer, a gap-filled band drape, a cloud-free mosaic. For one pinned scene use emem_band_raster; for the per-slice time series use emem_band_cube.'
+      operationId: emem_band_composite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                band:
+                  description: s2.B02|s2.B03|s2.B04|s2.B08|s2.B11|s2.B12
+                  type: string
+                bbox:
+                  properties:
+                    max_lat:
+                      type: number
+                    max_lng:
+                      type: number
+                    min_lat:
+                      type: number
+                    min_lng:
+                      type: number
+                  required:
+                  - min_lat
+                  - min_lng
+                  - max_lat
+                  - max_lng
+                  type: object
+                end_date:
+                  description: YYYY-MM-DD inclusive
+                  type: string
+                mask_policy:
+                  description: SCL classes to reject per pixel; default [0,1,3,8,9,10]
+                  items:
+                    type: integer
+                  type: array
+                max_scenes:
+                  description: cap on scenes read; default 12
+                  maximum: 16
+                  minimum: 2
+                  type: integer
+                min_valid_count:
+                  description: per-pixel minimum valid samples for a value, else nodata; default 1
+                  minimum: 1
+                  type: integer
+                start_date:
+                  description: YYYY-MM-DD inclusive
+                  type: string
+              required:
+              - bbox
+              - band
+              - start_date
+              - end_date
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ok
+        '400':
+          content:
+            application/json:
+              schema:
+                properties:
+                  details:
+                    type: object
+                  error:
+                    type: string
+                type: object
+          description: invalid argument; `details.code` names which rule refused
+        '502':
+          description: upstream scene fetch failed; typed
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: 'error, the emem.error.v1 envelope. Branch on the stable `code` (see GET /v1/errors), not the message. A malformed or missing-field request body returns `code: invalid_argument` with the offending field named in `message`.'
+      summary: a signed, cloud-masked median composite over a date window, as a raster-shaped…
+      tags:
+      - Band Composite
+    servers:
+    - description: Hosted instance (HTTPS-only)
+      url: https://emem.dev
+components:
+  schemas:
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+x-refined-from:
+- emem-dev-openapi-original.json
+- emem-dev-openapi.json
