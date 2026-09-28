@@ -1,8 +1,8 @@
 generated: '2026-09-19'
 method: probed
 status: published
-source: https://emem.dev/.well-known/mcp.json (server descriptor) and https://emem.dev/mcp (live initialize + tools/list,
-  2026-09-19); tool list paged from https://emem.dev/mcp/full (8 pages, nextCursor)
+source: https://emem.dev/.well-known/mcp.json (server descriptor) and https://emem.dev/mcp (live initialize
+  + tools/list, 2026-09-19); tool list paged from https://emem.dev/mcp/full (8 pages, nextCursor)
 llms_source: https://emem.dev/llms.txt
 server:
   name: emem
@@ -27,7 +27,8 @@ server:
       listChanged: false
   descriptor: well-known/emem-dev-mcp.json
   listings:
-  - Official MCP registry io.github.Vortx-AI/emem v2.4.0 (registry.modelcontextprotocol.io, published 2026-09-09)
+  - Official MCP registry io.github.Vortx-AI/emem v2.4.0 (registry.modelcontextprotocol.io, published
+    2026-09-09)
   - GitHub MCP Registry https://github.com/mcp/Vortx-AI/emem
   - Glama https://glama.ai/mcp/servers/Vortx-AI/emem
   - Smithery https://smithery.ai/servers/vortxai/emem
@@ -38,31 +39,33 @@ deployment:
   mode: both
   endpoint: https://emem.dev/mcp
   install: docker run --rm -p 5051:5051 ghcr.io/vortx-ai/emem:latest
-  package: https://github.com/Vortx-AI/emem (OCI image ghcr.io/vortx-ai/emem:latest; MCP registry package type oci,
-    streamable-http at http://localhost:5051/mcp)
+  package: https://github.com/Vortx-AI/emem (OCI image ghcr.io/vortx-ai/emem:latest; MCP registry package
+    type oci, streamable-http at http://localhost:5051/mcp)
   auth: none
   verified: probed
   probe: live
   checked: '2026-09-19'
-  note: The hosted endpoint answered initialize and tools/list anonymously on 2026-09-19. The local deployment is
-    a self-hosted full node (OCI image / cargo build --release --bin emem-server), not a stdio shim; the MCP registry
-    entry lists it as an oci package with a streamable-http transport.
+  note: The hosted endpoint answered initialize and tools/list anonymously on 2026-09-19. The local deployment
+    is a self-hosted full node (OCI image / cargo build --release --bin emem-server), not a stdio shim;
+    the MCP registry entry lists it as an oci package with a streamable-http transport.
 auth:
   methods:
   - none
-  reads: 'anonymous, no key, no account (oauth-protected-resource: auth_required false, authorization_servers [])'
-  writes: per-write ed25519 attester signature in the request body; a write without one returns 401 with details.how_to_sign
+  reads: 'anonymous, no key, no account (oauth-protected-resource: auth_required false, authorization_servers
+    [])'
+  writes: per-write ed25519 attester signature in the request body; a write without one returns 401 with
+    details.how_to_sign
   oauth: 'optional and open: RFC 8414 metadata at /.well-known/oauth-authorization-server, dynamic registration
     always succeeds, tokens grant nothing beyond anonymous access (session status open_unverified)'
-wire_budget: 24 KB per tools/call result; larger results are slimmed with an _emem_truncation marker (the same call
-  over REST is uncapped)
+wire_budget: 24 KB per tools/call result; larger results are slimmed with an _emem_truncation marker (the
+  same call over REST is uncapped)
 tool_count: 110
 core_tool_count: 18
-tools_source: live tools/list 2026-09-19 (mcp/emem-dev-mcp-tools-list.json, verbatim inputSchema + annotations +
-  _meta for all 110; mcp/emem-dev-mcp-tools-list-core.json for the 18-tool default listing)
+tools_source: live tools/list 2026-09-19 (mcp/emem-dev-mcp-tools-list.json, verbatim inputSchema + annotations
+  + _meta for all 110; mcp/emem-dev-mcp-tools-list-core.json for the 18-tool default listing)
 authorship: provider
-authorship_note: Tool names mirror the provider's own /v1 operationIds and carry provider-specific dev.emem/* metadata;
-  not a platform-default shape.
+authorship_note: Tool names mirror the provider's own /v1 operationIds and carry provider-specific dev.emem/*
+  metadata; not a platform-default shape.
 tools:
 - name: emem_tools
   title: What tools exist here, and when to reach for each
@@ -77,6 +80,9 @@ tools:
   core: true
   input_properties: 6
   has_output_schema: false
+  description: 'The map of emem''s tool surface, and the only tool you need to find the rest: the working
+    loop in the order you walk it (name, ground, cite, resolve, verify, check for drift), then every other
+    tool grouped by the question it answers, each wi'
 - name: emem_locate
   title: Resolve place to cell64 + band inventory
   category: read
@@ -92,6 +98,9 @@ tools:
   core: true
   input_properties: 6
   has_output_schema: false
+  description: 'Mint the canonical, vendor-neutral address (cell64) for a real-world place: the shared
+    spatial identity every agent resolves to identically, so two models refer to the same ground instead
+    of two descriptions of it. Also returns the topic-gr'
 - name: emem_ask
   title: Ask a free-text question about a place
   category: read
@@ -105,6 +114,9 @@ tools:
   core: true
   input_properties: 11
   has_output_schema: true
+  description: Single-shot free-text answer about a real-world location, backed by signed satellite/elevation/water/built-up
+    receipts. Forwards a place mention plus a question; runs the locate → recall → algorithm chain server-side;
+    returns one packaged e
 - name: emem_hunt
   title: Hunter mode, find event hotspots over a region
   category: read
@@ -119,6 +131,11 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Event-discovery sweep: pick an event keyword (algal_bloom, deforestation, flood_extent,
+    wildfire, urban_heat_island, methane_plume, landslide, drought, soil_salinity, crop_stress, water_turbidity,
+    oil_slick) plus a region (free-text name or polygon_bbox). The responder geocodes the region, fans
+    out across up to 32 sampled cells, recalls each event''s primary scalar input band, and returns the
+    top 8…'
 - name: emem_eudr_dds
   title: EUDR Due Diligence Statement, polygon-in, signed Annex II envelope out
   category: read
@@ -133,6 +150,11 @@ tools:
   core: false
   input_properties: 10
   has_output_schema: false
+  description: Produce a Due Diligence Statement per Regulation (EU) 2023/1115 for one or more plots.
+    Each plot carries operator-supplied geometry (GeoJSON Polygon for >4 ha, Point for ≤4 ha non-cattle
+    per Article 2(28)), country of production (ISO3), Combined Nomenclature code (HS-6+), and quantity
+    in kg. The endpoint applies the regulation's 10 % canopy / 0.5 ha / 5 m height forest definition (Article
+    2(4)) us…
 - name: emem_spi
   title: Standardized Precipitation Index (McKee 1993) drought metric
   category: read
@@ -148,6 +170,10 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Compute the Standardized Precipitation Index (McKee et al. 1993) at a cell: fit a gamma
+    distribution to the same-window precipitation-accumulation history, then standardize the current accumulation
+    to a z-score and map it to a drought class (extreme/severe/moderate drought … normal … wet). Supply
+    `precip_history_mm` + `current_accumulation_mm` directly, or omit them to read the stored `weather.pre…'
 - name: emem_burn_severity
   title: Burn severity (dNBR, Key & Benson) from pre/post-fire NBR
   category: read
@@ -163,6 +189,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: Compute the differenced Normalized Burn Ratio (dNBR = NBR_pre − NBR_post; Key & Benson
+    2006) and map it to the USGS burn-severity classes (unburned / low / moderate-low / moderate-high
+    / high). Supply `nbr_pre` + `nbr_post` (pin the scenes bracketing the fire date) for a correct result,
+    or omit both to use the two most-recent stored `indices.nbr` scenes (older=pre, newer=post) as a coarse
+    estimate…
 - name: emem_rice_ch4
   title: Rice-paddy methane (IPCC 2019 Tier 2, Eq 5.1)
   category: read
@@ -177,6 +208,11 @@ tools:
   core: false
   input_properties: 7
   has_output_schema: false
+  description: 'Estimate seasonal CH4 emissions from rice cultivation per IPCC 2019 Refinement Eq 5.1:
+    integrate the daily emission factor over the cultivation period with water-regime scaling (SFp pre-season,
+    SFo organic amendment) and an optional Yan-2005 Q10 temperature modifier. `cultivation_period_days`
+    and the regional `efc_kg_ch4_ha_day` (Table 5.11) are REQUIRED, the endpoint refuses to guess a global
+    def…'
 - name: emem_deforestation_alert
   title: Deforestation alert proxy (NDVI drop + embedding change)
   category: read
@@ -191,6 +227,10 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'Composite deforestation-alert score: `alert_score = 0.5·clamp01(ndvi_drop/0.30) + 0.5·clamp01(embedding_change/0.20)`,
+    where `ndvi_drop = max(0, ndvi_modis_baseline − ndvi_now)` and `embedding_change = 1 − cos(tessera_latest,
+    tessera_prev)`. Each half degrades INDEPENDENTLY and honestly: if a band is missing, that half is
+    dropped AND the output is renamed so a half-score can never be mistaken for …'
 - name: emem_sar_forest_disturbance
   title: Sentinel-1 SAR forest-disturbance scout (cloud-penetrating)
   category: read
@@ -206,6 +246,11 @@ tools:
   core: false
   input_properties: 2
   has_output_schema: false
+  description: Cloud- and night-independent Sentinel-1 C-band confirmation of forest disturbance. Intact
+    forest scatters VV strongly + stably (canopy volume scattering); clearing collapses that term so VV
+    backscatter DROPS ~3-5 dB. Samples VV at a baseline-year July-1 anchor and the latest scene, reports
+    `vv_drop_db = baseline − recent` and a `disturbed` flag when the drop ≥ 3 dB (Reiche et al. 2018,
+    RSE 204:147…
 - name: emem_triple_consensus
   title: Clay+Prithvi+Tessera change-consensus ensemble
   category: read
@@ -220,6 +265,11 @@ tools:
   core: false
   input_properties: 2
   has_output_schema: false
+  description: 'Three-encoder change ensemble: compute the cosine change between the two most-recent DISTINCT
+    vintages for each of the Clay, Prithvi, and Tessera embeddings at the cell, then vote each encoder''s
+    change against `consensus_threshold` (registry default 0.15). Returns each encoder''s change magnitude,
+    its vote, and the consensus verdict (how many of the three agree change happened). Two caveats ride
+    ev…'
 - name: emem_change_attribution
   title: 'Change attribution ledger: why did this place''s readout move'
   category: read
@@ -233,6 +283,11 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'The first runnable surface of the change decomposition Δz = Δ_env + Δ_sensor + Δ_geo +
+    Δ_encoder + ε: a per-term evidence LEDGER for the readout change at a cell, with NO numeric split.
+    `observed` carries the Tessera year-over-year embedding change. `terms.env` carries label-free index
+    pairs (NDVI, NBR, NDWI) with raw deltas and both fact cids, evidence a future estimator would read.
+    `terms.sensor…'
 - name: emem_band_raster
   title: 'Band raster: a field as a signed derivation'
   category: read
@@ -246,6 +301,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Return a native-resolution Sentinel-2 window over a bounding box as a FIELD, not a set
+    of points: the pixels become one content-addressed grid artifact (deterministic f32 encoding; fetch
+    the bytes at the returned artifact url, Cache-Control immutable), and what the receipt attests is
+    the DERIVATION, never a byte pipe. A persisted derivation record pins the chosen scene (id, asset,
+    capture time, cl…'
 - name: emem_raster_resolve
   title: 'Dereference an emem:raster: field token'
   category: read
@@ -259,6 +319,11 @@ tools:
   core: false
   input_properties: 2
   has_output_schema: false
+  description: 'Resolve emem:raster:<aoi_cid>:<band>:<tslot>:<derivation_cid> back to its signed derivation
+    record and the artifact''s status. Every claim in the token binds to the signed record before anything
+    dereferences, the same rule fact tokens follow: the cid must be a band_raster@1 derivation and the
+    token''s aoi_cid, band, and tslot must each match the record''s own body, so a real derivation_cid
+    cannot be …'
 - name: emem_band_cube
   title: 'Band cube: a field over time, as a signed manifest'
   category: read
@@ -272,6 +337,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Mint an emem:cube: token: a Sentinel-2 field over an AOI ACROSS TIME. A world model is
+    a field over an area across time, and emem:raster: names only one time-slice, so a 4D world''s time
+    scrub had no token to anchor. This mints one band_raster member per target date, each an independent,
+    resolvable emem:raster: derivation, then signs a cube record binding the ordered set. It is NOT new
+    pixels: line…'
 - name: emem_band_composite
   title: 'Band composite: a signed cloud-masked median over a window'
   category: read
@@ -285,6 +355,10 @@ tools:
   core: false
   input_properties: 7
   has_output_schema: false
+  description: 'Mint a signed, cloud-masked median composite over a date window as a raster-shaped field:
+    the clean, gap-filled texture a world model actually drapes, rather than one cloudy scene. It reads
+    every Sentinel-2 scene in [start_date, end_date] over the bbox, masks each per pixel by its SCL scene-classification
+    class (default reject {0,1,3,8,9,10}: no-data, saturated, cloud shadow, cloud, cirrus; snow 1…'
 - name: emem_cube_resolve
   title: 'Dereference an emem:cube: field-over-time token'
   category: read
@@ -298,6 +372,11 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'Resolve emem:cube:<aoi_cid>:<band>:<tslot_lo>..<tslot_hi>:<derivation_cid> back to its
+    signed cube record and the ordered member emem:raster: tokens. Same fail-closed rule as emem_raster_resolve:
+    the cid must be a band_cube@1 derivation, the token''s aoi_cid, band, and tslot range must each match
+    the signed record, and cube_cid is recomputed from the record''s members so an altered membership
+    is ref…'
 - name: emem_raster_bundle
   title: 'Raster bundle: bind N field tokens into one citeable manifest'
   category: read
@@ -311,6 +390,11 @@ tools:
   core: false
   input_properties: 2
   has_output_schema: false
+  description: 'Mint an emem:rasterset: token: a signed manifest binding 2..64 already-minted emem:raster:
+    field tokens (any mix of band_raster / s2_median_composite / dem_raster / embedding_raster) into ONE
+    citeable thing. The composition primitive a world model or a compliance report needs when it must
+    cite one token that points at every signed layer at once - the RGB ground composites, the DEM geometry,
+    the en…'
 - name: emem_raster_bundle_resolve
   title: 'Dereference an emem:rasterset: bundle token'
   category: read
@@ -324,6 +408,11 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'Resolve emem:rasterset:<bundle_cid>:<derivation_cid> back to its signed manifest and verify
+    it. Fail-closed like every field-token resolve: the cid must be a raster_bundle@1 derivation, bundle_cid
+    is recomputed from the record''s ordered members and matched against BOTH the token and the record
+    (any mismatch is a typed 409, refusing an altered or forged membership), and every member emem:raster:
+    to…'
 - name: emem_terrain
   title: Terrain triad, slope + ruggedness + topographic position from DEM
   category: read
@@ -339,6 +428,10 @@ tools:
   core: false
   input_properties: 6
   has_output_schema: false
+  description: 'Compute three standard DEM terrain indices from one 3×3 Copernicus-DEM (copdem30m.elevation_mean)
+    neighbourhood at a cell: Horn (1981) slope in degrees, Riley (1999) Terrain Ruggedness Index (TRI
+    = sqrt(Σ(Z_centre−Z_i)²)), and Weiss (2001) Topographic Position Index (TPI = Z_centre − mean(neighbours);
+    positive = ridge, negative = valley). The 8 neighbour cell64s are derived by perturbing the cell''…'
 - name: emem_region_similarity
   title: Region similarity, cosine of two regions' mean GeoTessera embeddings
   category: read
@@ -352,6 +445,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: Answer 'how alike are these two places?' Mean-pool the 128-D GeoTessera embedding across
+    each region's cells to get a centroid, then return the cosine similarity in [-1,1] (+1 = identical
+    landscape, 0 = unrelated). Each region is {place} | {polygon_bbox} | {cells}. CPU-fetched embeddings,
+    no GPU sidecar needed. Surfaces how many cells in each region actually carried a vector (coverage).  When
+    to u…
 - name: emem_embedding_centroid
   title: Embedding centroid, mean-pooled GeoTessera vector for a region
   category: read
@@ -365,6 +463,10 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Mean-pool the 128-D GeoTessera embedding over a region''s cells: centroid = (1/N) Σ v_i,
+    plus the L2-normalised centroid and a content-addressed centroid_cid. The building block region_similarity
+    composes. Region is {place} | {polygon_bbox} | {cells}. NaN dims are averaged over their finite contributors.
+    CPU-only.  When to use: Call when you need one representative embedding vector for an area, to …'
 - name: emem_embedding_diversity
   title: Embedding diversity, landscape heterogeneity over a region
   category: read
@@ -378,6 +480,10 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Quantify how varied a region''s landscape is: diversity = (1/(N(N-1))) Σ_{i<j} (1 − cosine(v_i,
+    v_j)), the mean pairwise cosine distance over the region''s GeoTessera embeddings. 0 = perfectly uniform;
+    higher = more heterogeneous land cover (a determinantal-point-process / k-medoid diversity). Region
+    is {place} | {polygon_bbox} | {cells}. CPU-only.  When to use: Call for habitat-heterogeneity / biod…'
 - name: emem_neighborhood_consistency
   title: Neighbourhood consistency / spatial outlier (GeoTessera vs 8 neighbours)
   category: read
@@ -391,6 +497,11 @@ tools:
   core: false
   input_properties: 5
   has_output_schema: false
+  description: 'Score how much a cell looks like its surroundings: consistency = (1/8) Σ cosine(centre,
+    neighbour_i) over the 8 immediate cell64 neighbours, plus outlier_score = 1 − consistency. High consistency
+    = the cell blends in (Tobler''s First Law); high outlier_score = it stands out, an edge, a fresh clearing,
+    a built patch in farmland. CPU-only GeoTessera embeddings.  When to use: Call to flag a cell that
+    …'
 - name: emem_state
   title: Read the place's state vector (single encoder OR full 1792-D cube)
   category: read
@@ -405,6 +516,11 @@ tools:
   core: false
   input_properties: 10
   has_output_schema: false
+  description: 'Get one dense numeric fingerprint that summarises everything known about a place, ready
+    to feed into similarity search, a classifier, or clustering. Two views: `encoder` returns a single
+    AI-model embedding (128-D Tessera, 1024-D Clay, 1024-D Prithvi); `cube` returns the full 1792-D vector
+    concatenated across every band, with a per-band coverage manifest.  When to use: Call this when the
+    user wants…'
 - name: emem_state_multi
   title: Multi-encoder state at one cell (foundation fan-out)
   category: read
@@ -418,6 +534,11 @@ tools:
   core: false
   input_properties: 8
   has_output_schema: false
+  description: 'Get the place''s fingerprint from several AI models at once (`geotessera`, `clay_v1`,
+    `prithvi_eo2`, `galileo`) in one call, returned as a per-model map. Each model is tried independently;
+    any that can''t produce a vector here show up under `missing` with a reason instead of failing the
+    whole request.  When to use: Call this when the user wants a second (or third) opinion on what a place
+    looks like,…'
 - name: emem_state_diff
   title: Between-tslot state vector delta (residual + cosine)
   category: read
@@ -433,6 +554,11 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Vector delta between the same cell at two tslots: returns the per-element residual, its
+    L2 norm (scalar change-magnitude), the cosine between the two source vectors (orientation drift),
+    and both source fact CIDs so the agent can quote both attestations as evidence.  When to use: Call
+    when the user asks ''how much did X change between A and B'' for a foundation embedding at one place.
+    Pass `tslot_a` …'
 - name: emem_memory_token
   title: Compose a memory_token citation handle
   category: read
@@ -448,6 +574,9 @@ tools:
   core: true
   input_properties: 4
   has_output_schema: true
+  description: 'Mint a citation handle, `emem:fact:<cell64>:<fact_cid>` (or `:<state_cid>`), that any
+    agent or LLM resolves to the byte-identical signed object. The antidote to referential drift on the
+    value side: hand this one string to another agent inst'
 - name: search
   title: Find signed facts for a place, as citable sources
   category: read
@@ -461,6 +590,9 @@ tools:
   core: true
   input_properties: 1
   has_output_schema: true
+  description: 'Search emem''s signed corpus and return results shaped as citations: each entry is one
+    signed fact, with an `id` to dereference, a `title` naming band, place and the value as signed, and
+    a stable `url` serving those bytes. Takes a place name'
 - name: fetch
   title: Open one search result and read the signed record
   category: read
@@ -474,6 +606,9 @@ tools:
   core: true
   input_properties: 1
   has_output_schema: true
+  description: 'Dereference an id from `search`: the reading in one line, then the signed body it came
+    from, the URL serving those bytes, and metadata naming cell, band, signing time and key. Takes an
+    `emem:fact:` citation, a bare fact_cid, or an `emem:cel'
 - name: emem_memory_token_resolve
   title: Dereference a memory_token in one round-trip
   category: read
@@ -489,6 +624,9 @@ tools:
   core: true
   input_properties: 1
   has_output_schema: false
+  description: Parse a `emem:fact:<cell64>:<fact_cid>` citation handle and return the reading it cites.
+    `value`, `unit`, `band` and `kind` are on the response at the TOP level, alongside the full signed
+    `fact` body they were lifted from. Saves the agent f
 - name: emem_echo_verify
   title: Check a value against the fact it cites, before you publish it
   category: read
@@ -503,6 +641,9 @@ tools:
   core: true
   input_properties: 3
   has_output_schema: true
+  description: Grade a value you are about to emit against the signed fact your citation points at. Returns
+    `matches` and, when it does not, the `drift` between what you were about to say and what emem holds.
+    This is the step that turns a transcription er
 - name: emem_derive
   title: Register your own derivation over emem facts
   category: write
@@ -518,6 +659,11 @@ tools:
   core: false
   input_properties: 12
   has_output_schema: false
+  description: 'Register a value YOU computed from facts this responder holds, and get back a citeable
+    `emem:fact:` token whose lineage terminates in emem-signed measurements. The registered fact names
+    its parents by CID, so a stranger walks the DAG down to signed sensor data instead of trusting your
+    summary. Requires an ed25519 `attester` block. What the responder signs is narrow and it says so on
+    the response: …'
 - name: emem_derive_list
   title: List one attester's registered derivations
   category: read
@@ -533,6 +679,11 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'List the derivations registered by one ed25519 key, optionally filtered to a cell (and
+    then a band). The explicit opt-in read for caller-registered derivatives: they hold no canonical key,
+    so no default read path returns them, and this is the only way to enumerate one rather than resolve
+    it by token.  When to use: Call to enumerate your own derivations (pass your pubkey_b32), or to inspect
+    what a …'
 - name: emem_memory_bundle
   title: Compose a signed multi-fact memory bundle
   category: read
@@ -548,6 +699,9 @@ tools:
   core: true
   input_properties: 3
   has_output_schema: false
+  description: Compose N (cell, band, tslot?) triples into ONE signed envelope. Each triple runs through
+    the standard auto-materialize recall path; the resulting fact_cids are bundled into a content-addressed
+    envelope and the responder signs over the full
 - name: emem_memory_bundle_resolve
   title: Dereference a memory_bundle token
   category: read
@@ -563,6 +717,11 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'Parse a `emem:bundle:<bundle_cid>` token and return the signed bundle envelope: every
+    citation (cell, band, resolved_tslot, fact_cid, memory_token), the receipt, the responder pubkey,
+    and the deduped flat cells[] / fact_cids[] arrays. Returns 404 with a typed code when the responder
+    does not hold the bundle.  When to use: Call when an agent receives an `emem:bundle:` token from another
+    agent (or e…'
 - name: emem_entity
   title: Mint or get a canonical object identity
   category: read
@@ -579,6 +738,9 @@ tools:
   core: true
   input_properties: 8
   has_output_schema: false
+  description: Give a real-world object (a bridge, a farm plot, a river, a named place) a single, shared,
+    content-addressed identity that any agent resolves the same way. Returns an `entity_token` (`emem:entity:<entity_cid>`)
+    plus a signed receipt that at
 - name: emem_entity_resolve
   title: 'Resolve a phrase (or emem:entity: token) to a canonical object'
   category: read
@@ -594,6 +756,9 @@ tools:
   core: true
   input_properties: 5
   has_output_schema: false
+  description: Find the objects agents have bound a phrasing to, ranked by INDEPENDENT corroboration,
+    never arrival order. Each candidate carries `asserted_by`, `disputed_by`, `independent_attesters`
+    and `corroboration` (`single_key` | `multiple_independe
 - name: emem_entity_link
   title: Attest that a phrasing/id denotes an existing object
   category: write
@@ -609,6 +774,9 @@ tools:
   core: true
   input_properties: 5
   has_output_schema: false
+  description: 'Record a signed, ATTRIBUTED claim that a label or external id (GERS / OSM / Wikidata)
+    denotes an existing object, or with `stance: "disputes"` that it does not. A shared-space write: it
+    changes what other agents resolve, so it is stored wit'
 - name: emem_memory_view
   title: memory_view, read file or directory listing
   category: read
@@ -623,6 +791,11 @@ tools:
   core: false
   input_properties: 6
   has_output_schema: false
+  description: 'Read the contents of a memory file at `/memories/<path>` or list a directory when the
+    path ends with `/`. Optional `view_range: [start, end]` slices a 1-indexed inclusive line range out
+    of the file. Mirrors the `view` verb in Anthropic''s context-management-2025-06-27 memory tool spec.
+    Reads are public: no key, no account, and every stored memory on this responder is world-readable,
+    including files…'
 - name: emem_memory_create
   title: memory_create, write a memory file (overwrite if exists)
   category: write
@@ -637,6 +810,11 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: Write a memory file at `/memories/<path>` with the supplied `file_text`. Overwrites if
+    the file exists AND your key owns the path; a write over someone else's file is refused, not merged.
+    Persists to sled, content-addresses the bytes (`file_cid`), and signs the write so the operation carries
+    a verifiable receipt. Mirrors the `create` verb in Anthropic's context-management-2025-06-27 memory
+    tool sp…
 - name: emem_memory_str_replace
   title: memory_str_replace, exact-string replacement in a memory file
   category: write
@@ -651,6 +829,11 @@ tools:
   core: false
   input_properties: 5
   has_output_schema: false
+  description: 'Replace `old_str` with `new_str` in the named memory file. Fails (no partial write) when
+    `old_str` is absent or matches more than once. Writes a new content-addressed `file_cid` and signs
+    the receipt. Mirrors the `str_replace` verb in Anthropic''s context-management-2025-06-27 memory tool
+    spec. WRITES ARE SIGNED, NOT ANONYMOUS: supply `attester: {pubkey_b32, sig_b32}`, an ed25519 signature
+    over bla…'
 - name: emem_memory_insert
   title: memory_insert, insert at a given line
   category: write
@@ -665,6 +848,10 @@ tools:
   core: false
   input_properties: 5
   has_output_schema: false
+  description: 'Insert `new_str` after the given 1-indexed line in the named memory file. `insert_line:
+    0` inserts at the top. Writes a new `file_cid` and signs the receipt. Mirrors the `insert` verb in
+    Anthropic''s context-management-2025-06-27 memory tool spec. WRITES ARE SIGNED, NOT ANONYMOUS: supply
+    `attester: {pubkey_b32, sig_b32}`, an ed25519 signature over blake3("emem.memory_write|<verb>|<path>|<body_hash>…'
 - name: emem_memory_delete
   title: memory_delete, remove a memory file or directory
   category: write
@@ -678,6 +865,10 @@ tools:
   core: false
   input_properties: 2
   has_output_schema: false
+  description: 'Delete a memory file at `/memories/<path>`. When the path ends with `/`, every file beneath
+    the directory is removed. Updates the path index but leaves prior content-addressed blobs in place
+    (the audit history is append-only). Mirrors the `delete` verb in Anthropic''s context-management-2025-06-27
+    memory tool spec. WRITES ARE SIGNED, NOT ANONYMOUS: supply `attester: {pubkey_b32, sig_b32}`, an ed255…'
 - name: emem_memory_supersede
   title: memory_supersede, mark your own note replaced by a later one
   category: write
@@ -691,6 +882,11 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Point one of your notes at the note that replaces it. Readers of the superseded path then
+    receive `superseded_by` and a `_superseded` banner, so a withdrawn claim stops resolving as though
+    it were current. This is redirection, not deletion: the original bytes are unchanged and still resolve
+    by their own cid, because the log is append-only and issued receipts must stay verifiable. The replacement
+    m…'
 - name: emem_memory_rename
   title: memory_rename, move a memory file
   category: write
@@ -704,6 +900,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Move (rename) a memory file from `old_path` to `new_path`. Both paths must stay under
+    `/memories/`; `new_path` must not already exist. The file_cid is preserved (no re-sign) so the prior
+    receipt still binds the bytes. Mirrors the `rename` verb in Anthropic''s context-management-2025-06-27
+    memory tool spec. WRITES ARE SIGNED, NOT ANONYMOUS: supply `attester: {pubkey_b32, sig_b32}`, an ed25519
+    signat…'
 - name: emem_memory_list_by_kind
   title: memory_list_by_kind, typed enumeration of memory files
   category: read
@@ -718,6 +919,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'List memory files by their typed `kind` (episodic | semantic | procedural | resource).
+    Optional path prefix narrows the scan; results are sorted by signed_at descending. The kind taxonomy
+    follows the CoALA / LangMem / MIRIX agent-memory ontology: `episodic` = observations of events, `semantic`
+    = durable learned facts, `procedural` = playbooks, `resource` = generic durable scratchpad (default
+    for b…'
 - name: emem_memory_search
   title: emem_memory_search, semantic search over /memories/* files
   category: read
@@ -733,6 +939,11 @@ tools:
   core: false
   input_properties: 6
   has_output_schema: false
+  description: Semantic search over /memories/* file contents using BGE-base-en-v1.5 (768-D, L2-normalised)
+    backed by a Lance partition (`memory_text_index_d768.lance`). Matches paraphrases, "rainfall in March"
+    finds "precipitation observed in spring" without an exact substring match. Returns ranked hits with
+    similarity in [0,1], 200-char snippets around the best-matching chunk, and the signing receipt's path
+    / …
 - name: emem_corpus_state_stats
   title: Signed snapshot of corpus liveness
   category: read
@@ -746,6 +957,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Signed snapshot of corpus liveness: distinct_cells, distinct_bands, facts_scanned, top
+    per-band counts, manifest CIDs. Same payload that backs /v1/stream''s corpus.state tick (signed).
+    Use this for a one-shot poll instead of holding an SSE connection.  When to use: Call when an agent
+    needs a single liveness reading to surface in a dashboard, attach to a report, or decide whether to
+    refresh local ca…'
 - name: emem_benchmark
   title: Hand-verified eval items for agent grading
   category: read
@@ -759,6 +975,10 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Hand-verified evaluation items for grading an agent against the responder. Returns {items[],
+    grader_url}. Submit answers (cell64 or fact_cid per item) to POST /v1/benchmark/grade for per-item
+    scores. Items today: elevation recall, NDVI, find_similar neighbours.  When to use: Call once at agent-onboarding
+    time (or in CI) to fetch the canonical task list, then have the agent answer each item using i…'
 - name: emem_recall
   title: Recall facts at a cell (auto-materializes on miss)
   category: read
@@ -773,6 +993,9 @@ tools:
   core: true
   input_properties: 14
   has_output_schema: true
+  description: Read the signed facts at a canonical address (cell64); auto-materializes on a miss for
+    any band with a registered materializer. A fact_cid names one signed attestation, so a recalled fact
+    is citeable and re-verifiable rather than a paraphra
 - name: emem_recall_polygon
   title: Recall facts across a place's polygon
   category: read
@@ -787,6 +1010,11 @@ tools:
   core: false
   input_properties: 20
   has_output_schema: false
+  description: 'Recall facts across every cell inside a place''s polygon (single signed envelope). Closes
+    the place-name-drift gap for wide features (parks, lakes, regions).  When to use: Call when the user
+    names a wide feature (national park, river basin, country, large urban area) where one cell is too
+    small. Pass `place` and the geocoder will fan out across the polygon, or pass `polygon_bbox` directly
+    if you ha…'
 - name: emem_field_boundaries
   title: Per-field agricultural boundaries (Fields of The World)
   category: read
@@ -801,6 +1029,11 @@ tools:
   core: false
   input_properties: 8
   has_output_schema: false
+  description: 'Per-field agricultural-boundary polygons from the Fields of The World global product (~3.17B
+    fields, 241 countries, 10 m resolution, CC-BY-4.0). Returns a GeoJSON FeatureCollection with the polygon
+    geometries, FIBOA-compatible properties, and a planar `area_m2` per field, plus provenance (source
+    CID, provider URL, license, attribution).  When to use: Call when the user asks about farms, fields,
+    pa…'
 - name: emem_query_region
   title: Aggregate facts over a region
   category: read
@@ -814,6 +1047,11 @@ tools:
   core: false
   input_properties: 8
   has_output_schema: false
+  description: 'Query facts over a region (single cell or list of cells), optionally aggregated per band.
+    A bbox is SAMPLED, not enumerated: the sampler walks addresses inside the box and returns only the
+    ones already materialized, so at any human-sized region (a district, a city) it commonly returns an
+    empty aggregate even when a warm cell sits inside the box. That is the sampler being honest, not a
+    miss. Measur…'
 - name: emem_compare
   title: Compare two cells (cosine + scalar deltas)
   category: read
@@ -828,6 +1066,9 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Compare two cells: cosine similarity over shared vector bands + per-band scalar deltas.  When
+    to use: Call when the user asks ''how similar is X to Y'', ''compare these two places'', or wants
+    a difference vector. Returns a single cosine score and per-band deltas.  Example arguments: {"a":"damO.zb000.xUti.zde78","b":"damO.zb000.xUto.sisA"}'
 - name: emem_compare_bands
   title: Compare two bands at one cell
   category: read
@@ -841,6 +1082,11 @@ tools:
   core: false
   input_properties: 7
   has_output_schema: false
+  description: 'Compare two bands at the same cell. Scalar pair → metric=delta, value=b-a. Vector pair
+    (equal dim) → metric=cosine + per-dim delta. Returns a signed receipt naming both source fact CIDs.  When
+    to use: Call when the user wants cross-source consistency at one place (''does Cop-DEM agree with
+    GMRT here?''), cross-vintage drift (''how did the embedding change between 2017 and 2024 at this cell?''),
+    or any…'
 - name: emem_find_similar
   title: k-NN over the corpus by embedding
   category: read
@@ -854,6 +1100,9 @@ tools:
   core: true
   input_properties: 10
   has_output_schema: false
+  description: 'k-NN over the corpus by cell embedding or inline vector. Returns `neighbours` ordered
+    nearest-first, each with `cell64`, `score` and the `band` scanned, plus a signed receipt over the
+    vectors read. Scoring is `mode`: cosine is exact fp32; h'
 - name: emem_trajectory
   title: Time series for one (cell, band)
   category: read
@@ -870,6 +1119,10 @@ tools:
   core: false
   input_properties: 7
   has_output_schema: false
+  description: 'Time series for one (cell, band) over an inclusive [start, end] tslot window. Returns
+    only what''s already attested; it does NOT trigger materialization. For historical backfill use `emem_backfill`.  When
+    to use: Call when the user asks ''how did X change over time'' for a band that already has multiple
+    historical tslots seeded. IMPORTANT differences from `emem_recall`: (1) trajectory does NOT auto-m…'
 - name: emem_diff
   title: Signed delta between two tslots
   category: read
@@ -883,6 +1136,11 @@ tools:
   core: false
   input_properties: 5
   has_output_schema: false
+  description: 'Compute a DerivativeFact (delta) between a band''s values at two tslots. Memory algebra:
+    the `diff` operation (https://emem.dev/docs/model.html). For a time-varying band the response also
+    carries an unsigned `phenology` advisory: the day-of-year of each tslot, their gap, and a `caution`
+    when the two dates sit at different points in the seasonal cycle, because that delta mixes phenology
+    with real ch…'
 - name: emem_compare_same_doy
   title: Compare a band at the same day-of-year across years
   category: read
@@ -897,6 +1155,11 @@ tools:
   core: false
   input_properties: 8
   has_output_schema: false
+  description: 'Compare a band at the SAME day-of-year across several years, the honest way to measure
+    year-over-year change on a seasonal band. For each year it finds the signed facts bracketing the target
+    day-of-year and linearly interpolates to it, and EXCLUDES years that cannot be bracketed (with a typed
+    reason) rather than extrapolating. This is the primitive the phenology advisory on emem_diff points
+    at: co…'
 - name: emem_memory_contradictions
   title: Scan for multi-attester disagreement
   category: read
@@ -912,6 +1175,9 @@ tools:
   core: true
   input_properties: 8
   has_output_schema: false
+  description: 'Surface where the corpus DISAGREES with itself (algebra: competing evidence). When two
+    or more independent sources signed different values for the same place + band + time, this returns
+    that disagreement with a 0–1 severity score and citati'
 - name: emem_edges_recall
   title: Recall temporal knowledge-graph edges
   category: read
@@ -926,6 +1192,10 @@ tools:
   core: false
   input_properties: 6
   has_output_schema: false
+  description: 'Read temporal knowledge-graph edges (subj --pred--> obj, valid over [valid_from, valid_to)),
+    bi-temporally filtered, in EITHER direction. Forward (`subj`, direction="out", the default): edges
+    originating at a subject fact. Reverse (`obj`, direction="in"): edges pointing AT a fact, what disagrees-with
+    / supersedes / relates-to it. Returns a signed list of edges plus the distinct neighbour fact CIDs…'
 - name: emem_fetch
   title: Resolve a fact by content-address (CID)
   category: read
@@ -940,6 +1210,11 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'Fetch a fact by its content-address (CID). Returns the full signed Primary or Absence
+    fact, the same body served by REST `/v1/facts/{cid}`. Closes the citation loop: any fact_cid surfaced
+    by recall, materialize, attest, or verify can be re-resolved by another agent without REST.  When
+    to use: Call whenever you have a `fact_cid` (e.g. from `emem_recall`''s response, an `emem_attest`
+    receipt, an `eme…'
 - name: emem_backfill
   title: Materialize historical facts in a window
   category: read
@@ -955,6 +1230,11 @@ tools:
   core: false
   input_properties: 8
   has_output_schema: false
+  description: 'Materialize and sign every per-tslot fact for one (cell, band) inside a [start_unix, end_unix]
+    window. Returns a signed list of (tslot, fact_cid, status) for each step. Slow but possible, one upstream
+    fetch per tslot, capped by `max_facts`. READ THE COUNT CAREFULLY: `steps[].tslot` is the REQUESTED
+    slot, not the slot the fact landed in. A signed fact carries the SCENE''s own tslot, so consecutive
+    r…'
 - name: emem_heat_solve
   title: 2-D heat-equation forecast (urban LST evolution)
   category: read
@@ -969,6 +1249,11 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Forward-step 2-D explicit finite-difference solver for the heat equation ∂u/∂t = α∇²u
+    over a 3×3 cell stencil centred on `cell`. Reads `modis.lst_day_8day` (Land Surface Temperature) at
+    the centre and 8 cell64 neighbours, integrates N hours ahead under a CFL-stable timestep, returns
+    a signed forecast. Real PDE rollout, not a decay-scoring heuristic.  When to use: Use when the user
+    wants a short-ho…'
 - name: emem_wave_solve
   title: 1-D shallow-water swell propagation to coast
   category: read
@@ -983,6 +1268,11 @@ tools:
   core: false
   input_properties: 6
   has_output_schema: false
+  description: Forward-step 1-D explicit finite-difference solver for the shallow-water wave equation
+    ∂²u/∂t² = c²∂²u/∂x² with c² = g·h, where depth h comes from `gmrt.topobathy_mean` along the seaward
+    gradient. Models how an offshore swell of height H_s and period T propagates toward `coastal_cell`.
+    Returns a signed forecast of arrival height + time + depth + phase-speed profiles, all under a CFL-stable
+    timeste…
 - name: emem_jepa_predict
   title: Constrained JEPA-pattern next-month NDVI predictor
   category: read
@@ -996,6 +1286,11 @@ tools:
   core: false
   input_properties: 5
   has_output_schema: false
+  description: Predict next-month NDVI at a cell using a constrained JEPA-pattern AR(2) seasonal predictor.
+    Reads up to 24 past months of `indices.ndvi`, fits a closed-form predictor `y_{t+1} = α·(lag-12 NDVI
+    or recent mean) + β·(last + slope) + γ·recent_mean`, returns the prediction clamped to NDVI's physical
+    range. Coefficients (α=0.6, β=0.3, γ=0.1) are NOT learned, they're fixed from the agricultural-NDVI
+    lit…
 - name: emem_jepa_predict_v2
   title: Learned multi-band-scalar dynamics head (jepa_temporal_predictor@2)
   category: read
@@ -1009,6 +1304,10 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: Predict the next-step value of 4 environmental scalars at a cell (`indices.ndvi`, `modis.lst_day_8day`,
+    `modis.lst_night_8day`, `cams.pm25`) using a small learned dynamics MLP. Reads up to K=6 most-recent
+    attested lags per band, runs them through an ONNX dynamics head (~200k params, CPU-fast), and returns
+    a per-band {value, confidence, n_real_lags, via}. The receipt's `model` block carries `model_…
 - name: emem_verify
   title: Verify a structured claim against a cell
   category: verify
@@ -1023,6 +1322,10 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Verify a structured claim against a cell''s facts. Returns verdict + evidence CIDs + signed
+    receipt.  When to use: Call when the user asks a yes/no question about a cell (''is the NDVI > 0.7
+    here'', ''has this been deforested''), or when downstream code wants citable evidence for a logical
+    predicate.  Example arguments: {"cell":"damO.zb000.xUti.zde78","claim":{"band":"indices.ndvi","op":"gt","value":0.…'
 - name: emem_bands
   title: Active band ontology
   category: introspect
@@ -1036,6 +1339,9 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Active band ontology (offsets, dims, tempo, privacy).  When to use: Call once at session
+    start to learn the band registry, every other primitive''s `band` argument MUST come from this list.  Example
+    arguments: {}'
 - name: emem_functions
   title: Active function registry
   category: introspect
@@ -1049,6 +1355,9 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Active function registry (derivation recipes).  When to use: Call when you need to know
+    which derivative ops are available for `emem_diff` or how a band is computed from upstream sources.  Example
+    arguments: {}'
 - name: emem_sources
   title: Active source-connector registry
   category: introspect
@@ -1063,6 +1372,9 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Active source-connector registry (URL templates, providers, licenses).  When to use: Call
+    when you need to inspect which upstream EO providers are wired (Copernicus DEM, JRC GSW, ESA WorldCover,
+    etc.), useful for license attribution in agent answers.  Example arguments: {}'
 - name: emem_schema
   title: Active CDDL/JSON schema bundle
   category: introspect
@@ -1076,6 +1388,9 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Active CDDL/JSON schema bundle by CID.  When to use: Rarely needed at chat time. Useful
+    for offline verification of receipts / attestations against the exact schema version a responder used.  Example
+    arguments: {}'
 - name: emem_errors
   title: Stable error code catalog
   category: introspect
@@ -1089,6 +1404,8 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: true
+  description: 'Stable error code catalog.  When to use: Call to enumerate the wire-stable error codes,
+    useful when the LLM wants to programmatically branch on responses.  Example arguments: {}'
 - name: emem_manifests
   title: Active manifest CIDs
   category: introspect
@@ -1103,6 +1420,9 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: true
+  description: 'Active manifest CIDs (bands / functions / sources / schema).  When to use: Call to learn
+    which exact registry versions a responder is serving. Cite these CIDs alongside any answer where reproducibility
+    matters.  Example arguments: {}'
 - name: emem_capabilities
   title: Cached upstream capability snapshot
   category: introspect
@@ -1116,6 +1436,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: true
+  description: 'Live capability snapshot of the responder''s GPU sidecar, extensions[] (e.g. gpu, clay-v1.5,
+    prithvi-eo2), cuda_available, models_loaded[], healthy, last_polled_unix_s. Refreshed every 30 s by
+    a background poller; reads are constant-time.  When to use: Call before scheduling a GPU-heavy plan
+    (Clay / Prithvi / Galileo embeddings, foundation-anchored algorithms) so the agent knows whether the
+    GPU tie…'
 - name: emem_grid_info
   title: Active grid encoding
   category: introspect
@@ -1129,6 +1454,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: true
+  description: 'Active grid encoding: cell64 ground resolution, lat/lng axis sizes, DGGS lineage.  When
+    to use: Call once at session start (or when the user asks about cell resolution / ''how big is a cell'').
+    Returns the actual ground resolution today (~9.54 m × 9.55 m square at the equator (lat 21 bits ×
+    lng 22 bits, matching Sentinel-1/Sentinel-2 native pixel pitch). The cell64 bit layout reserves a
+    resolution-t…'
 - name: emem_cells_in_bbox
   title: Enumerate the cell64s in a bounding box, paged
   category: introspect
@@ -1142,6 +1472,10 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'Enumerate every cell64 whose centre falls in a bounding box, paged, in stable row-major
+    order (north row first, then west column first). Pure geometry: it reads no facts and signs no receipt,
+    because the answer is a deterministic function of the bbox and the active grid that anyone can reproduce.
+    It walks the integer lat/lng grid directly, so it never skips or double-counts a cell the way a float-…'
 - name: emem_coverage_matrix
   title: Per-band live status & history bounds
   category: introspect
@@ -1156,6 +1490,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Per-band live status, what data is alive AND auto-materializable, with history bounds,
+    tempo cadence, and the responder pubkey that signs the band.  When to use: Call BEFORE `emem_recall`
+    when you don''t know which bands answer at this responder. For each band returns `has_materializer`
+    (true → an empty recall will auto-fetch+sign, no seeding needed), `facts_count` (how many cells already
+    cached), …'
 - name: emem_materializers
   title: Auto-fetch registry (per-band materializers)
   category: introspect
@@ -1169,6 +1508,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Auto-fetch registry: which bands the responder will materialize on a recall miss, the
+    upstream provider, license, value shape, and history bounds.  When to use: Call once at session start
+    (alongside `emem_bands` and `emem_coverage_matrix`) to learn which bands answer for ANY cell on Earth
+    without seeding. Each entry declares `upstream_scheme`, `upstream_endpoint`, `derivation_fn_key`,
+    `value_kind`…'
 - name: emem_data_availability
   title: Per-band temporal coverage catalog
   category: introspect
@@ -1183,6 +1527,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Temporal catalog: for every materializable band the upstream-of-record window the data
+    genuinely covers, the temporal `kind` (static | annual_snapshot | annual_stack | time_series | now_only
+    | per_release), tempo seconds, upstream wire path, and whether `emem_backfill` is meaningful.  When
+    to use: Call before `emem_backfill` or any historical recall to check whether a band has a meaningful
+    past at…'
 - name: emem_algorithms
   title: Composition recipes (algorithms)
   category: introspect
@@ -1196,6 +1545,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Content-addressed dictionary of composition recipes, formulas that fuse attested band
+    facts (and embeddings) into derived scores, classifications, and similarity metrics.  When to use:
+    Call when the user''s question is COMPOSITE (flood risk, urban density, water consensus, change-since-2020)
+    rather than a single band readout. Each entry has `kind` (solo | combined | embedding), the input
+    `bands` (a…'
 - name: emem_explain_algorithm
   title: One-algorithm drill-down (formula + inputs + citation)
   category: introspect
@@ -1209,6 +1563,10 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'Per-key drill-down on a single composition recipe, full body (kind, inputs, formula, output,
+    citation, references) for ONE algorithm key. Companion to `emem_algorithms` (which is the catalog).  When
+    to use: Call when you already know the algorithm key (from `emem_algorithms`''s catalog or the topic
+    registry) and need its full math. Cheaper than fetching the full catalog when you only need one entry…'
 - name: emem_topics
   title: Topic-grouped band + algorithm registry
   category: introspect
@@ -1222,6 +1580,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Topic-grouped registry of every band and algorithm at this responder, plus visual surfaces
+    and the `declared_but_no_materializer_at_this_responder` block (cube slots reserved without a live
+    connector). Single source of truth shared with `/v1/locate`''s `data_at_this_cell` block.  When to
+    use: Call when the user''s question lives in a topic but they haven''t named a specific band, e.g.
+    ''is this place …'
 - name: emem_coverage_map
   title: Coverage map (SVG image)
   category: introspect
@@ -1236,6 +1599,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Live SVG render of the responder''s corpus density, returned as a proper MCP EmbeddedResource
+    content block (image/svg+xml), multimodal MCP agents can render it natively.  When to use: Call when
+    the user asks ''where do you have data?'', ''show me the coverage'', or wants a visual brief of the
+    responder''s corpus footprint. Returns a 1440×720 Plate-Carrée SVG (1° × 1° bins, log-scale colour,
+    continent e…'
 - name: emem_cell_scene_rgb
   title: Sentinel-2 true-colour thumbnail (PNG)
   category: read
@@ -1250,6 +1618,11 @@ tools:
   core: false
   input_properties: 4
   has_output_schema: false
+  description: 'True-colour Sentinel-2 L2A RGB thumbnail centred on a cell. PNG returned as a native MCP
+    ImageContent block (mimeType image/png). Pure-Rust pipeline: STAC search + HTTP-Range COG reads +
+    2-98 percentile stretch + PNG encode.  When to use: Call when the user wants a VISUAL of a place,
+    ''show me what this looks like'', ''before/after the flood'', ''is there a forest here'', ''is this
+    developed''. Returns a …'
 - name: emem_cell_geojson
   title: Cell polygon as GeoJSON
   category: read
@@ -1264,6 +1637,11 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: false
+  description: 'Cell polygon as a native MCP EmbeddedResource (mimeType application/geo+json). Properties
+    carry centre lat/lng, bbox, approx size in metres, and the 8-cell neighbourhood, drop straight into
+    Mapbox / Leaflet / Deck.gl / QGIS without a GIS pipeline.  When to use: Call when the agent (or a
+    downstream renderer) needs the cell as geographic geometry, for map overlays, polygon-clipping ops,
+    or feeding a…'
 - name: emem_recall_many
   title: Bulk recall across up to 256 cells
   category: read
@@ -1277,6 +1655,11 @@ tools:
   core: false
   input_properties: 6
   has_output_schema: false
+  description: 'Recall facts across a list of up to 256 cell64 strings in one round-trip. Server fans
+    out per-cell recalls in parallel and returns them under `by_cell.<cell64>`. NOT one signed envelope:
+    there is no aggregate receipt, and each cell carries its own under `by_cell.<cell>.receipt`, so verifying
+    one cell verifies that cell only. Audit a bulk call by verifying each cell''s receipt independently.  When
+    t…'
 - name: emem_elevation
   title: Coherent elevation across Cop-DEM + GMRT + WorldCover
   category: read
@@ -1292,6 +1675,11 @@ tools:
   core: false
   input_properties: 9
   has_output_schema: false
+  description: 'One-shot elevation answer that fuses Cop-DEM 30 m (land), GMRT (ocean topobathy), and
+    ESA WorldCover (water mask) into a single signed scalar at a place or coordinate. Returns `elevation_m`,
+    the source actually used, and a `coherence_note` when the two surfaces disagree at the coast.  When
+    to use: Use when the user asks ''how high is X'' or ''what''s the elevation at this lat/lng'' and
+    you want the cor…'
 - name: emem_fleet
   title: Satellite / sensor lineage per band
   category: introspect
@@ -1307,6 +1695,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Per-band satellite-and-sensor fleet inventory, names the upstream platform (e.g. Sentinel-2A/B,
+    MODIS Aqua/Terra, Landsat-8/9), revisit cadence, native resolution, and license for every materialized
+    band. Lets an agent attribute imagery products correctly and pick the right band when revisit cadence
+    matters.  When to use: Call when the user asks ''which satellite is this from'', ''what''s the revisit
+    …'
 - name: emem_substrates
   title: Substrate profile registry
   category: introspect
@@ -1322,6 +1715,10 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: true
+  description: 'The written admission contract per contributor class (satellite archive, operator constellation,
+    telescope, microscope, CCTV, mobile, drone, robot, industrial machine, fixed sensor): which admission
+    rule applies (recomputable public archive, or complete OS execution trace), which trace layers a device
+    of that class must capture, the measurement grain range, and which profile is the drift anchor. C…'
 - name: emem_trace_verify
   title: Verify a device's OS execution trace
   category: verify
@@ -1337,6 +1734,11 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Stateless verification of an emem.os_trace.v1 record against a substrate profile: schema,
+    device identity, capture window, per-layer coverage, segment digest chain, merkle trace_root, emitted-output
+    binding, and the device''s ed25519 signature. Returns the full verdict with every failed check named
+    (chain_broken, missing_layer, output_unbound, signature_invalid, ...), never just a boolean, so a
+    dev…'
 - name: emem_temporal_route
   title: Plan a temporal recall recipe for a cell
   category: plan
@@ -1351,6 +1753,11 @@ tools:
   core: false
   input_properties: 10
   has_output_schema: false
+  description: 'Turn a time-shaped question into a ready-to-run recall plan: it figures out WHICH bands
+    to pull at WHICH past time windows (e.g. ''the year before the flood'', ''last growing season'', ''two
+    vintages to compare'') so you don''t have to compute tslot offsets by hand. Returns the band + lookback
+    + a `purpose` tag for each step. Algebra: valid(M, a): per-band validity from the physics decay kernel,
+    cite_now…'
 - name: emem_verify_receipt
   title: Server-side ed25519 receipt verifier
   category: verify
@@ -1366,6 +1773,9 @@ tools:
   core: true
   input_properties: 4
   has_output_schema: false
+  description: 'Verify a signed receipt envelope server-side: rebuilds the canonical preimage under the
+    rule the receipt''s own `preimage_version` names, runs ed25519 over the embedded key and signature,
+    and returns `{valid, reason, failure_detail, signatur'
 - name: emem_guard_verdict
   title: Check whether the citations in a draft actually verify
   category: verify
@@ -1379,6 +1789,9 @@ tools:
   core: true
   input_properties: 4
   has_output_schema: true
+  description: 'Run emem-guard''s policy pipeline over text you are about to send, against this responder''s
+    corpus. Finds every emem: citation, resolves each one, and returns allow or deny with a machine-readable
+    reason: `EMEM-GUARD DENY <CODE> token=<token'
 - name: emem_guard_selfhost
   title: The procedure for running your own verdict server
   category: introspect
@@ -1392,6 +1805,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: false
+  description: 'Returns the full emem-guard self-host skill as markdown, plus the exact build, test and
+    run commands. A node you run needs no account here and no key from us: it generates its own signing
+    key, keeps its own append-only verdict log, verifies what it holds, and cites what it does not. It
+    exposes checkpoints for Anthropic Inference hooks, Claude Code client hooks, MCP tools/call, OpenAI-shaped
+    client…'
 - name: emem_at
   title: Multi-band snapshot at a place
   category: read
@@ -1406,6 +1824,10 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'One-shot recall of the signed facts at a place''s cell64 (or lat/lng); each band carries
+    a citeable fact_cid. Defaults to emem''s standard at-a-glance band set; pass `band` / `bands` to override.
+    Polygon-resolved places stay at the centroid by default (`n_cells: 1`) to keep multi-band calls cheap;
+    pass `n_cells: 2..=64` to fan out.  When to use: Use when the user names a place and wants the standard…'
 - name: emem_ndvi
   title: NDVI at a place (one-shot, polygon-aware)
   category: read
@@ -1421,6 +1843,11 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'Recall the signed Sentinel-2 NDVI fact (indices.ndvi, 10 m native) at a place''s canonical
+    cell64, attesting it into the shared memory on a miss. Composes locate → cell64 → recall in one call;
+    the value returns with its citeable fact_cid.  When to use: Use when the user names a place (or lat/lng)
+    and just wants the NDVI number. Polygon-resolved places default to a 16-cell fan-out aggregated as
+    mean…'
 - name: emem_air
   title: Air-quality snapshot (CAMS PM2.5 / NO2 / O3)
   category: read
@@ -1435,6 +1862,11 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'Recall the signed Copernicus CAMS air-quality facts (PM2.5 + NO2 + O3) at a place''s cell64,
+    attesting on a miss. Composes locate → recall → aggregate; each band carries a citeable fact_cid.  When
+    to use: Use when the user names a place and asks about air quality, pollution, or emissions exposure.
+    CAMS is the European reanalysis, global coverage, ~0.4° native (resampled). For finer-grained urban
+    PM…'
 - name: emem_lst
   title: Land surface temperature (MODIS day + night)
   category: read
@@ -1450,6 +1882,11 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'Recall the signed MODIS land surface temperature facts (day-8day + night-8day composites,
+    1 km native) at a place''s cell64, attesting on a miss; each carries a citeable fact_cid.  When to
+    use: Use when the user asks about surface heat, urban heat island, thermal anomalies, or wants day/night
+    LST. Returns both fluxes so the agent can derive day–night spread.  Example arguments: {"place":"Phoenix,
+    A…'
 - name: emem_soil
   title: 'Soil profile (SoilGrids 0–30 cm: SOC, pH, texture)'
   category: read
@@ -1464,6 +1901,11 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'Recall the signed SoilGrids 250 m profile at a place''s cell64 (SOC, pH, clay/sand/silt
+    fractions, bulk density, nitrogen, all at 0–30 cm depth), attesting on a miss; each band carries a
+    citeable fact_cid.  When to use: Use when the user asks about soil quality, agricultural suitability,
+    or carbon stocks at a location. Six bands returned in one envelope.  Example arguments: {"place":"Bhanu
+    Pratappu…'
 - name: emem_water
   title: Surface water (JRC GSW recurrence + S1 backscatter)
   category: read
@@ -1480,6 +1922,10 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'Recall the signed surface-water facts at a place''s cell64: JRC Global Surface Water recurrence
+    (1984–2021) + Sentinel-1 SAR backscatter (current), attested on a miss and citeable by fact_cid. The
+    pair detects standing water through clouds.  When to use: Use when the user asks about flooding, wetlands,
+    surface-water dynamics, or wants a robust water-presence check. JRC alone gives historical baseli…'
 - name: emem_forest
   title: Forest signals (Hansen GFC + ESA WorldCover)
   category: read
@@ -1494,6 +1940,11 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'Recall the signed forest facts at a place''s cell64: Hansen Global Forest Change (tree
+    cover 2000 baseline + year-of-loss) + ESA WorldCover 2021 land class, attested on a miss; each carries
+    a citeable fact_cid.  When to use: Use when the user asks about deforestation, canopy cover, forest
+    loss, or wants a forest-vs-not classification. Hansen gives year-of-loss for any cell with disturbance
+    since 20…'
 - name: emem_weather
   title: Current weather snapshot (temperature, cloud, precip, wind)
   category: read
@@ -1509,6 +1960,11 @@ tools:
   core: false
   input_properties: 16
   has_output_schema: false
+  description: 'Recall the signed met.no/CAMS weather facts at a place''s cell64 (2 m temperature + total
+    cloud cover + precipitation + 10 m wind speed), attesting on a miss; each value carries a citeable
+    fact_cid.  When to use: Use when the user names a place and asks ''what''s the weather'' or wants
+    a now-cast snapshot. weather.* bands are now-only (no backfill); for climatology use terraclimate.*.  Example
+    argumen…'
 - name: emem_intent
   title: Intent-routed planner
   category: plan
@@ -1522,6 +1978,9 @@ tools:
   core: true
   input_properties: 14
   has_output_schema: false
+  description: 'Say what you want in one typed object and get the answer, without choosing a primitive.
+    `type` is a tagged union: it selects the intent AND decides which other fields are read, so send only
+    the fields its row needs. The plan is EXECUTED in'
 - name: emem_log_sth
   title: Transparency log signed tree head
   category: verify
@@ -1536,6 +1995,11 @@ tools:
   core: false
   input_properties: 0
   has_output_schema: true
+  description: 'Fetch the responder-signed tree head (STH) over the whole append-only attestation log:
+    {tree_size, root_b32, signed_at, responder_pubkey_b32, signature_b32}. The signature is ed25519 over
+    a domain-separated preimage, verifiable offline.  When to use: Call to pin a cryptographic commitment
+    to the log''s current state. Save the STH, then later call emem_log_consistency to prove the log only
+    grew (app…'
 - name: emem_log_inclusion
   title: Transparency log inclusion proof
   category: verify
@@ -1550,6 +2014,10 @@ tools:
   core: false
   input_properties: 3
   has_output_schema: false
+  description: 'Return an RFC 6962 inclusion (audit) proof that a log entry is committed under the current
+    signed tree head. Verify offline: the audit path re-derives the STH root from the entry''s leaf hash.  When
+    to use: Call to prove a specific log entry is in the log. Pass `leaf_index` (0-based position) or
+    `entry_hash` (base32 of the record''s blake3). Returns the audit path plus the STH to check it against.  …'
 - name: emem_log_consistency
   title: Transparency log consistency proof
   category: verify
@@ -1564,6 +2032,10 @@ tools:
   core: false
   input_properties: 2
   has_output_schema: false
+  description: 'Return an RFC 6962 consistency proof that the tree of size `first` is an append-only prefix
+    of size `second` (defaults to the current size). This is the append-only guarantee: it catches a responder
+    that rewrites or forks history.  When to use: Call with `first` = the tree_size of an STH you pinned
+    earlier. Verify the returned proof offline against that STH''s root; if the first_root does not match…'
 - name: emem_log_witnesses
   title: Transparency log witness co-signatures
   category: verify
@@ -1578,6 +2050,10 @@ tools:
   core: false
   input_properties: 1
   has_output_schema: true
+  description: 'List witness co-signatures recorded for tree heads, independent parties that counter-signed
+    a (tree_size, root) claim under their own ed25519 key. Co-signatures let a client detect split-view
+    equivocation. Empty until witnesses submit (submission is a signed write, done off-MCP via POST /v1/log/witness).  When
+    to use: Call to see who has independently vouched for the log''s history. For each co-sig…'
 - name: emem_reason
   title: Compose a prose answer over signed facts (LLM, labelled)
   category: plan
@@ -1591,3 +2067,10 @@ tools:
   core: false
   input_properties: 2
   has_output_schema: false
+  description: 'The opt-in reasoning tier: grounds your question through emem_ask (deterministic, signed),
+    then has the responder''s local model compose a prose answer over that envelope. The prose is model_output
+    and signed:false by construction, it is never evidence; the grounding block beside it (fact_cids +
+    receipt) is. Runs the model greedily (temperature 0) under a per-model single-flight lock, so a cold
+    loa…'
+descriptions_source: live tools/list (authorship probe or saved capture); filled by backfill-tools-from-authorship.py
+  --descriptions, 2026-09-28
