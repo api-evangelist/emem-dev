@@ -1,9 +1,10 @@
 openapi: 3.2.0
 info:
-  title: Emem Dev Field Boundaries API
-  version: 2.4.0
+  description: emem is shared memory for AI agents working together in the real world.
   license:
     name: Apache-2.0
+  title: emem Field Boundaries API
+  version: 2.4.0
   x-emem-surface-asymmetry:
     memory_notes: MCP only
     reach_them_at: POST /mcp, method tools/call
@@ -19,7 +20,6 @@ info:
     - emem_memory_str_replace
     - emem_memory_supersede
     why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
-  description: 'Operations tagged Field Boundaries across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
 servers:
 - description: Hosted instance (HTTPS-only)
   url: https://emem.dev
@@ -105,36 +105,8 @@ paths:
       summary: per-field agricultural-boundary polygons (Fields of The World, CC-BY-4.0)
       tags:
       - Field Boundaries
-    servers:
-    - description: Hosted instance (HTTPS-only)
-      url: https://emem.dev
 components:
   schemas:
-    Cost:
-      description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
-      properties:
-        credits:
-          description: Conceptual cost units; 0 for L0/L1 read endpoints on the hosted responder.
-          type: number
-        latency_p50_ms:
-          type: number
-        latency_p99_ms:
-          type: number
-        source_freshness_s:
-          description: 'Age of the STALEST source this response cites: now minus the earliest captured_at across the returned facts'' sources. null when nothing in the response carries a dated source, which is the honest answer for a primitive that reads no observation. Was a hardcoded 0 until 2026-08-05, so a 2021 DEM tile reported as 0 s old; a null here means unknown, never fresh.'
-          type:
-          - integer
-          - 'null'
-        was_cached:
-          type: boolean
-      type: object
-    FactCid:
-      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
-      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
-      maxLength: 52
-      minLength: 52
-      pattern: ^[a-z2-7]{52}$
-      type: string
     Receipt:
       description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
       properties:
@@ -221,6 +193,31 @@ components:
       - signature
       - registry_cid
       type: object
+    Cost:
+      description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
+      properties:
+        credits:
+          description: Conceptual cost units; 0 for L0/L1 read endpoints on the hosted responder.
+          type: number
+        latency_p50_ms:
+          type: number
+        latency_p99_ms:
+          type: number
+        source_freshness_s:
+          description: 'Age of the STALEST source this response cites: now minus the earliest captured_at across the returned facts'' sources. null when nothing in the response carries a dated source, which is the honest answer for a primitive that reads no observation. Was a hardcoded 0 until 2026-08-05, so a 2021 DEM tile reported as 0 s old; a null here means unknown, never fresh.'
+          type:
+          - integer
+          - 'null'
+        was_cached:
+          type: boolean
+      type: object
+    FactCid:
+      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
+      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
+      maxLength: 52
+      minLength: 52
+      pattern: ^[a-z2-7]{52}$
+      type: string
     ErrorEnvelope:
       description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
       properties:
@@ -253,6 +250,10 @@ components:
       minLength: 19
       pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
       type: string
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
     FieldBoundariesResp:
       description: Response of /v1/field_boundaries. `fields` is an array of per-field GeoJSON-Polygon features from Fields of The World (CC-BY-4.0). `attribution` and `license` must be surfaced with any rendered map.
       properties:
@@ -283,10 +284,3 @@ components:
       - license
       - attribution
       type: object
-    PubKey:
-      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
-      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
-      type: string
-x-refined-from:
-- emem-dev-openapi-original.json
-- emem-dev-openapi.json

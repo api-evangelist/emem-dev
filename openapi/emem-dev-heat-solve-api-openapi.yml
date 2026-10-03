@@ -1,9 +1,10 @@
 openapi: 3.2.0
 info:
-  title: Emem Dev Heat Solve API
-  version: 2.4.0
+  description: emem is shared memory for AI agents working together in the real world.
   license:
     name: Apache-2.0
+  title: emem Heat Solve API
+  version: 2.4.0
   x-emem-surface-asymmetry:
     memory_notes: MCP only
     reach_them_at: POST /mcp, method tools/call
@@ -19,7 +20,6 @@ info:
     - emem_memory_str_replace
     - emem_memory_supersede
     why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
-  description: 'Operations tagged Heat Solve across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
 servers:
 - description: Hosted instance (HTTPS-only)
   url: https://emem.dev
@@ -55,27 +55,8 @@ paths:
       summary: 2-D explicit-FD heat-equation solver (forecast LST N hours ahead from a 3×3…
       tags:
       - Heat Solve
-    servers:
-    - description: Hosted instance (HTTPS-only)
-      url: https://emem.dev
 components:
   schemas:
-    HeatSolveReq:
-      properties:
-        cell:
-          description: cell64 string. The solver evaluates LST evolution at this cell's centre.
-          type: string
-        diffusivity_m2_per_s:
-          default: 1.0e-06
-          description: Thermal diffusivity α (m²/s). Default 1e-6 matches urban surfaces (Oke 2017 §2.3 Table 2.4); use ~5e-7 for vegetation, ~1.4e-7 for water.
-          type: number
-        hours_ahead:
-          default: 6
-          description: Forecast horizon in hours. Capped at 168 (one week).
-          type: number
-      required:
-      - cell
-      type: object
     ErrorEnvelope:
       description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
       properties:
@@ -101,6 +82,19 @@ components:
       - message
       - schema
       type: object
-x-refined-from:
-- emem-dev-openapi-original.json
-- emem-dev-openapi.json
+    HeatSolveReq:
+      properties:
+        cell:
+          description: cell64 string. The solver evaluates LST evolution at this cell's centre.
+          type: string
+        diffusivity_m2_per_s:
+          default: 1.0e-06
+          description: Thermal diffusivity α (m²/s). Default 1e-6 matches urban surfaces (Oke 2017 §2.3 Table 2.4); use ~5e-7 for vegetation, ~1.4e-7 for water.
+          type: number
+        hours_ahead:
+          default: 6
+          description: Forecast horizon in hours. Capped at 168 (one week).
+          type: number
+      required:
+      - cell
+      type: object

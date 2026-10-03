@@ -1,9 +1,10 @@
 openapi: 3.2.0
 info:
-  title: Emem Dev Temporal Route API
-  version: 2.4.0
+  description: emem is shared memory for AI agents working together in the real world.
   license:
     name: Apache-2.0
+  title: emem Temporal Route API
+  version: 2.4.0
   x-emem-surface-asymmetry:
     memory_notes: MCP only
     reach_them_at: POST /mcp, method tools/call
@@ -19,7 +20,6 @@ info:
     - emem_memory_str_replace
     - emem_memory_supersede
     why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
-  description: 'Operations tagged Temporal Route across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
 servers:
 - description: Hosted instance (HTTPS-only)
   url: https://emem.dev
@@ -113,9 +113,6 @@ paths:
       summary: 'PDE-based band routing for a query time + intent (algebra: valid; cite_now vs…'
       tags:
       - Temporal Route
-    servers:
-    - description: Hosted instance (HTTPS-only)
-      url: https://emem.dev
 components:
   schemas:
     ErrorEnvelope:
@@ -143,6 +140,3 @@ components:
       - message
       - schema
       type: object
-x-refined-from:
-- emem-dev-openapi-original.json
-- emem-dev-openapi.json

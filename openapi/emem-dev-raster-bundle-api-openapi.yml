@@ -1,9 +1,10 @@
 openapi: 3.2.0
 info:
-  title: Emem Dev Raster Bundle API
-  version: 2.4.0
+  description: emem is shared memory for AI agents working together in the real world.
   license:
     name: Apache-2.0
+  title: emem Raster Bundle API
+  version: 2.4.0
   x-emem-surface-asymmetry:
     memory_notes: MCP only
     reach_them_at: POST /mcp, method tools/call
@@ -19,7 +20,6 @@ info:
     - emem_memory_str_replace
     - emem_memory_supersede
     why_not_here: These write the agent correspondence plane, which is prose and untrusted-by-declaration. It is deliberately not part of the REST fact surface, and the two planes are kept apart rather than merged for convenience.
-  description: 'Operations tagged Raster Bundle across 2 of this provider''s published API definitions: emem-dev-openapi-original.json, emem-dev-openapi.json. Each path carries the servers of the definition it was published in.'
 servers:
 - description: Hosted instance (HTTPS-only)
   url: https://emem.dev
@@ -95,9 +95,6 @@ paths:
       summary: 'bind 2..64 already-minted emem:raster: field tokens (band_raster /…'
       tags:
       - Raster Bundle
-    servers:
-    - description: Hosted instance (HTTPS-only)
-      url: https://emem.dev
   /v1/raster_bundle/resolve:
     post:
       description: 'Resolve emem:rasterset:: back to its signed manifest and verify it. Fail-closed like every field-token resolve: the cid must be a raster_bundle@1 derivation, bundle_cid is recomputed from the record''s ordered members and matched against BOTH the token and the record (any mismatch is a typed 409, refusing an altered or forged membership), and every member emem:raster: token is re-verified as a live raster derivation. Returns the member list with a per-member resolves flag, so a stranger confirms the whole set is intact before trusting the world it names.
@@ -161,9 +158,6 @@ paths:
       summary: 'dereference an emem:rasterset:: token.'
       tags:
       - Raster Bundle
-    servers:
-    - description: Hosted instance (HTTPS-only)
-      url: https://emem.dev
 components:
   schemas:
     ErrorEnvelope:
@@ -191,6 +185,3 @@ components:
       - message
       - schema
       type: object
-x-refined-from:
-- emem-dev-openapi-original.json
-- emem-dev-openapi.json
