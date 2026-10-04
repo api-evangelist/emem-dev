@@ -85,6 +85,27 @@ paths:
       - Verify Receipt
 components:
   schemas:
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+    VerifyReceiptResp:
+      description: Response of /v1/verify_receipt. `valid` is the ed25519 signature check; `signer` is the responder pubkey the signature was checked against; `preimage_b64` is the canonical preimage that was hashed and signed, for reproduction in any other ed25519 implementation.
+      properties:
+        errors:
+          items:
+            type: string
+          type: array
+        preimage_b64:
+          type: string
+        signer:
+          $ref: '#/components/schemas/PubKey'
+        valid:
+          type: boolean
+      required:
+      - valid
+      - signer
+      type: object
     ErrorEnvelope:
       description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
       properties:
@@ -110,24 +131,3 @@ components:
       - message
       - schema
       type: object
-    VerifyReceiptResp:
-      description: Response of /v1/verify_receipt. `valid` is the ed25519 signature check; `signer` is the responder pubkey the signature was checked against; `preimage_b64` is the canonical preimage that was hashed and signed, for reproduction in any other ed25519 implementation.
-      properties:
-        errors:
-          items:
-            type: string
-          type: array
-        preimage_b64:
-          type: string
-        signer:
-          $ref: '#/components/schemas/PubKey'
-        valid:
-          type: boolean
-      required:
-      - valid
-      - signer
-      type: object
-    PubKey:
-      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
-      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
-      type: string

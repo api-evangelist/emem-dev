@@ -57,6 +57,30 @@ paths:
       - Jepa Predict
 components:
   schemas:
+    JepaPredictReq:
+      properties:
+        band:
+          default: indices.ndvi
+          description: Band to forecast. v1 supports 'indices.ndvi' only.
+          type: string
+        cell:
+          description: cell64 to forecast at.
+          type: string
+        forecast_horizon_months:
+          default: 1
+          description: Horizon in months ahead. v1 supports 1; multi-step rollout lands in @2.
+          maximum: 1
+          minimum: 1
+          type: integer
+        lookback_months:
+          default: 6
+          description: How many past months of history to read.
+          maximum: 24
+          minimum: 1
+          type: integer
+      required:
+      - cell
+      type: object
     ErrorEnvelope:
       description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
       properties:
@@ -81,28 +105,4 @@ components:
       - code
       - message
       - schema
-      type: object
-    JepaPredictReq:
-      properties:
-        band:
-          default: indices.ndvi
-          description: Band to forecast. v1 supports 'indices.ndvi' only.
-          type: string
-        cell:
-          description: cell64 to forecast at.
-          type: string
-        forecast_horizon_months:
-          default: 1
-          description: Horizon in months ahead. v1 supports 1; multi-step rollout lands in @2.
-          maximum: 1
-          minimum: 1
-          type: integer
-        lookback_months:
-          default: 6
-          description: How many past months of history to read.
-          maximum: 24
-          minimum: 1
-          type: integer
-      required:
-      - cell
       type: object

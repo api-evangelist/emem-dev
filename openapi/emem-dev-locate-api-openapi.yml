@@ -116,72 +116,6 @@ paths:
       - Locate
 components:
   schemas:
-    ErrorEnvelope:
-      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
-      properties:
-        code:
-          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
-          example: invalid_argument
-          type: string
-        details:
-          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
-          type: object
-        message:
-          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
-          type: string
-        path:
-          description: Request path that produced the error.
-          example: /v1/ask
-          type: string
-        schema:
-          const: emem.error.v1
-          type: string
-      required:
-      - code
-      - message
-      - schema
-      type: object
-    LocateReq:
-      description: 'Body for POST /v1/locate. Provide `place` (free-text, geocoded via embedded gazetteer → cache → Photon → Nominatim) OR `lat`+`lng`. Mutually exclusive: at least one of (`place`/`q`/`query`/`name`) or (`lat`+`lng`) must be present.'
-      oneOf:
-      - required:
-        - place
-      - required:
-        - q
-      - required:
-        - query
-      - required:
-        - name
-      - required:
-        - lat
-        - lng
-      properties:
-        lat:
-          description: WGS-84 latitude. REQUIRED with `lng` unless `place` is provided.
-          type: number
-        lng:
-          description: WGS-84 longitude. REQUIRED with `lat` unless `place` is provided.
-          type: number
-        name:
-          description: Alias for `place`.
-          type: string
-        place:
-          description: Free-text place name. Resolved via embedded gazetteer → cache → Photon → Nominatim.
-          type: string
-        q:
-          description: Alias for `place`.
-          type: string
-        query:
-          description: Alias for `place`.
-          type: string
-      type: object
-    Cell64:
-      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
-      example: defi.zb4d9.pefa.zf619
-      maxLength: 23
-      minLength: 19
-      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
-      type: string
     LocateResp:
       description: Response of /v1/locate. `cell64` is the canonical handle for the resolved place; `polygon_bbox` is present when the geocoder found an extent (city / park / lake / country / region), absent for point features. `via` declares which layer of the seven-tier embedded cascade answered, falling back to network (Photon → Nominatim) only when no embedded layer matched.
       properties:
@@ -282,3 +216,69 @@ components:
       - cell64
       - via
       type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    LocateReq:
+      description: 'Body for POST /v1/locate. Provide `place` (free-text, geocoded via embedded gazetteer → cache → Photon → Nominatim) OR `lat`+`lng`. Mutually exclusive: at least one of (`place`/`q`/`query`/`name`) or (`lat`+`lng`) must be present.'
+      oneOf:
+      - required:
+        - place
+      - required:
+        - q
+      - required:
+        - query
+      - required:
+        - name
+      - required:
+        - lat
+        - lng
+      properties:
+        lat:
+          description: WGS-84 latitude. REQUIRED with `lng` unless `place` is provided.
+          type: number
+        lng:
+          description: WGS-84 longitude. REQUIRED with `lat` unless `place` is provided.
+          type: number
+        name:
+          description: Alias for `place`.
+          type: string
+        place:
+          description: Free-text place name. Resolved via embedded gazetteer → cache → Photon → Nominatim.
+          type: string
+        q:
+          description: Alias for `place`.
+          type: string
+        query:
+          description: Alias for `place`.
+          type: string
+      type: object
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string

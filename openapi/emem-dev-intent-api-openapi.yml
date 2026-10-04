@@ -116,31 +116,6 @@ paths:
       - Intent
 components:
   schemas:
-    ErrorEnvelope:
-      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
-      properties:
-        code:
-          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
-          example: invalid_argument
-          type: string
-        details:
-          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
-          type: object
-        message:
-          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
-          type: string
-        path:
-          description: Request path that produced the error.
-          example: /v1/ask
-          type: string
-        schema:
-          const: emem.error.v1
-          type: string
-      required:
-      - code
-      - message
-      - schema
-      type: object
     Claim:
       properties:
         agg:
@@ -185,4 +160,29 @@ components:
       - band
       - op
       - value
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
       type: object

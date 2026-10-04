@@ -181,6 +181,195 @@ paths:
       - Memory Token
 components:
   schemas:
+    MemoryTokenResolveResp:
+      description: 'Response of /v1/memory_token/resolve (and of the emem_memory_token_resolve MCP tool, which shares the implementation, so the two cannot disagree). The dereference at the centre of the citation loop: a token in, the signed reading it cites out. `value` / `unit` / `band` / `kind` are the reading itself, lifted to the top level; `fact` is the full signed body they were lifted from, and `value` is the same JSON node as `fact.value` by construction, never a re-render. `value_verbatim` is the scalar as the exact decimal string it was signed as, and is the field a model should quote: re-typing `fact.value` from a JSON number is where measured precision loss comes from. Nothing here is taken from the token: the token carries only cell + fact_cid, and any further claim a descriptor token makes (band, capture date, coordinates) is bound against this body before the dereference is permitted, so a mismatch is a 409 rather than a field in this response.'
+      properties:
+        band:
+          description: Band key the value is a reading of, from the signed body.
+          example: copdem30m.elevation_mean
+          type: string
+        canonical_token:
+          description: 'The same citation in canonical grammar, `emem:fact:<cell64>:<fact_cid>`. Cite this one onward: a legacy `memt:` prefix, a descriptor anchor and a bare cid all normalise here.'
+          type: string
+        cell:
+          $ref: '#/components/schemas/Cell64'
+        cell_matches:
+          description: 'Whether the cell the token asserted was CHECKED against the signed fact''s own cell, and agreed. `false` means NOT CHECKED, never checked-and-mismatched: a token whose cell contradicts the fact is refused with 409 before this response exists. The only route to a 200 with `false` is a degraded resolve, where a bare or recovered cid asserted no cell to compare and `cell` below is adopted from the signed body. Gate provenance on this field and you get the address check; read `degraded` for whether the citation itself was well-formed.'
+          type: boolean
+        degraded:
+          description: True when a BARE fact_cid was accepted, i.e. the `emem:fact:<descriptor>:` head was missing or the cid was recovered from surrounding text. The bytes and the receipt are as authoritative as any resolve; only the citation was lossy, and a bare cid is responder-scoped so it is ambiguous elsewhere. Re-cite `canonical_token`.
+          type: boolean
+        degraded_reason:
+          description: Present only when `degraded`. Names the recovery class and what to do about it.
+          type: string
+        fact:
+          $ref: '#/components/schemas/Fact'
+        fact_cid:
+          $ref: '#/components/schemas/FactCid'
+        fact_url:
+          description: Stable URL serving bytes identical to `fact`.
+          format: uri
+          type: string
+        kind:
+          description: 'Which kind of fact this token resolved to. Read it to interpret a null `value`. There is deliberately no top-level `tslot`: primary and absence carry a scalar `tslot` and a derivative carries a `tslot_window` pair, so time stays inside `fact` where it is typed honestly rather than flattened into one field that would be wrong for one of the three.'
+          enum:
+          - primary
+          - derivative
+          - absence
+          type: string
+        offline_verify_at:
+          description: Where to re-check the receipt without trusting this responder.
+          type: string
+        provenance:
+          description: Tamper-provenance, attached by THIS responder from its own registry at resolve time rather than carried in the token. For a primary fact it describes the band (`class`, `deterministic`, `tamper_evidence`, `trust_rank`); for a derivative it describes the derivation, and `responder_recomputed` is the field that separates what this responder verified from what the attester merely declared. Omitted when the band is unknown here.
+          type: object
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+        resolved:
+          description: 'Always true on a 200; the responder holds these bytes. A cid it does not hold is a 404, not a `resolved: false` body.'
+          type: boolean
+        signer_b32:
+          $ref: '#/components/schemas/PubKey'
+        token:
+          description: The citation exactly as sent, echoed back.
+          type: string
+        unit:
+          description: The band's declared unit (`m`, `degC`, `mm`). Always present, explicitly `null` when the band is dimensionless (most indices, including NDVI) or when the fact is a derivative or an absence.
+          type:
+          - string
+          - 'null'
+        value:
+          description: 'The cited reading: a number, an array of numbers for a vector band, or a class id. Always present, explicitly `null` when there is no reading, which happens only for `kind: "absence"`. Identical to `fact.value`.'
+        value_verbatim:
+          description: The scalar value as the exact decimal string it was signed as. Absent for non-scalar values (vectors, class ids, absences). Quote this rather than reformatting the number.
+          type: string
+      required:
+      - token
+      - canonical_token
+      - cell
+      - fact_cid
+      - value
+      - unit
+      - band
+      - kind
+      - fact
+      - resolved
+      - cell_matches
+      - fact_url
+      - signer_b32
+      - receipt
+      - degraded
+      type: object
+    Cost:
+      description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
+      properties:
+        credits:
+          description: Conceptual cost units; 0 for L0/L1 read endpoints on the hosted responder.
+          type: number
+        latency_p50_ms:
+          type: number
+        latency_p99_ms:
+          type: number
+        source_freshness_s:
+          description: 'Age of the STALEST source this response cites: now minus the earliest captured_at across the returned facts'' sources. null when nothing in the response carries a dated source, which is the honest answer for a primitive that reads no observation. Was a hardcoded 0 until 2026-08-05, so a 2021 DEM tile reported as 0 s old; a null here means unknown, never fresh.'
+          type:
+          - integer
+          - 'null'
+        was_cached:
+          type: boolean
+      type: object
+    Fact:
+      description: A primary attestation at (cell, band, tslot). `value` is the band's typed reading (number, array of numbers for vector bands, or a categorical class id). `unit` is the band's declared unit (e.g. `m_msl`, `degC`, `mm`).
+      properties:
+        absence_reason:
+          description: Present only when kind=`absence`.
+          enum:
+          - unavailable_capability
+          - outside_coverage
+          - archetype_seed_unavailable
+          - gpu_unavailable
+          - upstream_error
+          - upstream_timeout
+          type: string
+        band:
+          type: string
+        cell:
+          $ref: '#/components/schemas/Cell64'
+        fact_cid:
+          $ref: '#/components/schemas/FactCid'
+        kind:
+          description: '`primary` = signed measurement; `absence` = signed "we don''t have this here" with a typed reason.'
+          enum:
+          - primary
+          - absence
+          type: string
+        provenance:
+          description: Upstream source key (e.g. `copdem30m`, `s2_l2a`, `cams_eu`).
+          type: string
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+        tslot:
+          $ref: '#/components/schemas/Tslot'
+        unit:
+          type: string
+        value:
+          description: Number, array of numbers, or class id depending on band type.
+      required:
+      - kind
+      - cell
+      - band
+      - tslot
+      - value
+      - fact_cid
+      - receipt
+      type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string
+    FactCid:
+      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
+      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
+      maxLength: 52
+      minLength: 52
+      pattern: ^[a-z2-7]{52}$
+      type: string
+    Tslot:
+      description: Band-tempo-relative integer offset from the emem epoch. Each band declares its tempo (`fast` / `medium` / `slow` / `static`); tslot is the rounded count of that tempo's unit since the epoch.
+      minimum: 0
+      type: integer
     Receipt:
       description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
       properties:
@@ -267,192 +456,3 @@ components:
       - signature
       - registry_cid
       type: object
-    Cost:
-      description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
-      properties:
-        credits:
-          description: Conceptual cost units; 0 for L0/L1 read endpoints on the hosted responder.
-          type: number
-        latency_p50_ms:
-          type: number
-        latency_p99_ms:
-          type: number
-        source_freshness_s:
-          description: 'Age of the STALEST source this response cites: now minus the earliest captured_at across the returned facts'' sources. null when nothing in the response carries a dated source, which is the honest answer for a primitive that reads no observation. Was a hardcoded 0 until 2026-08-05, so a 2021 DEM tile reported as 0 s old; a null here means unknown, never fresh.'
-          type:
-          - integer
-          - 'null'
-        was_cached:
-          type: boolean
-      type: object
-    FactCid:
-      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
-      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
-      maxLength: 52
-      minLength: 52
-      pattern: ^[a-z2-7]{52}$
-      type: string
-    ErrorEnvelope:
-      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
-      properties:
-        code:
-          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
-          example: invalid_argument
-          type: string
-        details:
-          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
-          type: object
-        message:
-          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
-          type: string
-        path:
-          description: Request path that produced the error.
-          example: /v1/ask
-          type: string
-        schema:
-          const: emem.error.v1
-          type: string
-      required:
-      - code
-      - message
-      - schema
-      type: object
-    Tslot:
-      description: Band-tempo-relative integer offset from the emem epoch. Each band declares its tempo (`fast` / `medium` / `slow` / `static`); tslot is the rounded count of that tempo's unit since the epoch.
-      minimum: 0
-      type: integer
-    MemoryTokenResolveResp:
-      description: 'Response of /v1/memory_token/resolve (and of the emem_memory_token_resolve MCP tool, which shares the implementation, so the two cannot disagree). The dereference at the centre of the citation loop: a token in, the signed reading it cites out. `value` / `unit` / `band` / `kind` are the reading itself, lifted to the top level; `fact` is the full signed body they were lifted from, and `value` is the same JSON node as `fact.value` by construction, never a re-render. `value_verbatim` is the scalar as the exact decimal string it was signed as, and is the field a model should quote: re-typing `fact.value` from a JSON number is where measured precision loss comes from. Nothing here is taken from the token: the token carries only cell + fact_cid, and any further claim a descriptor token makes (band, capture date, coordinates) is bound against this body before the dereference is permitted, so a mismatch is a 409 rather than a field in this response.'
-      properties:
-        band:
-          description: Band key the value is a reading of, from the signed body.
-          example: copdem30m.elevation_mean
-          type: string
-        canonical_token:
-          description: 'The same citation in canonical grammar, `emem:fact:<cell64>:<fact_cid>`. Cite this one onward: a legacy `memt:` prefix, a descriptor anchor and a bare cid all normalise here.'
-          type: string
-        cell:
-          $ref: '#/components/schemas/Cell64'
-        cell_matches:
-          description: 'Whether the cell the token asserted was CHECKED against the signed fact''s own cell, and agreed. `false` means NOT CHECKED, never checked-and-mismatched: a token whose cell contradicts the fact is refused with 409 before this response exists. The only route to a 200 with `false` is a degraded resolve, where a bare or recovered cid asserted no cell to compare and `cell` below is adopted from the signed body. Gate provenance on this field and you get the address check; read `degraded` for whether the citation itself was well-formed.'
-          type: boolean
-        degraded:
-          description: True when a BARE fact_cid was accepted, i.e. the `emem:fact:<descriptor>:` head was missing or the cid was recovered from surrounding text. The bytes and the receipt are as authoritative as any resolve; only the citation was lossy, and a bare cid is responder-scoped so it is ambiguous elsewhere. Re-cite `canonical_token`.
-          type: boolean
-        degraded_reason:
-          description: Present only when `degraded`. Names the recovery class and what to do about it.
-          type: string
-        fact:
-          $ref: '#/components/schemas/Fact'
-        fact_cid:
-          $ref: '#/components/schemas/FactCid'
-        fact_url:
-          description: Stable URL serving bytes identical to `fact`.
-          format: uri
-          type: string
-        kind:
-          description: 'Which kind of fact this token resolved to. Read it to interpret a null `value`. There is deliberately no top-level `tslot`: primary and absence carry a scalar `tslot` and a derivative carries a `tslot_window` pair, so time stays inside `fact` where it is typed honestly rather than flattened into one field that would be wrong for one of the three.'
-          enum:
-          - primary
-          - derivative
-          - absence
-          type: string
-        offline_verify_at:
-          description: Where to re-check the receipt without trusting this responder.
-          type: string
-        provenance:
-          description: Tamper-provenance, attached by THIS responder from its own registry at resolve time rather than carried in the token. For a primary fact it describes the band (`class`, `deterministic`, `tamper_evidence`, `trust_rank`); for a derivative it describes the derivation, and `responder_recomputed` is the field that separates what this responder verified from what the attester merely declared. Omitted when the band is unknown here.
-          type: object
-        receipt:
-          $ref: '#/components/schemas/Receipt'
-        resolved:
-          description: 'Always true on a 200; the responder holds these bytes. A cid it does not hold is a 404, not a `resolved: false` body.'
-          type: boolean
-        signer_b32:
-          $ref: '#/components/schemas/PubKey'
-        token:
-          description: The citation exactly as sent, echoed back.
-          type: string
-        unit:
-          description: The band's declared unit (`m`, `degC`, `mm`). Always present, explicitly `null` when the band is dimensionless (most indices, including NDVI) or when the fact is a derivative or an absence.
-          type:
-          - string
-          - 'null'
-        value:
-          description: 'The cited reading: a number, an array of numbers for a vector band, or a class id. Always present, explicitly `null` when there is no reading, which happens only for `kind: "absence"`. Identical to `fact.value`.'
-        value_verbatim:
-          description: The scalar value as the exact decimal string it was signed as. Absent for non-scalar values (vectors, class ids, absences). Quote this rather than reformatting the number.
-          type: string
-      required:
-      - token
-      - canonical_token
-      - cell
-      - fact_cid
-      - value
-      - unit
-      - band
-      - kind
-      - fact
-      - resolved
-      - cell_matches
-      - fact_url
-      - signer_b32
-      - receipt
-      - degraded
-      type: object
-    Fact:
-      description: A primary attestation at (cell, band, tslot). `value` is the band's typed reading (number, array of numbers for vector bands, or a categorical class id). `unit` is the band's declared unit (e.g. `m_msl`, `degC`, `mm`).
-      properties:
-        absence_reason:
-          description: Present only when kind=`absence`.
-          enum:
-          - unavailable_capability
-          - outside_coverage
-          - archetype_seed_unavailable
-          - gpu_unavailable
-          - upstream_error
-          - upstream_timeout
-          type: string
-        band:
-          type: string
-        cell:
-          $ref: '#/components/schemas/Cell64'
-        fact_cid:
-          $ref: '#/components/schemas/FactCid'
-        kind:
-          description: '`primary` = signed measurement; `absence` = signed "we don''t have this here" with a typed reason.'
-          enum:
-          - primary
-          - absence
-          type: string
-        provenance:
-          description: Upstream source key (e.g. `copdem30m`, `s2_l2a`, `cams_eu`).
-          type: string
-        receipt:
-          $ref: '#/components/schemas/Receipt'
-        tslot:
-          $ref: '#/components/schemas/Tslot'
-        unit:
-          type: string
-        value:
-          description: Number, array of numbers, or class id depending on band type.
-      required:
-      - kind
-      - cell
-      - band
-      - tslot
-      - value
-      - fact_cid
-      - receipt
-      type: object
-    PubKey:
-      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
-      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
-      type: string
-    Cell64:
-      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
-      example: defi.zb4d9.pefa.zf619
-      maxLength: 23
-      minLength: 19
-      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
-      type: string

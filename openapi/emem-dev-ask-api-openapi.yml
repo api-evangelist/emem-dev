@@ -57,92 +57,6 @@ paths:
       - Ask
 components:
   schemas:
-    Receipt:
-      description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
-      properties:
-        cells:
-          items:
-            $ref: '#/components/schemas/Cell64'
-          type: array
-        cost:
-          $ref: '#/components/schemas/Cost'
-        fact_cids:
-          items:
-            $ref: '#/components/schemas/FactCid'
-          type: array
-        intent:
-          description: Optional natural-language hint. Populated when served via /v1/intent.
-          type: string
-        merkle_proof:
-          description: 'Inclusion proof for `fact_cids[0]` when persisted. Omitted from JSON when the cited facts pre-date the proof tree; under preimage_version 2 that absence is itself signed (an explicit ABSENT marker), so it is a statement rather than a gap. Do not strip this field: v2 binds it into the signature and removing it makes an authentic receipt report `signature_valid: false`.'
-          properties:
-            leaf_index:
-              description: u32 leaf index in the canonical-sorted batch.
-              type: integer
-            path:
-              description: Sibling hashes leaf→root.
-              items:
-                description: 32-byte sibling hash as a byte array
-                items:
-                  type: integer
-                type: array
-              type: array
-            root:
-              description: The expected 32-byte batch root as a byte array.
-              items:
-                type: integer
-              type: array
-            version:
-              description: 'Merkle hashing rule: 0 (omitted) = legacy unprefixed, 1 = RFC 6962-style prefixed.'
-              type: integer
-          required:
-          - leaf_index
-          - path
-          - root
-          type: object
-        primitive:
-          description: 'Namespaced wire form: `emem.recall`, `emem.find_similar`, `emem.verify`, …'
-          type: string
-        registry_cid:
-          description: CID of the function registry version in force.
-          type: string
-        request_id:
-          description: ULID generated per request.
-          type: string
-        responder:
-          $ref: '#/components/schemas/PubKey'
-        responder_key_epoch:
-          description: u32 rotation counter; bumps when the operator rotates keys.
-          type: integer
-        responder_pubkey_b32:
-          $ref: '#/components/schemas/PubKey'
-        schema_cid:
-          description: CID of the active CDDL profile.
-          type: string
-        served_at:
-          description: ISO 8601 UTC, second precision.
-          type: string
-        signature:
-          description: Ed25519 signature, 64 bytes base32-nopad-lowercase encoded.
-          type: string
-        source_versions:
-          additionalProperties:
-            type: string
-          description: Per-source freshness map.
-          type: object
-      required:
-      - request_id
-      - served_at
-      - primitive
-      - cells
-      - fact_cids
-      - schema_cid
-      - responder
-      - responder_key_epoch
-      - responder_pubkey_b32
-      - signature
-      - registry_cid
-      type: object
     Cost:
       description: 'Self-declared cost block on every receipt. Honest accounting: latencies are observed, freshness is the age of the stalest source cited (null when undatable, never 0 as a stand-in), `was_cached` is true when the hot cache served the read.'
       properties:
@@ -160,6 +74,51 @@ components:
           - 'null'
         was_cached:
           type: boolean
+      type: object
+    Fact:
+      description: A primary attestation at (cell, band, tslot). `value` is the band's typed reading (number, array of numbers for vector bands, or a categorical class id). `unit` is the band's declared unit (e.g. `m_msl`, `degC`, `mm`).
+      properties:
+        absence_reason:
+          description: Present only when kind=`absence`.
+          enum:
+          - unavailable_capability
+          - outside_coverage
+          - archetype_seed_unavailable
+          - gpu_unavailable
+          - upstream_error
+          - upstream_timeout
+          type: string
+        band:
+          type: string
+        cell:
+          $ref: '#/components/schemas/Cell64'
+        fact_cid:
+          $ref: '#/components/schemas/FactCid'
+        kind:
+          description: '`primary` = signed measurement; `absence` = signed "we don''t have this here" with a typed reason.'
+          enum:
+          - primary
+          - absence
+          type: string
+        provenance:
+          description: Upstream source key (e.g. `copdem30m`, `s2_l2a`, `cams_eu`).
+          type: string
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+        tslot:
+          $ref: '#/components/schemas/Tslot'
+        unit:
+          type: string
+        value:
+          description: Number, array of numbers, or class id depending on band type.
+      required:
+      - kind
+      - cell
+      - band
+      - tslot
+      - value
+      - fact_cid
+      - receipt
       type: object
     MaterializeNote:
       description: 'One entry in the response''s `materialize_notes[]`, recording what the lazy materializer did during this call. status:"materialized" means a signed fact was minted and persisted (a Primary observation OR a confirmed, evidence-backed Absence - both are signed and citeable by fact_cid). status:"skipped" means nothing was signed: `reason_class` says why (transient `timeout`/`upstream_error`, retryable; or structural `unknown_band`/`no_materializer`/`capability_unavailable`, not retryable here) and `absence` is always false, because a skip is ''unknown'', never a confirmed absence.'
@@ -195,6 +154,126 @@ components:
           - skipped
           type: string
       type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    AskResp:
+      description: Response of /v1/ask. Single envelope combining (a) place resolution, (b) topic-router classification, (c) recalled facts under those topics, (d) applicable algorithm recipes that compose those bands into named scores, (e) optional Sentinel-2 RGB thumbnail URL, and (f) caveats. All facts are signed and content-addressed.
+      properties:
+        algorithms_for_question:
+          items:
+            properties:
+              formula:
+                type: string
+              key:
+                type: string
+              topic:
+                type: string
+            type: object
+          type: array
+        answer:
+          description: Short natural-language summary of what the responder found, synthesised deterministically from the structured fields (every cited value traces to a fact_cid in the receipt). On a cold cell whose bands are not yet materialized it states that plainly and points at `next_steps`; never an LLM call.
+          type: string
+        answer_md:
+          description: Markdown variant of `answer`.
+          type: string
+        caveats:
+          items:
+            type: string
+          type: array
+        facts:
+          properties:
+            bands_already_attested_at_cell:
+              items:
+                type: string
+              type: array
+            facts:
+              items:
+                $ref: '#/components/schemas/Fact'
+              type: array
+          type: object
+        foundation_embeddings:
+          description: Per-encoder neighbour lists and consensus voting. Populated when the intent matches `find places like` / `what changed`.
+          type: object
+        materialize_notes:
+          items:
+            $ref: '#/components/schemas/MaterializeNote'
+          type: array
+        next_steps:
+          description: Present when the routed algorithms could not evaluate because their input bands are not materialized at this cell. Each item is a literal follow-up call (e.g. POST /v1/recall with the exact missing bands) the agent can issue, then re-ask.
+          items:
+            properties:
+              action:
+                type: string
+              body:
+                type: object
+              method:
+                type: string
+              path:
+                type: string
+              url:
+                type: string
+              why:
+                type: string
+            type: object
+          type: array
+        place_resolved:
+          $ref: '#/components/schemas/LocateResp'
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+        topic_routing:
+          properties:
+            matched_keywords:
+              items:
+                type: object
+              type: array
+            matched_topics:
+              items:
+                type: string
+              type: array
+            out_of_scope:
+              type: boolean
+            routing:
+              type: object
+          type: object
+      required:
+      - topic_routing
+      - facts
+      - receipt
+      type: object
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string
     LocateResp:
       description: Response of /v1/locate. `cell64` is the canonical handle for the resolved place; `polygon_bbox` is present when the geocoder found an extent (city / park / lake / country / region), absent for point features. `via` declares which layer of the seven-tier embedded cascade answered, falling back to network (Photon → Nominatim) only when no embedded layer matched.
       properties:
@@ -295,97 +374,12 @@ components:
       - cell64
       - via
       type: object
-    ErrorEnvelope:
-      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
-      properties:
-        code:
-          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
-          example: invalid_argument
-          type: string
-        details:
-          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
-          type: object
-        message:
-          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
-          type: string
-        path:
-          description: Request path that produced the error.
-          example: /v1/ask
-          type: string
-        schema:
-          const: emem.error.v1
-          type: string
-      required:
-      - code
-      - message
-      - schema
-      type: object
     FactCid:
       description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
       example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
       maxLength: 52
       minLength: 52
       pattern: ^[a-z2-7]{52}$
-      type: string
-    Tslot:
-      description: Band-tempo-relative integer offset from the emem epoch. Each band declares its tempo (`fast` / `medium` / `slow` / `static`); tslot is the rounded count of that tempo's unit since the epoch.
-      minimum: 0
-      type: integer
-    Cell64:
-      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
-      example: defi.zb4d9.pefa.zf619
-      maxLength: 23
-      minLength: 19
-      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
-      type: string
-    Fact:
-      description: A primary attestation at (cell, band, tslot). `value` is the band's typed reading (number, array of numbers for vector bands, or a categorical class id). `unit` is the band's declared unit (e.g. `m_msl`, `degC`, `mm`).
-      properties:
-        absence_reason:
-          description: Present only when kind=`absence`.
-          enum:
-          - unavailable_capability
-          - outside_coverage
-          - archetype_seed_unavailable
-          - gpu_unavailable
-          - upstream_error
-          - upstream_timeout
-          type: string
-        band:
-          type: string
-        cell:
-          $ref: '#/components/schemas/Cell64'
-        fact_cid:
-          $ref: '#/components/schemas/FactCid'
-        kind:
-          description: '`primary` = signed measurement; `absence` = signed "we don''t have this here" with a typed reason.'
-          enum:
-          - primary
-          - absence
-          type: string
-        provenance:
-          description: Upstream source key (e.g. `copdem30m`, `s2_l2a`, `cams_eu`).
-          type: string
-        receipt:
-          $ref: '#/components/schemas/Receipt'
-        tslot:
-          $ref: '#/components/schemas/Tslot'
-        unit:
-          type: string
-        value:
-          description: Number, array of numbers, or class id depending on band type.
-      required:
-      - kind
-      - cell
-      - band
-      - tslot
-      - value
-      - fact_cid
-      - receipt
-      type: object
-    PubKey:
-      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
-      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
       type: string
     AskReq:
       properties:
@@ -412,87 +406,93 @@ components:
       required:
       - q
       type: object
-    AskResp:
-      description: Response of /v1/ask. Single envelope combining (a) place resolution, (b) topic-router classification, (c) recalled facts under those topics, (d) applicable algorithm recipes that compose those bands into named scores, (e) optional Sentinel-2 RGB thumbnail URL, and (f) caveats. All facts are signed and content-addressed.
+    Tslot:
+      description: Band-tempo-relative integer offset from the emem epoch. Each band declares its tempo (`fast` / `medium` / `slow` / `static`); tslot is the rounded count of that tempo's unit since the epoch.
+      minimum: 0
+      type: integer
+    Receipt:
+      description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
       properties:
-        algorithms_for_question:
+        cells:
           items:
-            properties:
-              formula:
-                type: string
-              key:
-                type: string
-              topic:
-                type: string
-            type: object
+            $ref: '#/components/schemas/Cell64'
           type: array
-        answer:
-          description: Short natural-language summary of what the responder found, synthesised deterministically from the structured fields (every cited value traces to a fact_cid in the receipt). On a cold cell whose bands are not yet materialized it states that plainly and points at `next_steps`; never an LLM call.
-          type: string
-        answer_md:
-          description: Markdown variant of `answer`.
-          type: string
-        caveats:
+        cost:
+          $ref: '#/components/schemas/Cost'
+        fact_cids:
           items:
+            $ref: '#/components/schemas/FactCid'
+          type: array
+        intent:
+          description: Optional natural-language hint. Populated when served via /v1/intent.
+          type: string
+        merkle_proof:
+          description: 'Inclusion proof for `fact_cids[0]` when persisted. Omitted from JSON when the cited facts pre-date the proof tree; under preimage_version 2 that absence is itself signed (an explicit ABSENT marker), so it is a statement rather than a gap. Do not strip this field: v2 binds it into the signature and removing it makes an authentic receipt report `signature_valid: false`.'
+          properties:
+            leaf_index:
+              description: u32 leaf index in the canonical-sorted batch.
+              type: integer
+            path:
+              description: Sibling hashes leaf→root.
+              items:
+                description: 32-byte sibling hash as a byte array
+                items:
+                  type: integer
+                type: array
+              type: array
+            root:
+              description: The expected 32-byte batch root as a byte array.
+              items:
+                type: integer
+              type: array
+            version:
+              description: 'Merkle hashing rule: 0 (omitted) = legacy unprefixed, 1 = RFC 6962-style prefixed.'
+              type: integer
+          required:
+          - leaf_index
+          - path
+          - root
+          type: object
+        primitive:
+          description: 'Namespaced wire form: `emem.recall`, `emem.find_similar`, `emem.verify`, …'
+          type: string
+        registry_cid:
+          description: CID of the function registry version in force.
+          type: string
+        request_id:
+          description: ULID generated per request.
+          type: string
+        responder:
+          $ref: '#/components/schemas/PubKey'
+        responder_key_epoch:
+          description: u32 rotation counter; bumps when the operator rotates keys.
+          type: integer
+        responder_pubkey_b32:
+          $ref: '#/components/schemas/PubKey'
+        schema_cid:
+          description: CID of the active CDDL profile.
+          type: string
+        served_at:
+          description: ISO 8601 UTC, second precision.
+          type: string
+        signature:
+          description: Ed25519 signature, 64 bytes base32-nopad-lowercase encoded.
+          type: string
+        source_versions:
+          additionalProperties:
             type: string
-          type: array
-        facts:
-          properties:
-            bands_already_attested_at_cell:
-              items:
-                type: string
-              type: array
-            facts:
-              items:
-                $ref: '#/components/schemas/Fact'
-              type: array
-          type: object
-        foundation_embeddings:
-          description: Per-encoder neighbour lists and consensus voting. Populated when the intent matches `find places like` / `what changed`.
-          type: object
-        materialize_notes:
-          items:
-            $ref: '#/components/schemas/MaterializeNote'
-          type: array
-        next_steps:
-          description: Present when the routed algorithms could not evaluate because their input bands are not materialized at this cell. Each item is a literal follow-up call (e.g. POST /v1/recall with the exact missing bands) the agent can issue, then re-ask.
-          items:
-            properties:
-              action:
-                type: string
-              body:
-                type: object
-              method:
-                type: string
-              path:
-                type: string
-              url:
-                type: string
-              why:
-                type: string
-            type: object
-          type: array
-        place_resolved:
-          $ref: '#/components/schemas/LocateResp'
-        receipt:
-          $ref: '#/components/schemas/Receipt'
-        topic_routing:
-          properties:
-            matched_keywords:
-              items:
-                type: object
-              type: array
-            matched_topics:
-              items:
-                type: string
-              type: array
-            out_of_scope:
-              type: boolean
-            routing:
-              type: object
+          description: Per-source freshness map.
           type: object
       required:
-      - topic_routing
-      - facts
-      - receipt
+      - request_id
+      - served_at
+      - primitive
+      - cells
+      - fact_cids
+      - schema_cid
+      - responder
+      - responder_key_epoch
+      - responder_pubkey_b32
+      - signature
+      - registry_cid
       type: object

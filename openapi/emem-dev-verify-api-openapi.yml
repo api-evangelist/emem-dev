@@ -290,6 +290,126 @@ components:
         was_cached:
           type: boolean
       type: object
+    ErrorEnvelope:
+      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
+      properties:
+        code:
+          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
+          example: invalid_argument
+          type: string
+        details:
+          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
+          type: object
+        message:
+          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
+          type: string
+        path:
+          description: Request path that produced the error.
+          example: /v1/ask
+          type: string
+        schema:
+          const: emem.error.v1
+          type: string
+      required:
+      - code
+      - message
+      - schema
+      type: object
+    PubKey:
+      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
+      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
+      type: string
+    VerifyResp:
+      description: Response of /v1/verify. `holds` is the boolean verdict; `evidence_cids` are the fact CIDs the verifier walked to reach the verdict.
+      properties:
+        evidence_cids:
+          items:
+            $ref: '#/components/schemas/FactCid'
+          type: array
+        explanation:
+          type: string
+        holds:
+          type: boolean
+        receipt:
+          $ref: '#/components/schemas/Receipt'
+      required:
+      - holds
+      - receipt
+      type: object
+    Cell64:
+      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
+      example: defi.zb4d9.pefa.zf619
+      maxLength: 23
+      minLength: 19
+      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
+      type: string
+    FactCid:
+      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
+      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
+      maxLength: 52
+      minLength: 52
+      pattern: ^[a-z2-7]{52}$
+      type: string
+    Claim:
+      properties:
+        agg:
+          description: Aggregation over `window`
+          enum:
+          - any
+          - all
+          - mean
+          - min
+          - max
+          type: string
+        band:
+          description: Band key (e.g. `indices.ndvi`, `copdem30m.elevation_mean`)
+          type: string
+        op:
+          description: Comparison or membership operator
+          enum:
+          - eq
+          - ne
+          - lt
+          - le
+          - gt
+          - ge
+          - in
+          - ni
+          - exists
+          - absent
+          type: string
+        tslot:
+          description: Specific tslot; one of `tslot` or `window` MUST be set
+          type: integer
+        value:
+          description: Right-hand value, band-typed (number for scalar bands, array for vector bands, set for in/ni). Required even for exists/absent where it is ignored.
+        window:
+          description: Inclusive [start, end] u64 Unix-epoch range
+          items:
+            type: integer
+          maxItems: 2
+          minItems: 2
+          type: array
+      required:
+      - band
+      - op
+      - value
+      type: object
+    VerifyReq:
+      properties:
+        cell:
+          type: string
+        claim:
+          $ref: '#/components/schemas/Claim'
+        mode:
+          enum:
+          - fast
+          - resolve
+          type: string
+      required:
+      - claim
+      - cell
+      type: object
     Receipt:
       description: 'Ed25519-signed receipt. The browser-side verifier at /verify reconstructs the preimage from the receipt fields alone, no callback to the issuer. **A receipt is byte-for-byte or nothing.** Current receipts carry `preimage_version: 2`, whose preimage binds request_id, served_at, primitive, cells, fact_cids AND, when present, the scope / as_of / edges / source_versions / field digests and the `merkle_proof` segment. Reshaping a receipt — dropping a field an SDK considers redundant, re-keying it, summarising it, round-tripping it through a lossy model — invalidates the signature BY DESIGN, and the result is indistinguishable on the wire from tampering. Store and forward the responder''s exact bytes. POST /v1/verify_receipt names which of the two it is where it can prove the difference (`reason: receipt_reshaped_after_signing` with a `failure_detail`). What is NOT signed: the caller''s `place`/`q` string, raw `lat`/`lng`, requested `bands[]`, requested `tslot`, and `intent` — a wrong-place geocode produces a valid signature for the wrong cell. Branch on /v1/locate `selected.is_high_confidence` before trusting place-anchored answers. Also: `fact_cid` is per-replica (signed_at differs across responders even for byte-identical upstream pixels); cross-replica join key is the tuple (cell, band, tslot). /v1/recall_polygon emits one independently signed receipt per cell under `by_cell.<cell>.receipt`, `merged_facts[]` is convenience flattening and is NOT covered by an aggregate signature.'
       properties:
@@ -376,123 +496,3 @@ components:
       - signature
       - registry_cid
       type: object
-    VerifyResp:
-      description: Response of /v1/verify. `holds` is the boolean verdict; `evidence_cids` are the fact CIDs the verifier walked to reach the verdict.
-      properties:
-        evidence_cids:
-          items:
-            $ref: '#/components/schemas/FactCid'
-          type: array
-        explanation:
-          type: string
-        holds:
-          type: boolean
-        receipt:
-          $ref: '#/components/schemas/Receipt'
-      required:
-      - holds
-      - receipt
-      type: object
-    FactCid:
-      description: 'Content id of a fact: base32-nopad-lowercase encoding of `blake3(canonical_cbor(fact))`, the FULL 32-byte digest with no truncation. Always 52 characters, alphabet `[a-z2-7]`. A cid of any other length is a damaged citation, not a shorter address: /v1/memory_token/resolve rejects it as `fact_cid_malformed_length` rather than guessing. Note that `entity_cid` and `bundle_cid` are NOT this shape; both truncate to 16 bytes (26 characters) and hash an identity anchor or a citation list rather than a complete body.'
-      example: qtv2bco56qw4pmlohk56dotoxyl3atmnjpmzrijj2kazw2mj57oq
-      maxLength: 52
-      minLength: 52
-      pattern: ^[a-z2-7]{52}$
-      type: string
-    Claim:
-      properties:
-        agg:
-          description: Aggregation over `window`
-          enum:
-          - any
-          - all
-          - mean
-          - min
-          - max
-          type: string
-        band:
-          description: Band key (e.g. `indices.ndvi`, `copdem30m.elevation_mean`)
-          type: string
-        op:
-          description: Comparison or membership operator
-          enum:
-          - eq
-          - ne
-          - lt
-          - le
-          - gt
-          - ge
-          - in
-          - ni
-          - exists
-          - absent
-          type: string
-        tslot:
-          description: Specific tslot; one of `tslot` or `window` MUST be set
-          type: integer
-        value:
-          description: Right-hand value, band-typed (number for scalar bands, array for vector bands, set for in/ni). Required even for exists/absent where it is ignored.
-        window:
-          description: Inclusive [start, end] u64 Unix-epoch range
-          items:
-            type: integer
-          maxItems: 2
-          minItems: 2
-          type: array
-      required:
-      - band
-      - op
-      - value
-      type: object
-    VerifyReq:
-      properties:
-        cell:
-          type: string
-        claim:
-          $ref: '#/components/schemas/Claim'
-        mode:
-          enum:
-          - fast
-          - resolve
-          type: string
-      required:
-      - claim
-      - cell
-      type: object
-    ErrorEnvelope:
-      description: The `emem.error.v1` failure envelope returned by every endpoint on a 4xx/5xx. Branch on the stable `code` (not the human `message`). See GET /v1/errors for the full code catalog.
-      properties:
-        code:
-          description: Stable machine-readable error code. One of the codes in GET /v1/errors.
-          example: invalid_argument
-          type: string
-        details:
-          description: Optional structured recovery hints; present on errors that ship machine-readable next-steps.
-          type: object
-        message:
-          description: Human-readable detail. For invalid_argument this names the offending field (e.g. "missing field `q`").
-          type: string
-        path:
-          description: Request path that produced the error.
-          example: /v1/ask
-          type: string
-        schema:
-          const: emem.error.v1
-          type: string
-      required:
-      - code
-      - message
-      - schema
-      type: object
-    Cell64:
-      description: 'cell64 wire form: four base-65,536 bigrams separated by dots, e.g. `defi.zb4d9.pefa.zf619`. Encoded resolution is ~9.55 m at the equator. Each bigram is either a CVCV quad, consonant `[bcdfghjklmnpqrstvwxyz]` followed by vowel `[aeiouAEIOU]` repeated twice, OR a synthetic 5-char `z[0-9a-f]{4}` slot used for the unused pad cells in the 65,536-entry alphabet. The regex pin matches `pattern` below byte-for-byte and is also surfaced under `Cell64Pattern` so agents can validate before sending.'
-      example: defi.zb4d9.pefa.zf619
-      maxLength: 23
-      minLength: 19
-      pattern: ^(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})(?:\.(?:(?:[bcdfghjklmnpqrstvwxyz][aeiouAEIOU]){2}|z[0-9a-f]{4})){3}$
-      type: string
-    PubKey:
-      description: Ed25519 32-byte public key, base32-nopad-lowercase encoded (52 chars). Returned in receipts and `/.well-known/emem.json`.
-      example: 777er3yihgifqmv5hmc2wwmyszgddzderzhsx6rex4yoakwomvka
-      type: string
