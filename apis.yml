@@ -39,6 +39,9 @@ x-brands:
 specificationVersion: '0.20'
 created: '2026-09-19'
 modified: '2026-09-19'
+x-docs-platform: redocly
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-10-03
 tags:
 - Company
 - Artificial Intelligence
@@ -111,6 +114,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - A2A
+  tags_raw:
   - A2a
   properties:
   - type: OpenAPI
@@ -129,6 +134,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - A2A
+  tags_raw:
   - Agent Card
   properties:
   - type: OpenAPI
@@ -363,6 +370,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Benchmarks
+  tags_raw:
   - Benchmark
   properties:
   - type: OpenAPI
@@ -489,6 +498,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Cite
+  tags_raw:
   - cite
   properties:
   - type: OpenAPI
@@ -561,6 +572,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Compliance
+  tags_raw:
   - compliance
   properties:
   - type: OpenAPI
@@ -687,6 +700,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - cube
+  tags_raw:
   - Cube
   properties:
   - type: OpenAPI
@@ -777,6 +792,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Device
+  tags_raw:
   - device
   properties:
   - type: OpenAPI
@@ -849,6 +866,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Edges
+  tags_raw:
   - edges
   properties:
   - type: OpenAPI
@@ -867,6 +886,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Embeddings
+  tags_raw:
   - embedding
   properties:
   - type: OpenAPI
@@ -957,6 +978,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Entity
+  tags_raw:
   - entity
   properties:
   - type: OpenAPI
@@ -993,6 +1016,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - EUDR
+  tags_raw:
   - eudr
   properties:
   - type: OpenAPI
@@ -1011,6 +1036,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Fetch
+  tags_raw:
   - fetch
   properties:
   - type: OpenAPI
@@ -1100,7 +1127,8 @@ apis:
   description: The get_fact API from emem — 1 operation(s) for get_fact.
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
-  tags:
+  tags: []
+  tags_raw:
   - get_fact
   properties:
   - type: OpenAPI
@@ -1191,6 +1219,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Identity
+  tags_raw:
   - identity
   properties:
   - type: OpenAPI
@@ -1227,6 +1257,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Intents
+  tags_raw:
   - Intent
   properties:
   - type: OpenAPI
@@ -1245,6 +1277,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Introspect
+  tags_raw:
   - introspect
   properties:
   - type: OpenAPI
@@ -1299,6 +1333,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Knowledge Graph
+  tags_raw:
   - knowledge-graph
   properties:
   - type: OpenAPI
@@ -1407,6 +1443,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - MCP
+  tags_raw:
   - Mcp
   properties:
   - type: OpenAPI
@@ -1425,6 +1463,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Memory
+  tags_raw:
   - memory
   properties:
   - type: OpenAPI
@@ -1552,6 +1592,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Reason
+  tags_raw:
   - reason
   properties:
   - type: OpenAPI
@@ -1642,6 +1684,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Render
+  tags_raw:
   - render
   properties:
   - type: OpenAPI
@@ -1732,6 +1776,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Security
+  tags_raw:
   - security
   properties:
   - type: OpenAPI
@@ -1786,6 +1832,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - States
+  tags_raw:
   - State
   properties:
   - type: OpenAPI
@@ -1930,6 +1978,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Topic
+  tags_raw:
   - Topics
   properties:
   - type: OpenAPI
@@ -2038,6 +2088,8 @@ apis:
   humanURL: https://emem.dev/docs/api/
   baseURL: https://emem.dev/mcp
   tags:
+  - Vectors
+  tags_raw:
   - vector
   properties:
   - type: OpenAPI
@@ -2146,6 +2198,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/emem-dev-capability-edges.yml
+  name: emem Business Capability Map
 - type: Overlay
   url: overlays/emem-dev-openapi-overlay.yaml
 - type: Website
