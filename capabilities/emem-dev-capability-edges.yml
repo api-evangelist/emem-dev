@@ -1,0 +1,28 @@
+slug: emem-dev
+provider: emem
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 1
+edges:
+- tag: Discover
+  spec_file: emem-dev-discover-api-openapi.yml
+  capability_id: BC-4270
+  capability_id_l1: BC-4270
+  capability_name: Developer Platform & API Ecosystem Management
+  confidence: 0.7
+  evidence: GET /v1/discover 'machine-readable index of all surfaces'; GET /v1/deprecations 'Deprecated
+    surfaces and the policy governing them.'; GET /v1/limits 'The operational ceilings an agent would
+    otherwise find by bisection'
+  reason: These operations expose the public API surface itself — self-describing index, published JSON
+    Schemas, deprecation policy and rate/operational limits. That is developer-platform and public-API
+    lifecycle stewardship; it spans portal, API lifecycle and consumption-governance sub-capabilities
+    so only the L1 is asserted.
