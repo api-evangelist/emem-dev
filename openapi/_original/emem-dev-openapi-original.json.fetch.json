@@ -1,0 +1,12 @@
+{
+ "url": "https://emem.dev/openapi.json",
+ "requested_url": "https://emem.dev/openapi.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 375360,
+ "sha256": "5a9b17d28132772ca46710386ca1e28b84554f85c87ebd7a0ed277ee8b3722cb",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "equivalent",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the provider's current document describes the same operations (Jaccard 0.933), but the bytes differ, so the archive is an earlier or reformatted copy."
+}
