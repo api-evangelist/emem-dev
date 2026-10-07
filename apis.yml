@@ -2198,6 +2198,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Pricing
+  url: https://emem.dev/.well-known/emem-readonly.json
 - type: CapabilityMap
   url: capabilities/emem-dev-capability-edges.yml
   name: emem Business Capability Map
