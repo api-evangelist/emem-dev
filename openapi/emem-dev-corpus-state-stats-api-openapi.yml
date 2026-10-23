@@ -43,3 +43,9 @@ paths:
       summary: 'snapshot of corpus liveness: distinct_cells, distinct_bands, facts_scanned…'
       tags:
       - Corpus State Stats
+x-provenance:
+  method: harvested
+  publisher: emem
+  source: https://emem.dev/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)

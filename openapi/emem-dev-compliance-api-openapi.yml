@@ -40,3 +40,9 @@ paths:
       summary: JSON Schema for the EUDR Due Diligence Statement (Annex II + Article 2(28))…
       tags:
       - Compliance
+x-provenance:
+  method: harvested
+  publisher: emem
+  source: https://emem.dev/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)

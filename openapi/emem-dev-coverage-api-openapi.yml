@@ -39,3 +39,9 @@ paths:
       summary: JSON snapshot of where data lives (cells + lat/lng + counts)
       tags:
       - Coverage
+x-provenance:
+  method: harvested
+  publisher: emem
+  source: https://emem.dev/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
